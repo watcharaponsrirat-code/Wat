@@ -1,0 +1,173 @@
+{
+  "generator": "built-in imagegen",
+  "units": [
+    {
+      "key": "G1U1",
+      "grade": 1,
+      "index": 0,
+      "title": "เรียนรู้วิทยาศาสตร์อย่างไร",
+      "file": "assets/units/G1U1.png",
+      "thumbnail": "assets/units/G1U1.jpg"
+    },
+    {
+      "key": "G1U2",
+      "grade": 1,
+      "index": 1,
+      "title": "สารบริสุทธิ์",
+      "file": "assets/units/G1U2.png",
+      "thumbnail": "assets/units/G1U2.jpg"
+    },
+    {
+      "key": "G1U3",
+      "grade": 1,
+      "index": 2,
+      "title": "หน่วยพื้นฐานของสิ่งมีชีวิต",
+      "file": "assets/units/G1U3.png",
+      "thumbnail": "assets/units/G1U3.jpg"
+    },
+    {
+      "key": "G1U4",
+      "grade": 1,
+      "index": 3,
+      "title": "การดำรงชีวิตของพืช",
+      "file": "assets/units/G1U4.png",
+      "thumbnail": "assets/units/G1U4.jpg"
+    },
+    {
+      "key": "G1U5",
+      "grade": 1,
+      "index": 4,
+      "title": "พลังงานความร้อน",
+      "file": "assets/units/G1U5.png",
+      "thumbnail": "assets/units/G1U5.jpg"
+    },
+    {
+      "key": "G1U6",
+      "grade": 1,
+      "index": 5,
+      "title": "กระบวนการเปลี่ยนแปลงลมฟ้าอากาศ",
+      "file": "assets/units/G1U6.png",
+      "thumbnail": "assets/units/G1U6.jpg"
+    },
+    {
+      "key": "G2U1",
+      "grade": 2,
+      "index": 0,
+      "title": "ธรรมชาติของวิทยาศาสตร์",
+      "file": "assets/units/G2U1.png",
+      "thumbnail": "assets/units/G2U1.jpg"
+    },
+    {
+      "key": "G2U2",
+      "grade": 2,
+      "index": 1,
+      "title": "สารละลาย",
+      "file": "assets/units/G2U2.png",
+      "thumbnail": "assets/units/G2U2.jpg"
+    },
+    {
+      "key": "G2U3",
+      "grade": 2,
+      "index": 2,
+      "title": "ร่างกายมนุษย์",
+      "file": "assets/units/G2U3.png",
+      "thumbnail": "assets/units/G2U3.jpg"
+    },
+    {
+      "key": "G2U4",
+      "grade": 2,
+      "index": 3,
+      "title": "การเคลื่อนที่และแรง",
+      "file": "assets/units/G2U4.png",
+      "thumbnail": "assets/units/G2U4.jpg"
+    },
+    {
+      "key": "G2U5",
+      "grade": 2,
+      "index": 4,
+      "title": "งานและพลังงาน",
+      "file": "assets/units/G2U5.png",
+      "thumbnail": "assets/units/G2U5.jpg"
+    },
+    {
+      "key": "G2U6",
+      "grade": 2,
+      "index": 5,
+      "title": "การแยกสารและการนำไปใช้",
+      "file": "assets/units/G2U6.png",
+      "thumbnail": "assets/units/G2U6.jpg"
+    },
+    {
+      "key": "G2U7",
+      "grade": 2,
+      "index": 6,
+      "title": "โลกและการเปลี่ยนแปลง",
+      "file": "assets/units/G2U7.png",
+      "thumbnail": "assets/units/G2U7.jpg"
+    },
+    {
+      "key": "G2U8",
+      "grade": 2,
+      "index": 7,
+      "title": "ทรัพยากรพลังงาน",
+      "file": "assets/units/G2U8.png",
+      "thumbnail": "assets/units/G2U8.jpg"
+    },
+    {
+      "key": "G3U1",
+      "grade": 3,
+      "index": 0,
+      "title": "วิทยาศาสตร์กับการแก้ปัญหา",
+      "file": "assets/units/G3U1.png",
+      "thumbnail": "assets/units/G3U1.jpg"
+    },
+    {
+      "key": "G3U2",
+      "grade": 3,
+      "index": 1,
+      "title": "พันธุศาสตร์",
+      "file": "assets/units/G3U2.png",
+      "thumbnail": "assets/units/G3U2.jpg"
+    },
+    {
+      "key": "G3U3",
+      "grade": 3,
+      "index": 2,
+      "title": "คลื่นและแสง",
+      "file": "assets/units/G3U3.png",
+      "thumbnail": "assets/units/G3U3.jpg"
+    },
+    {
+      "key": "G3U4",
+      "grade": 3,
+      "index": 3,
+      "title": "ระบบสุริยะของเรา",
+      "file": "assets/units/G3U4.png",
+      "thumbnail": "assets/units/G3U4.jpg"
+    },
+    {
+      "key": "G3U5",
+      "grade": 3,
+      "index": 4,
+      "title": "ปฏิกิริยาเคมีและวัสดุในชีวิตประจำวัน",
+      "file": "assets/units/G3U5.png",
+      "thumbnail": "assets/units/G3U5.jpg"
+    },
+    {
+      "key": "G3U6",
+      "grade": 3,
+      "index": 5,
+      "title": "ไฟฟ้า",
+      "file": "assets/units/G3U6.png",
+      "thumbnail": "assets/units/G3U6.jpg"
+    },
+    {
+      "key": "G3U7",
+      "grade": 3,
+      "index": 6,
+      "title": "ระบบนิเวศและความหลากหลายทางชีวภาพ",
+      "file": "assets/units/G3U7.png",
+      "thumbnail": "assets/units/G3U7.jpg"
+    }
+  ]
+}
