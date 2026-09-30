@@ -11,7 +11,7 @@ export async function runLabRegression() {
   function element() {
     const children = new Map();
     return {textContent:'',classList:{add(){},remove(){},toggle(){}},setAttribute(){},scrollIntoView(){},
-      addEventListener(type,fn){this[type]=fn;},
+      addEventListener(type,fn){this[type]=fn;},querySelectorAll(){return [];},
       querySelector(selector){if(!children.has(selector))children.set(selector,element());return children.get(selector);}};
   }
   function node(selector) {
