@@ -1,0 +1,32 @@
+.readingMode .stageHUD{position:static}
+.readingPage{max-width:960px;margin:0 auto 32px}
+.readingPage .contentHeader{padding:24px}
+.readingPage .contentHeader h1{font-size:clamp(25px,4vw,34px);line-height:1.45;margin:12px 0}
+.readingPage .contentBody{padding:clamp(16px,3vw,32px)}
+.readingPage p,.readingPage li{font-size:18px;line-height:1.95;overflow-wrap:anywhere}
+.readingPage p{margin:0 0 18px}
+.readingPage h2{font-size:24px;line-height:1.5;margin:0 0 18px}
+.readingPage h3{line-height:1.5}
+.readingOutline{background:#f0f8fc;border:1px solid #cce4ee;border-radius:16px;padding:20px;margin:24px 0}
+.readingOutline ol{margin:0;padding-left:28px;columns:2;column-gap:28px}
+.readingOutline li{break-inside:avoid;font-size:16px;padding-bottom:6px}
+.readingSection{border-top:2px solid #e4eef3;padding:30px 0;scroll-margin-top:110px}
+.readingSection .infoCard{max-width:700px;margin:20px auto}
+.readingSection .lessonImage{height:auto;max-width:100%}
+.readingSection .callout{font-size:17px;line-height:1.8}
+.readingSection .callout p{font-size:17px;line-height:1.8;margin:8px 0 0}
+.readingWorked{background:#f1fbef;border:1px solid #c8e8c1;border-radius:18px;padding:24px;margin:16px 0 28px}
+.readingWorked ol{padding-left:26px}
+.readingWorked li{margin-bottom:12px}
+.readingSources{border-top:1px solid #dbe8ee;padding-top:20px;margin:28px 0}
+.readingSources p,.readingSources li{font-size:15px;line-height:1.8}
+.readingSources a{color:#075c94;text-decoration:underline;text-underline-offset:3px}
+.readingComplete{background:linear-gradient(115deg,#e8f9ff,#edffe5);border:2px solid #c8e7d5;border-radius:18px;padding:24px;text-align:center}
+.readingComplete p{font-size:17px}
+.readingComplete button{white-space:normal;max-width:100%}
+@media(max-width:600px){.readingOutline ol{columns:1}.readingPage p,.readingPage li{font-size:17px}.readingPage .contentHeader{padding:18px}.readingPage h2{font-size:22px}.readingWorked,.readingComplete{padding:18px}}
+
+.readingOutline a{display:inline-block;color:#075c94;text-decoration:underline;text-underline-offset:3px}
+.readingOutline a:hover{color:#183052}
+.readingOutline a:focus-visible{outline:3px solid #075c94;outline-offset:4px;border-radius:3px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
