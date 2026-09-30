@@ -1,0 +1,29 @@
+{
+  "generator": "built-in image_gen",
+  "images": [
+    {
+      "file": "assets/lessons/G1U6L1-09.png",
+      "prompt": "Scientific educational landscape 3:2 illustration: weather station, radar and satellite observations used by a meteorologist and numerical models, branching plausible forecasts communicate uncertainty. Clean light background, no text or invented numerical results."
+    },
+    {
+      "file": "assets/lessons/G1U6L2-02.png",
+      "prompt": "Use case: scientific-educational. ONE landscape 3:2 polished scientifically accurate textbook illustration for Thai students ages 12–15. Clean white/light background, realistic readable forms, restrained natural colors with teal accents. No text, titles, captions, logos, watermarks, random numbers, or decoration. Tropical cyclone: large organized spiral cloud system with clear eye over warm tropical ocean, adjacent cutaway coastal vignette showing wind-bent trees, heavy rainfall, elevated seawater storm surge inundating a low coast. Show cyclone broad scale distinctly from tornado. Convey warm sea formation and coastal hazards; no tornado funnel."
+    },
+    {
+      "file": "assets/lessons/G1U6L2-03.png",
+      "prompt": "Use case: scientific-educational. ONE landscape 3:2 polished scientifically accurate textbook illustration for Thai students ages 12–15. Clean white/light background, realistic readable forms, restrained natural colors with teal accents. No text, titles, captions, logos, watermarks, random numbers, or decoration. Weather hazard risk assessment: coherent isometric local Thai river village map during forecast heavy rain, low lying riverside homes exposed to flood contrasted with elevated sturdy shelter inland. Residents and local official study the same terrain map with simple hazard-colored zones and plan an uphill evacuation route. Convey risk depends on exposure, vulnerability and hazard, informed by local observations and warning. No written labels or numbers."
+    },
+    {
+      "file": "assets/lessons/G1U6L2-04.png",
+      "prompt": "Use case: scientific-educational. ONE landscape 3:2 polished scientifically accurate textbook illustration for Thai students ages 12–15. Clean white/light background, realistic readable forms, restrained natural colors with teal accents. No text, titles, captions, logos, watermarks, random numbers, or decoration. Weather versus climate: two clearly separated panels. Left a single location over a short sequence of three days, sun then rain then clouds, three small daily calendar sheets. Right same landscape monitored over many decades, a thick multi-year archive of weather records with repeated seasonal sun/rain patterns and a simple long-term averaged trend line, schematic not measured data. Make daily variation versus long-term patterns visually clear, no text or numerical claims."
+    },
+    {
+      "file": "assets/lessons/G1U6L2-05.png",
+      "prompt": "Use case: scientific-educational. ONE landscape 3:2 polished scientifically accurate textbook illustration for Thai students ages 12–15. Clean white/light background, realistic readable forms, restrained natural colors with teal accents. No text, titles, captions, logos, watermarks, random numbers, or decoration. Greenhouse effect accurate schematic: Earth curved land/ocean surface lower third, translucent atmosphere above, Sun top left. Yellow shortwave solar radiation passes through atmosphere to warm surface. Orange wavy infrared arrows rise FROM surface; some escape to space, some terminate at scattered greenhouse gas molecules and new orange wavy arrows emit FROM those molecules both upward and downward back to surface. No solid atmospheric lid, no reflective mirror layer, do not depict greenhouse gas as primarily blocking incoming sunlight. Minimal uncluttered scientific cutaway."
+    },
+    {
+      "file": "assets/lessons/G1U6L2-06.png",
+      "prompt": "Use case: scientific-educational. ONE landscape 3:2 polished scientifically accurate textbook illustration for Thai students ages 12–15. Clean white/light background, realistic readable forms, restrained natural colors with teal accents. No text, titles, captions, logos, watermarks, random numbers, or decoration. Climate impacts, mitigation and adaptation: coherent coastal Thai landscape educational illustration with hotter sun, drought-stressed field beside water-efficient irrigated crop field, flood-resilient elevated houses and restored coastal mangroves, people planting trees, solar panels and wind turbines for emission reduction. Clearly depict ecosystem and community adaptation alongside cleaner energy. No apocalypse, no invented measurements."
+    }
+  ]
+}

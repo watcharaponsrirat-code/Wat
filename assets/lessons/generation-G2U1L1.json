@@ -1,0 +1,35 @@
+{
+  "generator": "built-in image_gen",
+  "images": [
+    {
+      "file": "assets/lessons/G2U1L1-01.png",
+      "prompt": "Use case: scientific-educational. Create ONE landscape 3:2 teaching illustration for Thai lower secondary pupils. Polished accurate textbook realism, clean light background, generous spacing, natural colors and teal accents. No text, captions, logos, watermarks or invented numerical data. Concrete clear educational scenes, no decorative science symbols. Nature of scientific knowledge: same team of school scientists studies three pots of seedlings, measures heights and records observations; nearby an initial hand-drawn explanation sketch is thoughtfully revised on a fresh page after new observations of additional seedlings. Convey evidence, reasoned interpretation and willingness to revise conclusions, no arbitrary certainty badges. Unified classroom scene with evidence and revision clearly visible.",
+      "source": "C:/Users/Asus/.codex/generated_images/01a0ec1f-d92d-7542-a696-b7ad5bb31414/exec-63214730-899e-4084-b126-34ae06964c44.png"
+    },
+    {
+      "file": "assets/lessons/G2U1L1-02.png",
+      "prompt": "Use case: scientific-educational. Create ONE landscape 3:2 teaching illustration for Thai lower secondary pupils. Polished accurate textbook realism, clean light background, generous spacing, natural colors and teal accents. No text, captions, logos, watermarks or invented numerical data. Concrete clear educational scenes, no decorative science symbols. Four equal independent panels, no progression arrows or hierarchy: scientific fact, law, theory and model using gas as coherent example. Panel one observed inflated balloon with measuring tape; panel two sealed gas syringe compressing air with a pressure gauge, showing pressure-volume relationship qualitatively without invented numbers; panel three magnified gas particles in random motion colliding with container walls explaining pressure; panel four physical ball model representing gas particles in a transparent box. Theory explains, law describes a relationship; never imply theory becomes law. Keep apparatus plausible, no chemical hazards.",
+      "source": "C:/Users/Asus/.codex/generated_images/01a0ec1f-d92d-7542-a696-b7ad5bb31414/exec-48abf395-7c9c-4a0b-b07f-e7be7fd736d3.png"
+    },
+    {
+      "file": "assets/lessons/G2U1L1-03.png",
+      "prompt": "Use case: scientific-educational. Create ONE landscape 3:2 teaching illustration for Thai lower secondary pupils. Polished accurate textbook realism, clean light background, generous spacing, natural colors and teal accents. No text, captions, logos, watermarks or invented numerical data. Concrete clear educational scenes, no decorative science symbols. Evidence and claims: Thai pupils compare a replicated seedling growth experiment, two groups of three identical pots each with same soil and watering but different controlled light levels; rulers and dated-looking blank observation sheets supply multiple measurements. Student presents a cautious plant-growth explanation while another checks the measured seedlings and records. Show connection of actual relevant observations to reasoning; healthy realistic variation, no numerical data or written claims.",
+      "source": "C:/Users/Asus/.codex/generated_images/01a0ec1f-d92d-7542-a696-b7ad5bb31414/exec-ba1235b2-568b-4c5e-8e75-33d312617cc3.png"
+    },
+    {
+      "file": "assets/lessons/G2U1L1-04.png",
+      "prompt": "Use case: scientific-educational. Create ONE landscape 3:2 teaching illustration for Thai lower secondary pupils. Polished accurate textbook realism, clean light background, generous spacing, natural colors and teal accents. No text, captions, logos, watermarks or invented numerical data. Concrete clear educational scenes, no decorative science symbols. Scientific models: same simple pendulum represented in four clearly separated equal panels: actual classroom bob on string suspended from stand, clean schematic of that same pendulum with two faint alternate swing positions, a mathematical representation containing ONLY accurate formula T = 2π√(L/g), and a computer visualization of the same bob and its curved motion path. Show each representation simplifies same physical system; no ornate unrelated atoms or molecules. Formula is the sole allowed text. No numerical results.",
+      "source": "C:/Users/Asus/.codex/generated_images/01a0ec1f-d92d-7542-a696-b7ad5bb31414/exec-46534148-fcea-436b-a46e-21b5cf7d7e0f.png"
+    },
+    {
+      "file": "assets/lessons/G2U1L1-05.png",
+      "prompt": "Use case: scientific-educational. Create ONE landscape 3:2 teaching illustration for Thai lower secondary pupils. Polished accurate textbook realism, clean light background, generous spacing, natural colors and teal accents. No text, captions, logos, watermarks or invented numerical data. Concrete clear educational scenes, no decorative science symbols. Scientific inquiry as iterative process: five compact classroom vignettes around a central plant growth experiment. Pupils ask a question by observing seedlings, plan pots and controlled lighting, collect ruler measurements, compare observation sheets, discuss explanations. Curved teal arrows connect scenes in a cycle with one return arrow from analysis to experiment setup, clearly conveying revisiting and improving methods instead of fixed linear steps. No question marks or written words, uncluttered composition.",
+      "source": "C:/Users/Asus/.codex/generated_images/01a0ec1f-d92d-7542-a696-b7ad5bb31414/exec-d59a3dbd-2a62-4ad1-8ec8-40a57b41b014.png"
+    },
+    {
+      "file": "assets/lessons/G2U1L1-06.png",
+      "prompt": "Use case: scientific-educational. Create ONE landscape 3:2 teaching illustration for Thai lower secondary pupils. Polished accurate textbook realism, clean light background, generous spacing, natural colors and teal accents. No text, captions, logos, watermarks or invented numerical data. Concrete clear educational scenes, no decorative science symbols. Scientific communication and replication: side-by-side two school laboratory teams, each performs same simple pendulum investigation with matching string length and same bob type, stand, ruler and stopwatch. In middle foreground a pupil shares a notebook with apparatus drawing and procedural pictograms with peer who checks method and observations, constructive discussion. Convey transparent methods, evidence and independent repetition, no fabricated numerical data.",
+      "source": "C:/Users/Asus/.codex/generated_images/01a0ec1f-d92d-7542-a696-b7ad5bb31414/exec-c7835188-d6ff-46b5-b11c-4ecb1cbde794.png"
+    }
+  ]
+}
