@@ -1,4 +1,4 @@
-// References to the unmodified NIETS papers. No question text or figures are republished.
+// References to the NIETS papers; inline question crops are in onet-images/.
 // Columns: academic year, original question number, PDF page (1-based), topic, key, teaching note.
 // Answer keys and topic mappings were visually checked against each official PDF.
 window.SLH_ONET_ORIGINAL_ROWS = [

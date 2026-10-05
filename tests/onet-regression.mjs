@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {harness} from './exercise-regression.mjs';
 
 let h = harness();
@@ -9,6 +10,13 @@ for (const q of questions) {
   const xp = h.qa.snapshot(q.lesson).xp;
   const challenge = JSON.stringify(h.qa.snapshot(q.lesson).ex.e3);
   assert(h.markup.includes(q.source.pdf+'#page='+q.page));
+  assert(h.markup.includes(`src="${q.image.src}"`), 'Question is visible inline');
+  assert(q.image.width > 500 && q.image.height > 50);
+  const asset = await readFile(new URL('../'+q.image.src,import.meta.url));
+  assert.equal(asset.toString('ascii',0,4),'RIFF');
+  assert.equal(asset.toString('ascii',8,12),'WEBP');
+  assert(h.markup.indexOf('onetPractice') < h.markup.indexOf('แบบฝึกแต่งใหม่'), 'Original papers appear first');
+  assert(h.find(`[data-onet-zoom="${q.id}"]`), 'Inline zoom is available');
   assert(h.find(`[data-onet-check="${q.id}"]`).disabled);
   assert(!h.markup.includes(q.note), 'Explanation stays hidden before checking');
   h.click(`[data-onet-id="${q.id}"][data-onet-answer="${q.key%4+1}"]`);

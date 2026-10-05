@@ -1,0 +1,18 @@
+.onetPractice{margin-bottom:24px}
+.onetPractice .gameTitle h2{margin:0}
+.onetPractice .gameTitle p{margin:6px 0 0;color:var(--mut)}
+.onetNote,.onetImageTools,.onetSource{font-size:13px;color:var(--mut)}
+.onetQuestion h3{margin:12px 0;font-size:18px}
+.onetImageTools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.onetImageFrame{width:100%;max-width:900px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff;margin:12px 0 18px;overscroll-behavior-x:contain}
+.onetQuestionImage{display:block;width:100%;height:auto}
+.onetImageFrame.expanded .onetQuestionImage{width:1200px;max-width:none}
+.onetChoices{grid-template-columns:1fr;max-width:900px}
+.onetChoices .choice{display:flex;align-items:center;gap:10px;min-height:52px;text-align:left}
+.onetChoiceNumber{display:inline-grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:#eef5fb;font-weight:900}
+.onetSelected{margin-left:auto;font-size:13px}
+.onetSource{line-height:1.8;overflow-wrap:anywhere}
+.onetSource a{color:#2461a7}
+.onetImageError{padding:12px;border-radius:10px;background:#fff4d6;color:#704900}
+.onetPractice button:focus-visible,.onetImageFrame:focus-visible{outline:3px solid #2865c9;outline-offset:3px}
+@media(max-width:480px){.onetQuestion h3{font-size:16px}.onetImageTools{gap:8px}.onetImageTools span{width:100%}.onetChoices .choice{padding:10px}.onetSelected{font-size:12px}}
