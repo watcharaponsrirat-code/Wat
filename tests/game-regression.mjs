@@ -54,14 +54,14 @@ export function runGameRegression(){
       if(game.type==='mission')for(const item of game.items){assert(packs[id].some(s=>s.code===item.code));assert.equal(new Set(item.options).size,item.options.length);assert(item.options.includes(item.answer));assert(item.explanation&&item.hint)}
       h.qa.reset(id);h.qa.open(id,stage);
       assert(h.markup.includes('data-arcade-type="'+game.type+'"'));
-      assert(h.find('[data-arc-next]').disabled);
+      assert(!h.find('[data-arc-next]').disabled);
       h.click('[data-arc-hint]');assert(state().hint);
       // A full reload must keep the same random board, hint, and choices.
       const beforeReload=JSON.stringify(state());h=harness(h.storage);h.qa.open(id,stage);assert.equal(JSON.stringify(state()),beforeReload);
       const check=()=>h.click('[data-arc-check]');
       if(game.type==='memory'){
         let s=state();const a=0,b=s.deck.findIndex(c=>c.pair!==s.deck[a].pair);
-        h.click('[data-arc-flip="'+a+'"]');h.click('[data-arc-flip="'+b+'"]');assert.equal(state().open.length,2);assert.equal(state().feedback.ok,false);assert(h.find('[data-arc-next]').disabled);
+        h.click('[data-arc-flip="'+a+'"]');h.click('[data-arc-flip="'+b+'"]');assert.equal(state().open.length,2);assert.equal(state().feedback.ok,false);assert(!h.find('[data-arc-next]').disabled);
         const pending=JSON.stringify(state());h=harness(h.storage);h.qa.open(id,stage);assert.equal(JSON.stringify(state()),pending);
         h.click('[data-arc-fold]');
         for(let pair=0;pair<game.pairs.length;pair++){
@@ -101,16 +101,16 @@ export function runGameRegression(){
       }else if(game.type==='mission'){
         for(let i=0;i<game.items.length;i++){
           const item=game.items[i],options=state().options[i];
-          h.click('[data-arc-answer="'+options.findIndex(o=>o!==item.answer)+'"]');assert.equal(state().feedback.ok,false);assert(h.find('[data-arc-next]').disabled);
+          h.click('[data-arc-answer="'+options.findIndex(o=>o!==item.answer)+'"]');assert.equal(state().feedback.ok,false);assert(!h.find('[data-arc-next]').disabled);
           h.click('[data-arc-answer="'+options.indexOf(item.answer)+'"]');assert.equal(state().feedback.ok,true);assert(h.markup.includes(item.explanation));
-          if(i<game.items.length-1){assert(h.find('[data-arc-next]').disabled);h.click('[data-arc-mission-next]')}
+          if(i<game.items.length-1){assert(!h.find('[data-arc-next]').disabled);h.click('[data-arc-mission-next]')}
         }
       }
       assert.equal(state().complete,true,id+'/'+stage+' puzzle completes');assert.equal(progress().games[stage].done,true);assert(!h.find('[data-arc-next]').disabled);
       assert(progress().trace.some(t=>t.stage===stage&&t.ok===false),'incorrect attempt recorded');assert(progress().trace.some(t=>t.stage===stage&&t.ok===true),'correct attempt recorded');
       const saved=JSON.stringify(state()),xp=progress().xp;h=harness(h.storage);h.qa.open(id,stage);assert.equal(JSON.stringify(state()),saved,'completion and explanations survive reload');
       h.click('[data-arc-next]');assert.equal(progress().resume,index===2?'e1':'g'+(index+2));
-      h.qa.open(id,stage);h.click('[data-arc-reset]');assert.equal(progress().games[stage].done,false);assert.equal(progress().xp,xp,'replaying does not remove earned XP');assert(h.find('[data-arc-next]').disabled);
+      h.qa.open(id,stage);h.click('[data-arc-reset]');assert.equal(progress().games[stage].done,false);assert.equal(progress().xp,xp,'replaying does not remove earned XP');assert(!h.find('[data-arc-next]').disabled);
       played++;
     }
   }
@@ -120,6 +120,6 @@ export function runGameRegression(){
   p.games.g1={done:true,attempts:9,state:{pairs:[],matched:[]}};p.xp=300;p.exam.passed=true;p.lab.text='ข้อความที่บันทึกไว้';h.storage.set(key,JSON.stringify(p));
   h=harness(h.storage);h.qa.open(id,'g1');const migrated=h.qa.snapshot(id);
   assert.equal(migrated.games.g1.state.version,4);assert.equal(migrated.games.g1.done,true);assert.equal(migrated.games.g1.attempts,9);assert.equal(migrated.xp,300);assert.equal(migrated.exam.passed,true);assert.equal(migrated.lab.text,'ข้อความที่บันทึกไว้');assert(!h.find('[data-arc-next]').disabled);
-  return {lessons:40,games:played,mechanics:[...types],checks:['incorrect answers and incomplete boards stay locked','all game types solved through UI event handlers','resume after page reload','feedback, hints and shuffling persisted','completion unlocks next stage','replay retains earned XP','legacy progress migration']};
+  return {lessons:40,games:played,mechanics:[...types],checks:['incorrect answers and incomplete boards do not earn a pass','all game types solved through UI event handlers','resume after page reload','feedback, hints and shuffling persisted','navigation stays available independently of completion','replay retains earned XP','legacy progress migration']};
 }
 console.log(runGameRegression());

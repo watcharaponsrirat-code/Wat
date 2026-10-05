@@ -9,9 +9,9 @@ for(const block of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){
   scripts.push(src?await readFile(new URL('../'+src[1],import.meta.url),'utf8'):block[2]);
 }
 const decode=s=>s.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
-function harness(storage=new Map()){
+export function harness(storage=new Map()){
   let markup='',elements=[];
-  const stub=()=>({textContent:'',classList:{add(){},remove(){},toggle(){}},setAttribute(){},focus(){},scrollIntoView(){},addEventListener(){},querySelector(){return stub()},querySelectorAll(){return []}});
+  const stub=()=>({textContent:'',value:'',classList:{add(){},remove(){},toggle(){}},setAttribute(){},focus(){},scrollIntoView(){},addEventListener(){},querySelector(){return stub()},querySelectorAll(){return []}});
   function matches(el,selector){
     if(selector.includes(':not(:disabled)')&&el.disabled)return false;
     const attributes=[...selector.matchAll(/\[([^=\]]+)(?:="([^"]*)")?\]/g)];
@@ -55,9 +55,9 @@ export function runExerciseRegression(){
       h.qa.reset(id);h.qa.open(id,stage);
       const state=()=>h.qa.snapshot(id).ex[stage].state;
       assert.equal(state().qs.length,6);assert(state().qs.every(q=>stage==='e3'?['onet','analyze'].includes(q.type):q.type===(stage==='e1'?'basic':'apply')));
-      assert(h.find('[data-ex-next]').disabled);h.click('[data-ex-check]');assert.equal(state().checked,false);
+      assert(!h.find('[data-ex-next]').disabled);h.click('[data-ex-check]');assert.equal(state().checked,false);
       state().qs.forEach((q,i)=>{const el=h.context.document.querySelectorAll('[data-ex-q="'+i+'"]').find(b=>b.dataset.exO!==q.correct);el.onclick()});
-      h.click('[data-ex-check]');assert.equal(h.qa.snapshot(id).ex[stage].done,false);assert(h.find('[data-ex-next]').disabled);
+      h.click('[data-ex-check]');assert.equal(h.qa.snapshot(id).ex[stage].done,false);assert(!h.find('[data-ex-next]').disabled);
       const saved=JSON.stringify(state());h=harness(h.storage);h.qa.open(id,stage);assert.equal(JSON.stringify(state()),saved);
       state().qs.forEach((q,i)=>{const el=h.context.document.querySelectorAll('[data-ex-q="'+i+'"]').find(b=>b.dataset.exO===q.correct);el.onclick()});
       h.click('[data-ex-check]');assert.equal(h.qa.snapshot(id).ex[stage].done,true);assert(!h.find('[data-ex-next]').disabled);
@@ -69,7 +69,7 @@ export function runExerciseRegression(){
       assert.equal(h.qa.snapshot(id).resume,stage==='e1'?'e2':stage==='e2'?'e3':'exam');
       if(stage==='e3')assert(h.find('[data-exam-next]'),'challenge completion opens final exam');
       else assert(h.find('[data-ex-check]'),'completion opens next exercise');
-      h.qa.open(id,stage);h.click('[data-ex-reset]');assert(!h.qa.snapshot(id).ex[stage].done);assert.equal(h.qa.snapshot(id).xp,xp);assert(h.find('[data-ex-next]').disabled);
+      h.qa.open(id,stage);h.click('[data-ex-reset]');assert(!h.qa.snapshot(id).ex[stage].done);assert.equal(h.qa.snapshot(id).xp,xp);assert(!h.find('[data-ex-next]').disabled);
       sets++;
     }
     h.qa.open(id,'e3');assert.equal(h.qa.snapshot(id).ex.e3.state.qs.length,6);
@@ -81,6 +81,6 @@ export function runExerciseRegression(){
   assert(entry);const old=JSON.parse(entry[1]);delete old.ex.e1.state.version;old.ex.e1.done=true;old.xp=140;
   const oldState=JSON.stringify(old.ex.e1.state);h.storage.set(entry[0],JSON.stringify(old));h=harness(h.storage);h.qa.open(id,'e1');
   const migrated=h.qa.snapshot(id);assert.equal(JSON.stringify(migrated.ex.e1.previousState),oldState);assert.equal(migrated.ex.e1.done,true);assert.equal(migrated.xp,140);assert.equal(migrated.ex.e1.state.version,1);assert(!h.find('[data-ex-next]').disabled);
-  return {lessons:h.qa.lessonIds.length,sets,basic,applications,checks:['strict level and topic alignment','wrong and incomplete responses stay locked','correct explanations visible','passed answers frozen','reload preserves answers and question order','completion opens next exercise or final exam','replay retains XP','old attempt archived and earned progress retained','all final exams retain 20 questions']};
+  return {lessons:h.qa.lessonIds.length,sets,basic,applications,checks:['strict level and topic alignment','wrong and incomplete responses do not earn a pass','correct explanations visible','passed answers frozen','reload preserves answers and question order','completion opens next exercise or final exam','replay retains XP','old attempt archived and earned progress retained','all final exams retain 20 questions']};
 }
 console.log(runExerciseRegression());
