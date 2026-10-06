@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1000" viewBox="0 0 1440 1000">
+ <defs>
+  <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#49c9f4"/><stop offset=".6" stop-color="#c7f6ec"/><stop offset="1" stop-color="#edffd7"/></linearGradient>
+  <pattern id="earth" width="64" height="64" patternUnits="userSpaceOnUse"><path fill="#79b745" d="M0 0h64v64H0z"/><path fill="#83c04c" d="M0 0h32v16H0zM32 32h32v32H32z"/><path fill="#6eaa40" d="M0 48h16v16H0zM48 0h16v16H48z"/></pattern>
+  <g id="cloud" fill="#fff" opacity=".85"><path d="M0 25h30V0h55v14h35v15h30v27H0z"/><path fill="#d7f4ff" d="M0 46h150v10H0z"/></g>
+  <g id="tree"><path fill="#865432" d="M43 85h25v130H43z"/><path fill="#ad7741" d="M43 85h9v130h-9z"/><path fill="#3e982f" d="M0 32h22V0h78v22h20v78H90v22H20v-20H0z"/><path fill="#6dc838" d="M0 32h22V0h78v22H55v28H0z"/><path fill="#8bdc45" d="M22 0h30v26H22zM0 32h20v20H0zM65 22h35v20H65z"/><path fill="#2e822e" d="M20 83h30v39H20zM90 52h30v48H90zM55 56h25v22H55z"/></g>
+ </defs>
+ <path fill="url(#sky)" d="M0 0h1440v1000H0z"/>
+ <g opacity=".7"><use href="#cloud" x="40" y="85"/><use href="#cloud" x="1120" y="140"/><use href="#cloud" x="450" y="40"/><use href="#cloud" x="780" y="260"/></g>
+ <path fill="#87ce9d" d="M0 500h70v-90h80v70h90v-60h130v110h150v-70h100v-70h100v100h120v-60h100v80h100v-120h80v90h110v-60h70v580H0z"/>
+ <path fill="#60ae6b" d="M0 580h110v-70h90v60h200v-35h150v50h180v-65h160v50h160v-90h100v70h150v-40h140v490H0z"/>
+ <g opacity=".8"><use href="#tree" x="-20" y="390"/><use href="#tree" x="1280" y="370"/><use href="#tree" x="110" y="510" transform="translate(0 -40)"/><use href="#tree" x="1360" y="510"/></g>
+ <path fill="url(#earth)" d="M0 730h160v20h180v-10h200v35h220v-40h240v20h200v-35h240v280H0z"/>
+ <path fill="#a1e060" d="M0 730h160v20h180v-10h200v35h220v-40h240v20h200v-35h240v12h-240v35h-200v-20H760v40H540v-35H340v10H160v-20H0z"/>
+ <g fill="#ffe36a"><path d="M45 803h8v28h-8zM35 812h28v8H35zM1345 867h8v28h-8zM1335 876h28v8h-28z"/></g>
+ <g fill="#fff8e7"><path d="M120 917h8v28h-8zM110 926h28v8h-28zM1390 764h8v28h-8zM1380 773h28v8h-28z"/></g>
+</svg>

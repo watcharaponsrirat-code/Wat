@@ -1,0 +1,88 @@
+/* A block-world skin. Learning content keeps a quiet, readable surface. */
+:root{--ink:#153c42;--mut:#526d70;--shadow:0 6px 0 #285d4b33,0 16px 28px #174e3a18;--radius:12px}
+body{background:#79b745 url('./world.svg') center top/1440px auto repeat-x fixed;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+#skyFX{display:none}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #075d91;outline-offset:4px}
+.shell{max-width:1240px;padding:22px 22px 120px}
+.topbar{background:#f5fffff5;border-bottom:4px solid #59bc54;box-shadow:0 4px 0 #23684626;backdrop-filter:blur(12px)}
+.topinner{max-width:1240px;padding:10px 22px;gap:12px}
+.brandTitle{color:#18564b;letter-spacing:-.5px}
+.brandLogo{border-radius:6px}
+.topBtn,.profilePill{border-radius:8px;border:2px solid #bcded6;box-shadow:0 3px 0 #91b7ad;background:#fff}
+.profilePill{color:#205b4b}
+.topBtn{transition:background .15s,box-shadow .15s}
+.topBtn:hover{background:#e0ffe4}
+.topBtn:active{transform:translateY(2px);box-shadow:0 1px 0 #91b7ad}
+.heroWorld{min-height:370px;border:4px solid #fff;border-radius:14px;box-shadow:0 7px 0 #256a45,0 20px 36px #16482530;background-position:center 48%;margin-bottom:26px;isolation:isolate}
+.heroWorld:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#092f46d9,#123e4d73 50%,transparent 85%);z-index:0;pointer-events:none}
+.heroWorld:after{height:24px;background:repeating-linear-gradient(90deg,#61d139 0 24px,#8de34d 24px 48px,#41b631 48px 72px);border-top:5px solid #b2f871;box-shadow:inset 0 -7px 0 #338b29,0 7px 0 #81512c}
+.heroContent{min-height:340px;padding:32px;align-items:center;gap:24px}
+.heroLogoBox{background:none;border:0;border-radius:0;padding:0;box-shadow:none;gap:18px;max-width:780px}
+.heroLogoBox img{width:72px;height:105px;background:#fffef1ed;border:3px solid #fff;border-radius:8px;padding:6px;box-shadow:4px 4px 0 #102a3c66}
+.heroTitle{font-family:Impact,"Arial Black",Tahoma,sans-serif;font-size:clamp(38px,5vw,68px);line-height:1.02;letter-spacing:1px;color:#f1faff;text-shadow:3px 3px 0 #284350,5px 5px 0 #122735}
+.heroTitle span{color:#ffe35b;text-shadow:3px 3px 0 #9b531b,5px 5px 0 #34241c}
+.heroLogoBox>div>b{display:block;color:#fff9dc;margin-top:15px;line-height:1.7;text-shadow:0 2px 3px #153525}
+.heroQuote,.woodSign,.loginSlogan{border:3px solid #5a341f;border-radius:6px;background:repeating-linear-gradient(0deg,transparent 0 30px,#663b2338 30px 33px),linear-gradient(115deg,#bd8246,#855026);box-shadow:inset 0 3px 0 #e6b373,0 5px 0 #4e3423,0 12px 20px #173c4026;color:#fffbea;text-shadow:0 2px 0 #603821}
+.heroQuote{max-width:250px;padding:24px 18px;line-height:1.8;transform:rotate(2deg);position:relative}
+.heroQuote:before,.heroQuote:after{content:"";position:absolute;top:8px;width:7px;height:7px;background:#dbe9e6;border:2px solid #647b78;box-shadow:0 2px 0 #4b3627}
+.heroQuote:before{left:8px}.heroQuote:after{right:8px}
+.woodSign{padding:14px 30px}
+.woodSign:before,.woodSign:after{border-radius:1px;background:#dcf1ee}
+.sectionTitle{margin:28px 0 22px}
+.sectionTitle .woodSign{min-width:min(480px,92%)}
+.subWood{color:#fff7d5;line-height:1.6}
+.panel,.welcomeCard,.unitCard,.lessonCard{border-radius:12px;border-color:#d6eee0;box-shadow:0 5px 0 #81ad9540,0 12px 24px #134b2a12;background:#fffffff7}
+.panel{border-width:2px;padding:24px}
+.gradeCard{border:3px solid #fff;border-radius:12px;box-shadow:0 6px 0 #448652,0 14px 25px #1a4e3426;animation:none!important;position:relative;background:#fcfff8;transition:box-shadow .18s,border-color .18s}
+.gradeCard:nth-child(2){box-shadow:0 6px 0 #b89326,0 14px 25px #1a4e3426;background:#fffef5}
+.gradeCard:nth-child(3){box-shadow:0 6px 0 #7460ad,0 14px 25px #1a4e3426;background:#fcfaff}
+.gradePic{height:205px;border-bottom:5px solid #6ac83e}
+.gradeCard:nth-child(2) .gradePic{border-color:#efc44c}.gradeCard:nth-child(3) .gradePic{border-color:#b294f2}
+.gradeBody{padding:20px}
+.gradeBody h3{font-size:22px;color:#234534}
+.gradeBody p{line-height:1.7;min-height:54px}
+.progress{height:12px;border:2px solid #b4cebf;background:#e5efe8;border-radius:4px;overflow:hidden}
+.progress span{background:repeating-linear-gradient(90deg,#64d933 0 18px,#46bc29 18px 22px);box-shadow:inset 0 3px 0 #b3f66d}
+.quickGrid{gap:16px;margin:26px 0}
+button.quick{position:relative;border:3px solid #fff;border-radius:10px;padding:22px 12px 18px;color:#163f38;background:linear-gradient(135deg,#f3ffce,#c7f298);box-shadow:0 6px 0 #669e3c,0 12px 20px #28593120;transition:filter .15s,box-shadow .15s;overflow:hidden}
+button.quick:nth-child(2){background:linear-gradient(135deg,#f6eaff,#d2b4ff);box-shadow:0 6px 0 #8460b2,0 12px 20px #28593120;color:#462761}
+button.quick:nth-child(3){background:linear-gradient(135deg,#e2fcff,#92dbf8);box-shadow:0 6px 0 #368cab,0 12px 20px #28593120;color:#17435b}
+button.quick:nth-child(4){background:linear-gradient(135deg,#fff7c2,#ffd474);box-shadow:0 6px 0 #b88c2d,0 12px 20px #28593120;color:#654115}
+button.quick:before{content:"";position:absolute;width:62px;height:62px;right:-16px;top:-18px;border:12px solid #ffffff66;transform:rotate(16deg);pointer-events:none}
+button.quick b{font-size:19px;margin:10px 0 5px}button.quick small{font-size:13px}
+.quick .ico{font-size:40px;filter:drop-shadow(0 3px 0 #ffffffaa)}
+.pixelBtn{border:2px solid #183b382b;border-radius:7px;font-weight:800;box-shadow:inset 0 3px 0 #ffffff50,0 5px 0 #1b603f;animation:none!important;transition:filter .12s,box-shadow .12s}
+.pixelBtn.green{background:linear-gradient(#67db3c,#29ad36);text-shadow:0 1px 1px #236a24}
+.pixelBtn.blue{background:linear-gradient(#51d6fc,#168dc8);box-shadow:inset 0 3px 0 #ffffff60,0 5px 0 #1b6280}
+.pixelBtn.yellow{background:linear-gradient(#ffe76b,#efb529);box-shadow:inset 0 3px 0 #ffffff60,0 5px 0 #ab7921}
+.pixelBtn.purple{background:linear-gradient(#b299ff,#8260df);box-shadow:inset 0 3px 0 #ffffff60,0 5px 0 #553794}
+.pixelBtn.red{box-shadow:inset 0 3px 0 #ffffff60,0 5px 0 #973b36}
+.pixelBtn.soft{box-shadow:inset 0 3px 0 #fff,0 4px 0 #b0cac4;background:#edf6f0}
+.pixelBtn:not(:disabled):hover{transform:none;filter:brightness(1.07)}
+.pixelBtn:not(:disabled):active,button.quick:active{transform:translateY(3px);box-shadow:inset 0 2px 0 #ffffff40,0 2px 0 #375c43}
+.unitCard,.lessonCard{border:2px solid #d4e7d8;transition:border-color .15s,background .15s}
+.unitCard:hover,[data-lesson]:hover{border-color:#6ab75a;background:#f6ffec}
+.unitIcon,.lessonThumb{border-radius:7px}
+.bottomNav{bottom:12px;width:min(calc(100% - 32px),900px);border:3px solid #ecffed;border-radius:12px;background:#183f37;box-shadow:0 5px 0 #123127,0 12px 26px #0f352d4d;overflow:hidden;padding:5px 5px max(5px,env(safe-area-inset-bottom));gap:4px}
+.bottomItem{border-radius:6px;color:#d6eee3;min-height:57px;transition:background .15s}
+.bottomItem:hover{background:#306450}
+.bottomItem.active{background:linear-gradient(#74d949,#35ab37);color:white;box-shadow:inset 0 2px 0 #b2f578}
+.navIco{filter:drop-shadow(0 2px 0 #102d3d40)}
+.loginPage{padding-top:30px}.loginPanel{border-radius:10px;border:3px solid #fff;background:#fffffff5;box-shadow:0 7px 0 #744d2c,0 22px 48px #163c3d40}
+.loginPanel:before{border-radius:4px 4px 0 0;background:repeating-linear-gradient(90deg,#63d42d 0 24px,#87e540 24px 48px,#49b62a 48px 72px);box-shadow:inset 0 4px 0 #b7fb74}
+.loginGameTitle{font-family:Impact,"Arial Black",Tahoma,sans-serif;color:#f1f9f8;letter-spacing:1px;line-height:1.02;text-shadow:3px 3px 0 #294251,6px 6px 0 #112a36}
+.loginGameTitle span{color:#ffe251;text-shadow:3px 3px 0 #9b531b,6px 6px 0 #34241c}
+.loginFeature{border-radius:6px;background:#ecfae1;border:2px solid #cfdfb5}.loginFeature:nth-child(2){background:#e5f8ff;border-color:#b6e0ed}.loginFeature:nth-child(3){background:#fff6d0;border-color:#ebd795}
+.field input{border-radius:6px;border:2px solid #c1d9c9;background:#fafff7;min-height:48px}
+.activityGrades [aria-pressed="true"]{outline:3px solid #17503f;outline-offset:3px}
+.activityLesson{border-color:#deeddf}.activityChoices{gap:14px}
+.stageHUD{border-radius:10px;border-color:#c6e0c8;background:#fcfff9}
+.readingPage,.examCard,.examReview{background:#fff}
+.blockParticles{position:fixed;inset:0;z-index:10000;pointer-events:none;overflow:hidden;contain:strict}
+.blockParticle{position:absolute;width:8px;height:8px;background:var(--particle-color);box-shadow:2px 2px 0 #173d362f;animation:blockBurst .48s ease-out forwards;pointer-events:none}
+@keyframes blockBurst{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(90deg) scale(.45)}}
+@media(hover:hover){.gradeCard:hover{border-color:#d6ff91;box-shadow:0 6px 0 #448652,0 0 0 4px #c5ff7e88,0 14px 25px #1a4e3426}button.quick:hover{filter:brightness(1.045) saturate(1.15)}}
+@media(max-width:760px){.shell{padding:16px 14px 115px}.topinner{padding:8px 14px;gap:8px}.heroWorld{min-height:345px}.heroContent{padding:24px 20px;min-height:315px;align-items:flex-start;gap:24px}.heroLogoBox{width:100%;gap:12px}.heroTitle{font-size:clamp(31px,6.3vw,48px)}.heroLogoBox img{width:56px;height:80px}.heroQuote{font-size:13px;max-width:280px;padding:12px 18px;align-self:flex-end}.heroWorld:before{background:linear-gradient(90deg,#092f46c9,#123e4d55)}.gradeBody p{min-height:0}.panel{padding:18px}.quickGrid{gap:14px}.gradePic{height:205px}.bottomNav{bottom:8px;width:calc(100% - 16px)}.bottomItem{font-size:11px}.sectionTitle{margin:24px 0 18px}}
+@media(max-width:400px){.shell{padding-left:10px;padding-right:10px}.heroContent{padding:22px 14px}.heroTitle{font-size:29px}.heroLogoBox img{width:45px;height:65px}.heroLogoBox{gap:9px}.heroLogoBox>div>div:last-child:not(.heroTitle){font-size:12px}.quickGrid{gap:12px}button.quick{padding:18px 8px}button.quick b{font-size:16px}.woodSign{padding:13px 18px}.woodSign h1{font-size:24px}.bottomItem{padding:7px 2px}.panel{padding:14px}}
+@media(prefers-reduced-motion:reduce){.blockParticles{display:none}.pixelBtn,.gradeCard,.quick,.topBtn,.bottomItem{transition:none!important}.pixelBtn:active,button.quick:active,.topBtn:active{transform:none!important}}
