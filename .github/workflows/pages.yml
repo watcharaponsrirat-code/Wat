@@ -26,6 +26,8 @@ jobs:
           cp -R assets _site/
           test -s _site/assets/theme/voxel-world.css
           test -s _site/assets/theme/voxel-ui.js
+          test -s _site/assets/theme/ui-icons.js
+          test -s _site/assets/theme/ui-icons.css
           test -s _site/assets/theme/voxel-landscape.svg
           test -s _site/assets/theme/school-world.png
           test -s _site/assets/theme/world-nature.png

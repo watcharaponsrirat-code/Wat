@@ -1,0 +1,17 @@
+.uiIcon{display:inline-block;width:1.2em;height:1.2em;flex-shrink:0;vertical-align:-.22em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible;pointer-events:none}
+.uiIcon--flask,.uiIcon--atom,.uiIcon--microscope,.uiIcon--globe,.uiIcon--weather,.uiIcon--planet,.uiIcon--search,.uiIcon--compass{color:#087b98}
+.uiIcon--leaf,.uiIcon--tree,.uiIcon--frog,.uiIcon--grasshopper,.uiIcon--check{color:#29844d}
+.uiIcon--trophy,.uiIcon--star,.uiIcon--bolt,.uiIcon--bulb,.uiIcon--celebrate,.uiIcon--gem{color:#a97708}
+.uiIcon--heart,.uiIcon--close,.uiIcon--thermometer{color:#c24954}
+.uiIcon--dna,.uiIcon--game,.uiIcon--cards,.uiIcon--rocket{color:#7956ad}
+button .uiIcon,a .uiIcon{color:inherit}
+.arcade-icon .uiIcon{width:1.05em;height:1.05em;stroke-width:1.6}
+.circuit-bulb .uiIcon{width:1.1em;height:1.1em;color:#82949b}
+.circuit-bulb.is-lit .uiIcon{color:#a97400;fill:#fff0a2}
+.tick .uiIcon{width:.9em;height:.9em;color:inherit;stroke-width:2.5}
+.profilePill>.uiIcon{width:18px;height:18px}
+.gameTitle .num .uiIcon{width:22px;height:22px}
+.checkpointIcon .uiIcon{width:24px;height:24px}
+.loginFeature .uiIcon{width:27px;height:27px}
+.simDisplay .uiIcon{width:1.2em;height:1.2em;background:none;border:0;border-radius:0}
+@media(forced-colors:active){.uiIcon{color:CanvasText}button .uiIcon,a .uiIcon{color:ButtonText}}
