@@ -9,7 +9,10 @@ from playwright.sync_api import sync_playwright
 ROOT=Path(__file__).resolve().parents[1]
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self,*_): pass
-server=ThreadingHTTPServer(('127.0.0.1',0),partial(QuietHandler,directory=str(ROOT)))
+class AuditServer(ThreadingHTTPServer):
+    # Chrome can open more connections than the default Windows listen backlog.
+    request_queue_size=128
+server=AuditServer(('127.0.0.1',0),partial(QuietHandler,directory=str(ROOT)))
 Thread(target=server.serve_forever,daemon=True).start()
 findings=[]
 counts={'screens':0,'simControls':0,'readingImages':0,'examSubmissions':0}
@@ -22,6 +25,7 @@ try:
         # Decorative motion must not prevent Playwright's stable-element checks.
         page.add_init_script("document.addEventListener('DOMContentLoaded',()=>{const s=document.createElement('style');s.textContent='*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.pixelBtn:hover{transform:none!important}';document.head.append(s)})")
         page.on('pageerror',lambda e:findings.append('JavaScript: '+str(e)))
+        page.on('requestfailed',lambda r:findings.append('Request failed: '+r.url+' '+str(r.failure)))
         page.on('response',lambda r:findings.append('HTTP '+str(r.status)+' '+r.url) if r.status>=400 and not r.url.endswith('favicon.ico') else None)
         url=f'http://127.0.0.1:{server.server_port}/index.html'
         def login(user,password='1234'):

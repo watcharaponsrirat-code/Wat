@@ -1,0 +1,4 @@
+/* Chemical equations and long answer text must wrap even on narrow screens. */
+.examCard,.examReview{min-width:0;overflow-wrap:anywhere}
+.examCard .choice,.examReview .callout{min-width:0;overflow-wrap:anywhere}
+.examReview .pixelBtn{max-width:100%;white-space:normal;overflow-wrap:anywhere}

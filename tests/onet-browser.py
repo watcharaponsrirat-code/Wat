@@ -12,7 +12,10 @@ class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_):
         pass
 
-server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler,directory=str(ROOT)))
+class AuditServer(ThreadingHTTPServer):
+    request_queue_size = 128
+
+server = AuditServer(('127.0.0.1', 0), partial(QuietHandler,directory=str(ROOT)))
 Thread(target=server.serve_forever,daemon=True).start()
 try:
     with sync_playwright() as pw:

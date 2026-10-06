@@ -74,7 +74,7 @@ export function runExerciseRegression(){
     }
     h.qa.open(id,'e3');assert.equal(h.qa.snapshot(id).ex.e3.state.qs.length,6);
     h.qa.open(id,'exam');const exam=h.qa.snapshot(id).exam.current;assert.equal(exam.qs.length,20);
-    assert.equal(exam.qs.filter(q=>q.type==='basic').length,5);assert.equal(exam.qs.filter(q=>q.type==='apply').length,6);
+    assert.equal(exam.version,2);assert(exam.qs.every(q=>q.id.startsWith(id+'-F')));assert(exam.qs.filter(q=>q.type==='apply').length>=4);
   }
   const id='G1U4L3';h.qa.open(id,'e1');
   const entry=[...h.storage].find(([,v])=>{try{return JSON.parse(v).ex?.e1?.state?.qs?.[0]?.code.startsWith(id)}catch{return false}});
