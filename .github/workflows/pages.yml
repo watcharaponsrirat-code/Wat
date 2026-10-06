@@ -24,8 +24,13 @@ jobs:
           mkdir _site
           cp index.html _site/
           cp -R assets _site/
-          test -s _site/assets/theme/arcane-world.css
-          test -s _site/assets/theme/arcane-world.svg
+          test -s _site/assets/theme/voxel-world.css
+          test -s _site/assets/theme/voxel-ui.js
+          test -s _site/assets/theme/voxel-landscape.svg
+          test -s _site/assets/theme/school-world.png
+          test -s _site/assets/theme/world-nature.png
+          test -s _site/assets/theme/world-science.png
+          test -s _site/assets/theme/world-space.png
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:

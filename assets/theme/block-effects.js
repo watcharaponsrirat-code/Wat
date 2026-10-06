@@ -1,12 +1,13 @@
 (() => {
   'use strict';
+  if (!window.matchMedia) return;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const colors = ['#8dfaff', '#d8adff', '#74c9ff', '#ffe9ac', '#ffffff'];
+  const colors = ['#7bce3e', '#ffda56', '#52c7f1', '#fff3b2', '#ffffff'];
   let layer;
   // Capture the activation before navigation replaces the clicked element.
   // The overlay never intercepts clicks, scrolling, focus, or game controls.
   document.addEventListener('click', event => {
-    if (reducedMotion.matches || !(event.target instanceof Element)) return;
+    if (reducedMotion.matches || ['exam', 'content'].includes(document.body.dataset.scene) || !(event.target instanceof Element)) return;
     const target = event.target.closest('button, [data-grade], [data-unit], [data-lesson]');
     if (!target || target.matches(':disabled,[aria-disabled="true"]')) return;
     const rect = target.getBoundingClientRect();
