@@ -1,0 +1,62 @@
+/* Crystal portals, voxel islands, and an enchanted navigation dock. */
+:root{--ink:#233458;--mut:#617192;--shadow:0 6px 0 #25174840,0 16px 36px #040c2833}
+body{background:#10152f url('./arcane-world.svg') center top/cover fixed no-repeat}
+.topbar{background:#101c38f5;border-color:#496391;box-shadow:0 3px 0 #57deee28,0 10px 28px #03081c55}
+.brandTitle{color:#d9faff}.topBtn,.profilePill{background:#1b2e4f;border-color:#3e587a;color:#e2f6ff;box-shadow:0 3px 0 #080e23}
+.topBtn:hover{background:#284465}.brandLogo{box-shadow:0 0 14px #74e5ef40}
+.profilePill small{color:#c2d4ee}
+.heroWorld{min-height:390px;background:#151c3c url('./arcane-world.svg') center 42%/cover no-repeat;border:2px solid #8beaff;border-radius:14px;box-shadow:0 6px 0 #263562,0 0 0 5px #516ab929,0 16px 50px #25b9e924}
+.heroWorld:before{background:linear-gradient(90deg,#0a1639f2,#162849b3 46%,#1f18451a 78%)}
+.heroWorld:after{height:10px;border-top:2px solid #bbfbff;background:repeating-linear-gradient(90deg,#51dbe5 0 25px,#947cf2 25px 50px,#3e548c 50px 75px);box-shadow:0 -2px 24px #7ef6ff88}
+.heroContent{min-height:370px}
+.heroTitle,.loginGameTitle{color:#e8fbff;text-shadow:3px 3px 0 #437594,6px 6px 0 #070e2b,0 0 28px #74d8ff50}
+.heroTitle span,.loginGameTitle span{color:#d6b7ff;text-shadow:3px 3px 0 #7151b1,6px 6px 0 #170b34,0 0 30px #b368e94f}
+.heroLogoBox img{border-color:#beedff;background:#fff;box-shadow:0 0 22px #71ebfb50}
+.heroQuote,.woodSign,.loginSlogan{background:repeating-linear-gradient(0deg,transparent 0 26px,#aec8ff08 26px 28px),linear-gradient(120deg,#253a65,#322352);border:2px solid #a1a3df;box-shadow:inset 0 2px 0 #b6d8ff40,0 5px 0 #131b38,0 0 22px #8d81ff24;color:#edf8ff;text-shadow:0 2px 0 #141f39}
+.woodSign:before,.woodSign:after,.heroQuote:before,.heroQuote:after{background:#a5fcff;border-color:#4c79a2;box-shadow:0 0 12px #67eaff;border-radius:0;transform:rotate(45deg)}
+.subWood{color:#cfdafa}.heroQuote{transform:rotate(1deg)}
+.welcomeCard{border-color:#c3d9f3;box-shadow:0 5px 0 #50628a,0 12px 30px #050c2533;background:linear-gradient(115deg,#f1fdff,#f5f0ff)}
+.panel,.unitCard,.lessonCard{border-color:#ccdaed;box-shadow:0 5px 0 #44568550,0 12px 24px #030b2520}
+.gradeCard{border-color:#abf8ff;box-shadow:0 6px 0 #26778b,0 0 24px #5adae922;background:#f6fdff}
+.gradeCard:nth-child(2){border-color:#dbc0ff;background:#fcf8ff;box-shadow:0 6px 0 #705393,0 0 24px #be7efa22}
+.gradeCard:nth-child(3){border-color:#ffdf9d;background:#fffdf5;box-shadow:0 6px 0 #9d7a3f,0 0 24px #ffe09422}
+.gradePic{border-color:#63d8f2}.gradeCard:nth-child(2) .gradePic{border-color:#b795f1}.gradeCard:nth-child(3) .gradePic{border-color:#f0c46c}
+.gradeBody h3{color:#273c61}.progress{border-color:#b6c9e3;background:#e5ecf5}
+.progress span{background:repeating-linear-gradient(90deg,#41bfd6 0 18px,#508ee0 18px 22px);box-shadow:inset 0 3px 0 #a6f8ff}
+button.quick{color:#213e63;border-color:#b2effb;background:linear-gradient(135deg,#f0ffff,#bdeaf7);box-shadow:0 6px 0 #2e7d96,0 0 24px #4bcced20}
+button.quick:nth-child(2){color:#49316b;border-color:#e0c6ff;background:linear-gradient(135deg,#fcf5ff,#ddc5ff);box-shadow:0 6px 0 #74519f,0 0 24px #bb7bea20}
+button.quick:nth-child(3){color:#263f76;border-color:#bad3ff;background:linear-gradient(135deg,#f0f7ff,#bed3ff);box-shadow:0 6px 0 #476ca4,0 0 24px #6c9bff20}
+button.quick:nth-child(4){color:#674622;border-color:#ffe3a4;background:linear-gradient(135deg,#fff9e7,#ffdda5);box-shadow:0 6px 0 #a17a39,0 0 24px #ffdc8720}
+.worldIcon{display:block;width:32px;height:32px;overflow:visible;shape-rendering:crispEdges;filter:drop-shadow(0 3px 0 #00000038)}
+.quick .ico{display:flex!important;justify-content:center}.quick .worldIcon{width:48px;height:48px;filter:drop-shadow(0 4px 0 #32528630)}
+.pixelBtn.green{background:linear-gradient(#56dbcf,#1e8ca7);box-shadow:inset 0 3px 0 #c2ffff70,0 5px 0 #19506a;text-shadow:0 1px 1px #155268}
+.pixelBtn.blue{background:linear-gradient(#6dcbff,#387ac9);box-shadow:inset 0 3px 0 #c2ffff70,0 5px 0 #274c89}
+.pixelBtn.purple{background:linear-gradient(#b698ff,#7656c4);box-shadow:inset 0 3px 0 #f2d8ff70,0 5px 0 #49366e}
+.pixelBtn.soft{background:#eff4ff;box-shadow:inset 0 3px 0 #fff,0 4px 0 #b0c1df}
+.unitCard:hover,[data-lesson]:hover{border-color:#8da9e3;background:#f5f9ff}
+.activityGrades [aria-pressed="true"]{outline-color:#a7dcff;box-shadow:0 0 20px #7ad7ff80}
+.stageHUD{background:#f6faff;border-color:#b5cee9}
+.bottomNav{width:min(calc(100% - 28px),940px);bottom:12px;padding:7px 7px max(7px,env(safe-area-inset-bottom));gap:7px;background:linear-gradient(135deg,#101c36f7,#251b41fa);border:2px solid #7896c3;border-radius:14px;box-shadow:inset 0 1px 0 #c9e5ff60,0 6px 0 #060b1c,0 0 0 4px #101b3690,0 0 32px #74beff30;overflow:visible;backdrop-filter:blur(16px)}
+.bottomNav:before{content:"";position:absolute;left:12%;right:12%;top:-3px;height:3px;background:linear-gradient(90deg,transparent,#81f6ff,#c89aff,transparent);box-shadow:0 0 14px #77e7ff;pointer-events:none}
+.bottomItem{position:relative;min-width:0;min-height:70px;border:1px solid transparent;border-radius:8px;background:transparent;color:#c8d8f1;font-size:12px;font-weight:750;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 3px;transition:background .18s,border-color .18s,color .18s}
+.bottomItem .navIco{display:flex;align-items:center;justify-content:center;margin:0;filter:none}
+.bottomItem:hover{background:#37508066;border-color:#6977a6;color:white}
+.bottomItem.active{color:#fff;background:linear-gradient(135deg,#265875,#50447b);border-color:#99edff;box-shadow:inset 0 1px 0 #ccffff66,0 0 18px #7de8ff30}
+.bottomItem.active:after{content:"";position:absolute;bottom:-4px;width:20px;height:3px;background:#acfcff;box-shadow:0 0 10px #68eaff;pointer-events:none}
+.bottomItem.active .worldIcon{filter:drop-shadow(0 0 7px #a3eaff80)}
+.bottomItem.active .worldIcon{animation:crystalAura 3s ease-in-out infinite}
+.heroWorld:after{background-size:150px 100%;animation:manaFlow 8s linear infinite}
+@keyframes crystalAura{0%,100%{filter:drop-shadow(0 0 3px #78d4ff60)}50%{filter:drop-shadow(0 0 9px #c8b0ffb0)}}
+@keyframes manaFlow{to{background-position:150px 0}}
+.bottomItem:focus-visible{outline:3px solid #ffdf91;outline-offset:2px}.bottomItem:active{background:#5b5792}
+.loginPage{background:#10152f url('./arcane-world.svg') center/cover fixed no-repeat}
+.loginPage:before{background:linear-gradient(#10163220,#10163266)}
+.loginPanel{box-shadow:0 7px 0 #2b315e,0 0 40px #73dfff30;border-color:#c5edff}
+.loginPanel:before{background:repeating-linear-gradient(90deg,#62dce7 0 24px,#9f9aef 24px 48px,#6959ac 48px 72px);box-shadow:inset 0 3px 0 #cafbff}
+.loginFeature{background:#eef2ff;border-color:#cbd5ef}.loginFeature:nth-child(2){background:#eafaff;border-color:#b9e3f0}.loginFeature:nth-child(3){background:#f5eeff;border-color:#d8c7ee}
+.field input{border-color:#c0cfe5;background:#f9fcff}
+.blockParticle{box-shadow:0 0 8px var(--particle-color),2px 2px 0 #111a484f}
+@media(hover:hover){.gradeCard:hover{border-color:#e4fcff;box-shadow:0 6px 0 #405982,0 0 0 3px #84d7ff55,0 0 30px #99a7ff40}.bottomItem:hover .worldIcon{filter:drop-shadow(0 0 6px #b8b1ff80)}}
+@media(max-width:760px){.heroWorld{min-height:355px;background-position:62% center}.heroContent{min-height:335px}.heroWorld:before{background:linear-gradient(90deg,#0c193adb,#1c284a80 70%,#26174730)}.bottomNav{width:calc(100% - 16px);bottom:8px;gap:3px;padding:5px 4px max(5px,env(safe-area-inset-bottom))}.bottomItem{font-size:10px;min-height:65px;gap:5px;padding:7px 1px}.bottomItem .worldIcon{width:28px;height:28px}.heroQuote{background-color:#242441}.shell{padding-bottom:125px}}
+@media(prefers-reduced-motion:reduce){.bottomItem{transition:none}.worldIcon{animation:none}}
+@media(max-width:760px){.bottomItem{font-size:11px}.bottomItem>span:last-child{display:flex;align-items:center;justify-content:center;min-height:2.6em;line-height:1.3;width:100%}}

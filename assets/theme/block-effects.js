@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const colors = ['#9af052', '#ffe263', '#57d9f5', '#c3a0ff', '#ffffff'];
+  const colors = ['#8dfaff', '#d8adff', '#74c9ff', '#ffe9ac', '#ffffff'];
   let layer;
   // Capture the activation before navigation replaces the clicked element.
   // The overlay never intercepts clicks, scrolling, focus, or game controls.
