@@ -1,0 +1,37 @@
+.simPanel .simHeader{position:relative;padding:28px;background:linear-gradient(115deg,#e4f8f7,#f3fbff 60%,#e6f1ff);border-top:5px solid #269eae}
+.simPanel .simHeader h1{max-width:850px;color:#163f52;font-size:clamp(22px,2.5vw,32px);letter-spacing:-.4px}
+.simPanel .simEyebrow{display:inline-block;color:#187984;font-size:11px;letter-spacing:1.7px}
+.simPanel .simLayout{grid-template-columns:minmax(0,1.8fr) minmax(250px,1fr);gap:22px;padding:24px;align-items:start}
+.simStudio{overflow:hidden;border:1px solid #c4dce6;border-radius:18px;background:radial-gradient(ellipse at 45% 35%,#ffffff 5%,#edf7fa 60%,#dcecf3);box-shadow:0 12px 32px #153d5510}
+.simStudioTop{display:flex;align-items:center;gap:8px;padding:14px 16px;background:#ffffffb5;border-bottom:1px solid #d7e7ed;color:#2a566a;font-size:13px}
+.simLiveDot{width:7px;height:7px;flex:none;border-radius:50%;background:#2bac91;box-shadow:0 0 0 4px #2bac9116}
+.simViewSwitch{display:flex;gap:3px;margin-left:auto;padding:3px;background:#e5eff3;border-radius:10px}
+.simViewSwitch button{min-height:32px;padding:5px 14px;border:0;border-radius:7px;background:transparent;color:#496477;font-size:12px;font-weight:700;cursor:pointer}
+.simViewSwitch button[aria-pressed=true]{background:#fff;color:#087f91;box-shadow:0 2px 6px #28445d17}
+.simViewport{height:360px;width:100%;position:relative;overflow:hidden}
+.simViewport canvas{display:block;width:100%;height:100%;cursor:grab}
+.simViewport canvas:active{cursor:grabbing}
+.simCameraTools{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;padding:10px 12px 2px}
+.simCameraTools button{min-width:37px;min-height:40px;border:1px solid #c7dce5;border-radius:9px;background:#ffffffdc;color:#275870;cursor:pointer;font-size:13px;padding:7px 10px;box-shadow:0 2px 0 #b9cfd533}
+.simCameraTools button:hover{background:#e0f5f9;border-color:#50aebe}
+.simCameraTools button[aria-pressed=true]{background:#d7f3ee;color:#146656;border-color:#7cc6b6}
+.simStudioHint{font-size:11px;text-align:center;color:#527888;margin:8px 12px 14px;line-height:1.6}
+.simPanel[data-sim-view="3d"] .simDiagram{display:none}
+.simPanel[data-sim-view="2d"] .simCameraTools{display:none}
+.simPanel:not([data-sim-view]) .simViewport{height:80px}
+.simPanel .simControls{background:#fff;border:1px solid #d5e5e9;border-radius:18px;padding:22px;box-shadow:0 6px 24px #143e5210;border-top:4px solid #2caaae}
+.simPanel .simControls h2{color:#205667;font-size:17px;margin-bottom:23px}
+.simPanel .simControl{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid #e8eff1}
+.simPanel .simControl>span{font-size:13px;gap:8px;color:#345568}
+.simPanel .simControl output{background:#e8f6f7;color:#126c79;padding:3px 8px;border-radius:6px;font-variant-numeric:tabular-nums}
+.simPanel .simControl input{accent-color:#168e9e;cursor:pointer}
+.simPanel .simControl select{border:1px solid #c4dce4;border-radius:9px;font-size:14px}
+.simPanel .simMetrics{gap:10px;margin-top:17px}
+.simPanel .simMetrics>div{background:#fff;border:1px solid #d4e5eb;border-radius:12px;border-top:3px solid #5bb6ba;padding:14px}
+.simPanel .simMetrics span{font-size:11px;line-height:1.6}
+.simPanel .simMetrics strong{font-size:clamp(18px,2vw,24px);color:#176578;font-variant-numeric:tabular-nums}
+.simPanel .simObservation{background:#edf8f5;border-left:3px solid #40aa8c;font-size:14px;padding:16px}
+.simPanel .simAssumption{background:#faf9f3;border:1px solid #e7e4d4;margin:0 24px 22px}
+.simPanel .simFree{font-size:12px;margin-bottom:0}
+@media(max-width:850px){.simPanel .simLayout{grid-template-columns:1fr;padding:12px;gap:16px}.simPanel .simHeader{padding:20px 16px}.simViewport{height:310px}.simPanel .simControls{padding:18px}.simPanel .simAssumption{margin:0 12px 16px}.simStudioTop{padding:12px}.simPanel .simMetrics{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}}
+@media(max-width:380px){.simViewport{height:285px}.simCameraTools{gap:4px}.simCameraTools button{padding:7px 8px}.simStudioTop strong{font-size:12px}}
