@@ -1,162 +1,110 @@
 import * as THREE from '../vendor/three/three.module.js';
 import {OrbitControls} from '../vendor/three/OrbitControls.js';
-import {SVGLoader} from '../vendor/three/SVGLoader.js';
+import {RoomEnvironment} from '../vendor/three/RoomEnvironment.js';
+import {ModelKit} from './models3d-kit.js';
+import {models3d} from './models3d.js';
 
-// The lesson's original model remains the source of positions, colors and values.
-// Depth is illustrative; the 2D reference remains available for exact diagrams.
-export function mountScene(host, initialSVG, title) {
-  const panel = host.closest('.simPanel');
-  const canvas = document.createElement('canvas');
-  canvas.setAttribute('aria-label', title + ' — แบบจำลองสามมิติ');
-  canvas.setAttribute('role', 'img');
-  let renderer;
-  try { renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true}); }
-  catch { throw new Error('WebGL unavailable'); }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-  renderer.setClearColor(0xeaf5fa, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
-  host.append(canvas);
-  const scene = new THREE.Scene();
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x7097a6, 1.7));
-  const key = new THREE.DirectionalLight(0xffffff, 2.4);
-  key.position.set(-250, 400, 500); scene.add(key);
-  const rim = new THREE.DirectionalLight(0x7ad8ff, 1.6);
-  rim.position.set(350, 20, -80); scene.add(rim);
-  const camera = new THREE.PerspectiveCamera(38, 1, 1, 4000);
-  const orbit = new OrbitControls(camera, canvas);
-  orbit.enablePan = false; orbit.enableDamping = false;
-  orbit.enableZoom = false; // Page scrolling stays available; use explicit zoom buttons.
-  orbit.minDistance = 280; orbit.maxDistance = 1500;
-  orbit.minAzimuthAngle = -Math.PI / 2.8; orbit.maxAzimuthAngle = Math.PI / 2.8;
-  orbit.minPolarAngle = Math.PI / 5; orbit.maxPolarAngle = Math.PI * .79;
-  orbit.enableRotate = !matchMedia('(pointer: coarse)').matches;
-  canvas.style.touchAction = orbit.enableRotate ? 'none' : 'pan-y';
-  const stage = new THREE.Group(); scene.add(stage);
-  const platform = new THREE.Mesh(new THREE.BoxGeometry(650, 12, 155), new THREE.MeshStandardMaterial({color:0xd4e9ef,roughness:.65}));
-  platform.position.set(0,-181,0); scene.add(platform);
-  const grid = new THREE.GridHelper(650, 20, 0x8bb7c6, 0xc7e1e8);
-  grid.position.y = -188; scene.add(grid);
-  let disposed = false, mode = '3d', revision = 0, zoomFactor = 1;
-  const fitDistance = () => Math.max(640 / (host.clientWidth / host.clientHeight),380) / (2*Math.tan(THREE.MathUtils.degToRad(19)));
-  const draw = () => { if (!disposed && mode === '3d') {renderer.render(scene,camera);host.dataset.cameraDistance=String(camera.position.length());} };
-  const disposeGroup = group => {
-    group.traverse(item => {
-      item.geometry?.dispose();
-      const materials = item.material ? (Array.isArray(item.material) ? item.material : [item.material]) : [];
-      for (const material of materials) { material.map?.dispose(); material.dispose(); }
-    });
-    group.clear();
+export function mountScene(host,spec,initialValues){
+  const build=models3d[spec.id];if(!build)throw Error('Missing native model: '+spec.id);
+  const radius=({G1U1L1:285,G1U2L1:250,G1U2L2:265,G1U3L1:315,G1U4L1:250,G2U2L1:250,G2U2L2:250,G2U3L2:280,G2U3L5:300,G3U5L1:255,G3U6L2:275})[spec.id]||335;
+  const panel=host.closest('.simPanel'),canvas=document.createElement('canvas');
+  canvas.setAttribute('aria-label',spec.title+' — หมุนสำรวจสามมิติ');canvas.setAttribute('role','img');canvas.tabIndex=0;
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'default'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));renderer.setClearColor(0x0c263b,0);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.append(canvas);
+  const scene=new THREE.Scene(),group=new THREE.Group();scene.add(group);
+  const pmrem=new THREE.PMREMGenerator(renderer),room=new RoomEnvironment(),environment=pmrem.fromScene(room,.04);
+  scene.environment=environment.texture;scene.environmentIntensity=.55;room.dispose();pmrem.dispose();
+  scene.add(new THREE.HemisphereLight(0xe7f5ff,0x6a7e8b,1.5));
+  const key=new THREE.DirectionalLight(0xfff4dd,3);key.position.set(-240,450,300);key.castShadow=true;
+  key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-420,right:420,top:420,bottom:-420,near:1,far:1400});key.shadow.bias=-.0003;key.shadow.normalBias=1;key.shadow.radius=3;scene.add(key);
+  const rim=new THREE.DirectionalLight(0x87cfff,2.3);rim.position.set(250,90,-300);scene.add(rim);
+  const platform=new THREE.Mesh(new THREE.CylinderGeometry(radius+5,radius+15,14,96),new THREE.MeshStandardMaterial({color:0x24475a,roughness:.65,metalness:.2}));platform.position.y=-172;platform.receiveShadow=true;scene.add(platform);
+  const edge=new THREE.Mesh(new THREE.TorusGeometry(radius+2,1.6,8,96),new THREE.MeshBasicMaterial({color:0x51b8c1}));edge.rotation.x=Math.PI/2;edge.position.y=-163;scene.add(edge);
+  const camera=new THREE.PerspectiveCamera(40,1,1,5000),orbit=new OrbitControls(camera,canvas),kit=new ModelKit(group);
+  orbit.enablePan=false;orbit.enableDamping=true;orbit.dampingFactor=.12;orbit.rotateSpeed=.65;orbit.zoomSpeed=.8;
+  orbit.minAzimuthAngle=-Infinity;orbit.maxAzimuthAngle=Infinity;orbit.minPolarAngle=.06;orbit.maxPolarAngle=Math.PI-.06;
+  orbit.enableRotate=!matchMedia('(pointer:coarse)').matches;orbit.enableZoom=orbit.enableRotate;orbit.autoRotateSpeed=.65;
+  orbit.target.set(0,20,0);canvas.style.touchAction=orbit.enableRotate?'none':'pan-y';
+  const reduced=matchMedia('(prefers-reduced-motion:reduce)');
+  let disposed=false,mode='3d',frame=0,lastTime=0,zoomFactor=1,tween=null,updating=false,inView=true,revision=0;
+  const fitDistance=()=>{
+    const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight)),half=Math.atan(Math.tan(THREE.MathUtils.degToRad(20))*Math.min(1,aspect));
+    return radius/Math.sin(half);
   };
-  const resetCamera = () => {
-    const distance = fitDistance(); zoomFactor=1;
-    camera.position.set(.14,.12,1).normalize().multiplyScalar(distance);
-    orbit.target.set(0,0,0); orbit.update(); draw();
-  };
-  const material = color => new THREE.MeshStandardMaterial({color,roughness:.38,metalness:.08,side:THREE.DoubleSide});
-  function update(svg) {
-    if (disposed) return;
-    disposeGroup(stage);
-    const parsed = new SVGLoader().parse('<svg xmlns="http://www.w3.org/2000/svg">'+svg+'</svg>');
-    let layer = 0;
-    for (const path of parsed.paths) {
-      const style = path.userData.style, node = path.userData.node;
-      const z = layer++ * .35;
-      if (style.fill && style.fill !== 'none' && Number(style.fillOpacity) !== 0) {
-        for (const shape of SVGLoader.createShapes(path)) {
-          const flat = new THREE.ShapeGeometry(shape,20);
-          flat.computeBoundingBox();
-          const box = flat.boundingBox, width = box.max.x-box.min.x, height = box.max.y-box.min.y;
-          if (width <= 0 || height <= 0) { flat.dispose(); continue; }
-          let mesh;
-          if (node.nodeName === 'circle' || node.nodeName === 'ellipse') {
-            mesh = new THREE.Mesh(new THREE.SphereGeometry(1,24,16),material(path.color));
-            mesh.scale.set(width/2,height/2,Math.min(width,height)*.32);
-            mesh.position.set((box.min.x+box.max.x)/2-300,160-(box.min.y+box.max.y)/2,z+8);
-          } else if (node.nodeName === 'rect' && node.getAttribute('fill') === '#b87d55') {
-            mesh = new THREE.Mesh(new THREE.CylinderGeometry(width*.5,width*.36,height,32),material(path.color));
-            mesh.position.set((box.min.x+box.max.x)/2-300,160-(box.min.y+box.max.y)/2,z);
-          } else {
-            const depth = Math.min(24,Math.max(4,Math.min(width,height)*.25));
-            const geometry = new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:false,curveSegments:16,steps:1});
-            mesh = new THREE.Mesh(geometry,material(path.color));
-            mesh.scale.y = -1; mesh.position.set(-300,160,z-depth/2);
-          }
-          flat.dispose(); stage.add(mesh);
-        }
-      }
-      if (style.stroke && style.stroke !== 'none' && Number(style.strokeOpacity) !== 0) {
-        for (const sub of path.subPaths) {
-          const points = sub.getPoints(24);
-          const distinct=points.filter((p,i)=>!i||p.distanceToSquared(points[i-1])>.0001);
-          if(distinct.length<2)continue;
-          const curve=new THREE.CurvePath();
-          for(let i=1;i<distinct.length;i++)curve.add(new THREE.LineCurve3(new THREE.Vector3(distinct[i-1].x-300,160-distinct[i-1].y,z+15),new THREE.Vector3(distinct[i].x-300,160-distinct[i].y,z+15)));
-          const geometry=new THREE.TubeGeometry(curve,Math.max(2,distinct.length*2),Math.max(.6,Number(style.strokeWidth||1)/2),8,false);
-          stage.add(new THREE.Mesh(geometry,material(style.stroke)));
-        }
-      }
+  const spherical=()=>new THREE.Spherical().setFromVector3(camera.position.clone().sub(orbit.target));
+  function paint(){
+    if(disposed||mode!=='3d'||document.hidden||!inView)return;
+    for(const item of kit.items.values())if(item.type==='label'&&item.mesh.visible){const pixels=host.clientWidth<450?20:23;const scale=2*camera.position.distanceTo(item.mesh.position)*Math.tan(THREE.MathUtils.degToRad(20))/Math.max(1,host.clientHeight)*pixels;item.mesh.scale.set(scale*item.mesh.userData.labelAspect,scale,1)}
+    renderer.render(scene,camera);const s=spherical();
+    host.dataset.cameraDistance=String(s.radius);host.dataset.azimuth=String(s.theta);host.dataset.polar=String(s.phi);
+  }
+  function schedule(){if(!disposed&&!frame&&mode==='3d'&&!document.hidden&&inView)frame=requestAnimationFrame(tick)}
+  function tick(time){
+    frame=0;if(disposed||mode!=='3d'||document.hidden||!inView)return;
+    const dt=Math.min(.05,Math.max(.001,(time-(lastTime||time-16))/1000));lastTime=time;
+    updating=true;
+    if(tween){
+      const progress=reduced.matches?1:Math.min(1,(time-tween.start)/260),ease=1-(1-progress)**3;
+      const s=new THREE.Spherical(tween.from.radius+(tween.to.radius-tween.from.radius)*ease,tween.from.phi+(tween.to.phi-tween.from.phi)*ease,tween.from.theta+(tween.to.theta-tween.from.theta)*ease);
+      camera.position.setFromSpherical(s).add(orbit.target);if(progress===1)tween=null;
     }
-    // A separate transparent texture preserves all Thai labels and SVG transforms.
-    const labels = document.createElementNS('http://www.w3.org/2000/svg','svg');
-    labels.setAttribute('xmlns','http://www.w3.org/2000/svg');
-    labels.setAttribute('viewBox','0 0 600 320'); labels.setAttribute('width','1200'); labels.setAttribute('height','640');
-    labels.setAttribute('style','font-family:Tahoma,sans-serif');
-    labels.innerHTML = svg;
-    labels.querySelectorAll('path,rect,circle,ellipse,line,polyline,polygon').forEach(el=>el.remove());
-    const blob = new Blob([new XMLSerializer().serializeToString(labels)],{type:'image/svg+xml'});
-    const url = URL.createObjectURL(blob), img = new Image(), current = ++revision;
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      if (disposed || current !== revision) return;
-      const texture = new THREE.Texture(img); texture.colorSpace = THREE.SRGBColorSpace; texture.needsUpdate = true;
-      const label = new THREE.Mesh(new THREE.PlaneGeometry(600,320),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthTest:false,side:THREE.DoubleSide}));
-      label.position.z = 0; label.renderOrder = 10; stage.add(label); draw();
-    };
-    img.onerror = () => URL.revokeObjectURL(url); img.src = url;
-    host.dataset.revision = String(revision);
-    host.dataset.meshes = String(stage.children.length);
-    draw();
+    const cameraMoving=orbit.update(dt),modelMoving=kit.tick(dt,reduced.matches);updating=false;paint();
+    host.dataset.animating=String(Boolean(tween||cameraMoving||modelMoving||orbit.autoRotate));
+    if(tween||cameraMoving||modelMoving||orbit.autoRotate)schedule();
   }
-  function resize() {
-    if (disposed || !host.clientWidth) return;
-    renderer.setSize(host.clientWidth,host.clientHeight,false);
-    // Recompute from the requested zoom, not a previously clamped camera distance.
-    // Transient narrow layouts must not accumulate zoom when the viewport recovers.
-    if(camera.position.length())camera.position.normalize().multiplyScalar(fitDistance()*zoomFactor);
-    camera.aspect=host.clientWidth/host.clientHeight; camera.updateProjectionMatrix(); orbit.update(); draw();
+  function settledControls(){const damping=orbit.enableDamping;orbit.enableDamping=false;orbit.update();orbit.enableDamping=damping}
+  function moveTo(to,instant=false){
+    settledControls();
+    if(instant||reduced.matches){camera.position.setFromSpherical(to).add(orbit.target);orbit.update();tween=null;paint()}
+    else {tween={from:spherical(),to,start:performance.now()};host.dataset.animating='true'}schedule();
   }
-  const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(host);
-  const buttons = panel.querySelectorAll('[data-sim-camera],[data-sim-view]');
-  function action(event) {
+  function resetCamera(instant=false){zoomFactor=1;orbit.autoRotate=false;panel.querySelector('[data-sim-camera="auto"]')?.setAttribute('aria-pressed','false');moveTo(new THREE.Spherical(fitDistance(),1.12,.42),instant)}
+  function resize(){
+    if(disposed||!host.clientWidth||!host.clientHeight)return;
+    renderer.setSize(host.clientWidth,host.clientHeight,false);camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();
+    const fit=fitDistance();orbit.minDistance=fit*.42;orbit.maxDistance=fit*2.4;
+    if(camera.position.length()){const s=spherical();s.radius=fit*zoomFactor;moveTo(s,true)}schedule();
+  }
+  function update(values){
+    if(disposed)return;kit.begin();build(kit,values);kit.end();
+    host.dataset.revision=String(++revision);host.dataset.meshes=String([...kit.items.values()].filter(i=>i.mesh.visible&&i.type!=='label').length);
+    host.dataset.model=spec.id;host.dataset.renderer='native';host.dataset.modelState=JSON.stringify(kit.values);schedule();
+    host.dataset.animating='true';
+  }
+  const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(host);
+  const visibilityObserver=new IntersectionObserver(([entry])=>{inView=entry.isIntersecting;if(inView){lastTime=0;schedule()}else{cancelAnimationFrame(frame);frame=0}},{rootMargin:'100px'});visibilityObserver.observe(host);
+  function action(event){
     const button=event.currentTarget;
-    if (button.dataset.simView) {
-      mode=button.dataset.simView; panel.dataset.simView=mode;
-      panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView===mode)));
-      host.hidden=mode!=='3d'; resize(); draw(); return;
-    }
-    const command=button.dataset.simCamera;
-    if (command==='reset') resetCamera();
-    if (command==='in'||command==='out') { zoomFactor=THREE.MathUtils.clamp(zoomFactor*(command==='in'?.85:1.18),.5,2);camera.position.normalize().multiplyScalar(fitDistance()*zoomFactor); orbit.update(); }
-    if (command==='left'||command==='right') { const angle=command==='left'?-.18:.18; camera.position.applyAxisAngle(new THREE.Vector3(0,1,0),angle); orbit.update(); }
-    if (command==='drag') { orbit.enableRotate=!orbit.enableRotate; canvas.style.touchAction=orbit.enableRotate?'none':'pan-y'; button.setAttribute('aria-pressed',String(orbit.enableRotate)); }
-    draw();
+    if(button.dataset.simView){mode=button.dataset.simView;panel.dataset.simView=mode;host.hidden=mode!=='3d';panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView===mode)));cancelAnimationFrame(frame);frame=0;lastTime=0;if(mode==='3d'){inView=true;resize();schedule()}return}
+    const command=button.dataset.simCamera,s=tween?tween.to.clone():spherical();
+    if(command==='reset'){resetCamera();return}
+    if(command==='left'||command==='right'){s.theta+=(command==='left'?-1:1)*Math.PI/12;moveTo(s)}
+    if(command==='in'||command==='out'){zoomFactor=THREE.MathUtils.clamp(zoomFactor*(command==='in'?.85:1/.85),.42,2.4);s.radius=fitDistance()*zoomFactor;moveTo(s)}
+    if(command==='front')moveTo(new THREE.Spherical(fitDistance()*zoomFactor,Math.PI/2,0));
+    if(command==='top')moveTo(new THREE.Spherical(fitDistance()*zoomFactor,.06,0));
+    if(command==='auto'){tween=null;orbit.autoRotate=!orbit.autoRotate;button.setAttribute('aria-pressed',String(orbit.autoRotate));schedule()}
+    if(command==='labels'){kit.setLabels(!kit.labels);button.setAttribute('aria-pressed',String(kit.labels));schedule()}
+    if(command==='drag'){orbit.enableRotate=!orbit.enableRotate;orbit.enableZoom=orbit.enableRotate;canvas.style.touchAction=orbit.enableRotate?'none':'pan-y';button.setAttribute('aria-pressed',String(orbit.enableRotate))}
   }
-  buttons.forEach(button=>button.addEventListener('click',action));
+  const buttons=panel.querySelectorAll('[data-sim-camera],[data-sim-view]');buttons.forEach(button=>button.addEventListener('click',action));
   panel.querySelector('[data-sim-camera="drag"]').setAttribute('aria-pressed',String(orbit.enableRotate));
-  orbit.addEventListener('change',draw);
-  const onLost = event => { event.preventDefault(); mode='2d'; panel.dataset.simView='2d'; host.hidden=true; panel.querySelector('[data-sim-view="3d"]').disabled=true;panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView==='2d'))); panel.querySelector('[data-sim-status]').textContent='แสดงแผนภาพ 2D — กรุณาเปิดบทเรียนใหม่เพื่อใช้ 3D'; };
-  canvas.addEventListener('webglcontextlost',onLost);
-  try { update(initialSVG); resize(); resetCamera(); }
-  catch(error) { dispose(); throw error; }
-  panel.dataset.simView='3d';
-  panel.querySelector('[data-sim-status]').textContent='แบบจำลอง 3D • หมุนและซูมเพื่อสำรวจ';
-  function dispose() {
-    disposed=true; revision++; resizeObserver.disconnect(); orbit.dispose();
-    buttons.forEach(button=>button.removeEventListener('click',action));
-    canvas.removeEventListener('webglcontextlost',onLost);
-    disposeGroup(scene); renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
+  function changed(){if(!updating)schedule()}
+  function start(){tween=null;orbit.autoRotate=false;panel.querySelector('[data-sim-camera="auto"]').setAttribute('aria-pressed','false');schedule()}
+  function end(){zoomFactor=THREE.MathUtils.clamp(spherical().radius/fitDistance(),.42,2.4);schedule()}
+  orbit.addEventListener('change',changed);orbit.addEventListener('start',start);orbit.addEventListener('end',end);
+  function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0}else{lastTime=0;schedule()}}document.addEventListener('visibilitychange',visibility);
+  function keydown(event){const commands={ArrowLeft:'left',ArrowRight:'right','+':'in','=':'in','-':'out',Home:'reset'};if(commands[event.key]){event.preventDefault();panel.querySelector('[data-sim-camera="'+commands[event.key]+'"]').click()}}
+  canvas.addEventListener('keydown',keydown);
+  function lost(event){event.preventDefault();mode='2d';panel.dataset.simView='2d';host.hidden=true;cancelAnimationFrame(frame);frame=0;panel.querySelector('[data-sim-view="3d"]').disabled=true;panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView==='2d')));panel.querySelector('[data-sim-status]').textContent='แสดงแผนภาพ 2D — เปิดบทเรียนใหม่เพื่อกลับมุมมอง 3D'}
+  canvas.addEventListener('webglcontextlost',lost);
+  try{panel.dataset.simView='3d';update(initialValues);resize();resetCamera(true);paint()}catch(error){dispose();throw error}
+  panel.querySelector('[data-sim-status]').textContent='หมุนได้รอบ 360° · ลากเพื่อสำรวจ · ซูมด้วยสองนิ้วหรือปุ่ม';
+  function dispose(){
+    disposed=true;cancelAnimationFrame(frame);frame=0;resizeObserver.disconnect();visibilityObserver.disconnect();orbit.dispose();
+    buttons.forEach(button=>button.removeEventListener('click',action));canvas.removeEventListener('keydown',keydown);canvas.removeEventListener('webglcontextlost',lost);document.removeEventListener('visibilitychange',visibility);
+    kit.dispose();platform.geometry.dispose();platform.material.dispose();edge.geometry.dispose();edge.material.dispose();key.shadow.map?.dispose();environment.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
   }
-  return {update,dispose};
+  return{update,dispose};
 }

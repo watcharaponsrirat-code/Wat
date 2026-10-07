@@ -51,13 +51,15 @@
     snake:'<path d="M18 5c-8-5-12 7-5 7h2c9 0 6 10-2 9C1 20 1 11 5 10m13-5 3 2-3 2h-3m6-2h2m-5-1h.1"/>',
     flag:'<path d="M5 22V3m0 1c5-5 9 5 15 0v11c-6 5-10-5-15 0"/>',
     left:'<path d="m10 5-7 7 7 7M3 12h18"/>',
-    right:'<path d="m14 5 7 7-7 7M3 12h18"/>'
+    right:'<path d="m14 5 7 7-7 7M3 12h18"/>',
+    'rotate-left':'<path d="M4 9a8 8 0 1 1 0 7M4 3v6h6"/>',
+    'rotate-right':'<path d="M20 9a8 8 0 1 0 0 7m0-13v6h-6"/>'
   };
   const entries=[
     ['🔍🔎','search','ค้นหา'],['⚛','atom','อะตอม'],['🔬','microscope','กล้องจุลทรรศน์'],['🌿','leaf','พืช'],['🌡','thermometer','อุณหภูมิ'],['🌦','weather','สภาพอากาศ'],['🧭','compass','เข็มทิศ'],['🧂','salt','สารละลาย'],['🫀','heart','หัวใจ'],['🏃','run','การเคลื่อนที่'],['⚙','gear','เครื่องกล'],['🧪⚗','flask','การทดลอง'],['🌍','globe','โลก'],['🔋','battery','แบตเตอรี่'],['💡','bulb','หลอดไฟ'],['🧬','dna','พันธุศาสตร์'],['🌈','rainbow','แสง'],['🪐','planet','ดาวเคราะห์'],['⚡','bolt','ไฟฟ้า'],['🌳','tree','ต้นไม้'],['🏠','home','หน้าหลัก'],['🎓','graduate','ผู้เรียน'],['💎','gem','คะแนนประสบการณ์'],['🔄','refresh','ทบทวน'],['⭐★','star','ดาว'],['🔭','telescope','กล้องโทรทรรศน์'],['🟫','block','บล็อก'],['▶','play','เล่น'],['🎮','game','เกม'],['📘📚','book','บทเรียน'],['🧑','person','ผู้ใช้'],['⛏','pickaxe','ภารกิจ'],['✅✓','check','ถูกต้อง'],['📍','pin','จุดที่บันทึก'],['❌','close','ไม่ถูกต้อง'],['🏆','trophy','รางวัล'],['🎉','celebrate','สำเร็จ'],['🎯','target','เป้าหมาย'],['🃏','cards','การ์ด'],['📦','block','จัดกลุ่ม'],['🎛','sliders','ปรับค่า'],['🚀','rocket','ภารกิจ'],['🦗','grasshopper','ตั๊กแตน'],['🐁','mouse','หนู'],['🐸','frog','กบ'],['🐍','snake','งู'],['⚑','flag','จุดเรียนต่อ']
   ];
   const icons=new Map();for(const [chars,name,label] of entries)for(const char of chars)icons.set(char,{name,label});
-  const arrows=new Map([['←',{name:'left',label:'ย้อนกลับ'}],['→',{name:'right',label:'ถัดไป'}],['↻',{name:'refresh',label:'เริ่มใหม่'}],['↺',{name:'refresh',label:'เริ่มใหม่'}],['↶',{name:'refresh',label:'หมุนซ้าย'}],['↷',{name:'refresh',label:'หมุนขวา'}],['❚❚',{name:'pause',label:'หยุดเวลา'}]]);
+  const arrows=new Map([['←',{name:'left',label:'ย้อนกลับ'}],['→',{name:'right',label:'ถัดไป'}],['↻',{name:'refresh',label:'เริ่มใหม่'}],['↺',{name:'refresh',label:'เริ่มใหม่'}],['↶',{name:'rotate-left',label:'หมุนซ้าย'}],['↷',{name:'rotate-right',label:'หมุนขวา'}],['❚❚',{name:'pause',label:'หยุดเวลา'}]]);
   const pattern=new RegExp([...icons.keys(),...arrows.keys()].sort((a,b)=>b.length-a.length).join('|')+'|\uFE0F','gu');
   const skip='script,style,textarea,input,select,option,code,pre,svg,canvas,[contenteditable]:not([contenteditable="false"]),.uiIcon';
   function replaceText(node){

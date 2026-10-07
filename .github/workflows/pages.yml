@@ -34,10 +34,16 @@ jobs:
           test -s _site/assets/theme/world-science.png
           test -s _site/assets/theme/world-space.png
           test -s _site/assets/simulations/scene3d.js
+          test -s _site/assets/simulations/models3d.js
+          test -s _site/assets/simulations/models3d-kit.js
+          test -s _site/assets/simulations/models3d-grade1.js
+          test -s _site/assets/simulations/models3d-grade2.js
+          test -s _site/assets/simulations/models3d-grade3.js
           test -s _site/assets/simulations/studio3d.css
           test -s _site/assets/vendor/three/three.module.js
           test -s _site/assets/vendor/three/three.core.js
           test -s _site/assets/vendor/three/OrbitControls.js
+          test -s _site/assets/vendor/three/RoomEnvironment.js
           test -s _site/assets/vendor/three/SVGLoader.js
       - name: Upload website
         uses: actions/upload-pages-artifact@v3

@@ -35,3 +35,17 @@
 .simPanel .simFree{font-size:12px;margin-bottom:0}
 @media(max-width:850px){.simPanel .simLayout{grid-template-columns:1fr;padding:12px;gap:16px}.simPanel .simHeader{padding:20px 16px}.simViewport{height:310px}.simPanel .simControls{padding:18px}.simPanel .simAssumption{margin:0 12px 16px}.simStudioTop{padding:12px}.simPanel .simMetrics{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}}
 @media(max-width:380px){.simViewport{height:285px}.simCameraTools{gap:4px}.simCameraTools button{padding:7px 8px}.simStudioTop strong{font-size:12px}}
+
+/* Native 3D studio: consistent framing and readable controls on every lesson. */
+.simStudio{background:radial-gradient(ellipse at 40% 30%,#2b506a,#102d43 70%,#091f32);border-color:#345b70;box-shadow:0 16px 38px #153d5520}
+.simStudioTop{background:#122e43;color:#e2f2f7;border-bottom-color:#34576a}
+.simViewSwitch{background:#23485d}.simViewSwitch button{color:#c0dce8}.simViewSwitch button[aria-pressed=true]{background:#c8f2ee;color:#155e68}
+.simViewport{height:440px}
+.simCameraTools{padding:12px 12px 4px;border-top:1px solid #355467;background:#102b40}
+.simCameraTools button{color:#d2e6ef;background:#1b3c51;border-color:#426477;box-shadow:none;min-height:42px}
+.simCameraTools button:hover{background:#2f5c70;border-color:#65afba}
+.simCameraTools button[aria-pressed=true]{background:#245b60;color:#c6fff0;border-color:#57a999}
+.simStudioHint{color:#b4d0df;background:#102b40;margin:0;padding:9px 12px 14px}
+.simViewport canvas:focus-visible{outline:3px solid #66e5d3;outline-offset:-4px}
+@media(max-width:850px){.simViewport{height:380px}.simCameraTools{gap:5px}.simCameraTools button{font-size:12px;padding:7px 9px}}
+@media(max-width:380px){.simViewport{height:340px}.simCameraTools button{font-size:11px}}
