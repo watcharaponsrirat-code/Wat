@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const bank={},blueprints={};
-  const version=2;
+  const version=3;
   const enrichment=new Set(['G3U3L1S6','G3U3L2S7']);
   const labels={understand:'ความเข้าใจ',apply:'ประยุกต์',analyze:'วิเคราะห์หลักฐาน'};
   window.defineFinalExam=(id,source)=>{

@@ -6,7 +6,18 @@
   function cameraMore(){return '<button type="button" data-sim-camera="front">ด้านหน้า</button><button type="button" data-sim-camera="top">ด้านบน</button><button type="button" data-sim-camera="auto" aria-pressed="false">หมุนอัตโนมัติ</button><button type="button" data-sim-camera="labels" aria-pressed="true">ป้ายชื่อ</button>'}
   function sceneMarkup(){return `<div class="simStudio"><div class="simStudioTop"><span class="simLiveDot" aria-hidden="true"></span><strong>สำรวจแบบจำลอง</strong><div class="simViewSwitch" role="group" aria-label="มุมมองแบบจำลอง"><button type="button" data-sim-view="3d" aria-pressed="true">3D</button><button type="button" data-sim-view="2d" aria-pressed="false">2D</button></div></div><div class="simViewport" data-sim-viewport></div><div class="simCameraTools" role="group" aria-label="ควบคุมมุมมองสามมิติ"><button type="button" data-sim-camera="left" aria-label="หมุนซ้าย">↶</button><button type="button" data-sim-camera="right" aria-label="หมุนขวา">↷</button><button type="button" data-sim-camera="in" aria-label="ซูมเข้า">＋</button><button type="button" data-sim-camera="out" aria-label="ซูมออก">−</button><button type="button" data-sim-camera="reset">มุมเริ่มต้น</button>${cameraMore()}<button type="button" data-sim-camera="drag" aria-pressed="false">ลากหมุน</button></div><p class="simStudioHint" data-sim-status role="status">กำลังเตรียมมุมมอง 3D…</p></div>`}
   function fallback(){const panel=document.querySelector('.simPanel');if(!panel)return;panel.dataset.simView='2d';panel.querySelector('[data-sim-viewport]').hidden=true;panel.querySelector('[data-sim-status]').textContent='แสดงแผนภาพ 2D — อุปกรณ์นี้เปิดมุมมอง 3D ไม่ได้';panel.querySelector('[data-sim-view="3d"]').disabled=true;panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView==='2d')))}
-  function values(spec,saved={}){return Object.fromEntries(spec.controls.map(c=>{const raw=Number(saved[c.key]),v=Number.isFinite(raw)?raw:c.value;return [c.key,c.options?Math.max(0,Math.min(c.options.length-1,Math.round(v))):Math.max(c.min,Math.min(c.max,v))]}))}
+  function values(spec,saved={}){
+    const source=saved&&typeof saved==='object'&&!Array.isArray(saved)?saved:{};
+    return Object.fromEntries(spec.controls.map(c=>{
+      const stored=Object.prototype.hasOwnProperty.call(source,c.key)?source[c.key]:undefined;
+      const raw=typeof stored==='number'||(typeof stored==='string'&&stored.trim())?Number(stored):NaN;
+      const value=Number.isFinite(raw)?raw:c.value;
+      if(c.options)return [c.key,Math.max(0,Math.min(c.options.length-1,Math.round(value)))];
+      const bounded=Math.max(c.min,Math.min(c.max,value));
+      const stepped=c.min+Math.round((bounded-c.min)/c.step)*c.step;
+      return [c.key,Math.max(c.min,Math.min(c.max,Number(stepped.toFixed(10))))];
+    }));
+  }
   function state(spec,p){return values(spec,p.simulation?.[spec.id]?.values)}
   function output(spec,v){const r=spec.model(v);return `<svg class="simDiagram" viewBox="0 0 600 320" role="img" aria-label="${esc(r.summary)}"><title>${esc(spec.title)}</title>${r.svg}</svg><div class="simMetrics">${r.metrics.map(([label,value])=>`<div><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('')}</div><p class="simObservation">${esc(r.summary)}</p>`}
   window.SLH_SIM_ENGINE={stop,values,

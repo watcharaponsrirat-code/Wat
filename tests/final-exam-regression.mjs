@@ -37,7 +37,7 @@ for(const [id,qs] of Object.entries(api.bank)){
   const original=JSON.stringify(qs);
   for(let i=0;i<100;i++){
     const attempt=api.build(id,shuffle);forms++;
-    assert.equal(attempt.version,2);assert.equal(attempt.qs.length,20);
+    assert.equal(attempt.version,3);assert.equal(attempt.qs.length,20);
     assert.equal(new Set(attempt.qs.map(q=>q.id)).size,20);
     for(let key=0;key<4;key++)assert.equal(attempt.qs.filter(q=>q.opts.indexOf(q.correct)===key).length,5,id+' unbalanced keys');
     assert.deepEqual([...new Set(attempt.qs.map(q=>q.code))].sort(),[...new Set(qs.map(q=>q.code))].sort());

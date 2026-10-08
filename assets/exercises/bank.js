@@ -22,7 +22,7 @@
     G3U6L2S1:'อัตราการใช้พลังงานไฟฟ้าต่อเวลา มีหน่วยวัตต์'
   };
   window.SLH_EXERCISES = {
-    version:1,
+    version:2,
     basic(id){
       const sections=window.SLH_DATA.packs[id].filter(s=>!excluded.has(s.code)).map(s=>({...s,body:descriptions[s.code]||s.body}));
       const questions=sections.map((section,i)=>({

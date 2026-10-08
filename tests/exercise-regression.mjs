@@ -74,13 +74,20 @@ export function runExerciseRegression(){
     }
     h.qa.open(id,'e3');assert.equal(h.qa.snapshot(id).ex.e3.state.qs.length,6);
     h.qa.open(id,'exam');const exam=h.qa.snapshot(id).exam.current;assert.equal(exam.qs.length,20);
-    assert.equal(exam.version,2);assert(exam.qs.every(q=>q.id.startsWith(id+'-F')));assert(exam.qs.filter(q=>q.type==='apply').length>=4);
+    assert.equal(exam.version,3);assert(exam.qs.every(q=>q.id.startsWith(id+'-F')));assert(exam.qs.filter(q=>q.type==='apply').length>=4);
   }
-  const id='G1U4L3';h.qa.open(id,'e1');
-  const entry=[...h.storage].find(([,v])=>{try{return JSON.parse(v).ex?.e1?.state?.qs?.[0]?.code.startsWith(id)}catch{return false}});
-  assert(entry);const old=JSON.parse(entry[1]);delete old.ex.e1.state.version;old.ex.e1.done=true;old.xp=140;
-  const oldState=JSON.stringify(old.ex.e1.state);h.storage.set(entry[0],JSON.stringify(old));h=harness(h.storage);h.qa.open(id,'e1');
-  const migrated=h.qa.snapshot(id);assert.equal(JSON.stringify(migrated.ex.e1.previousState),oldState);assert.equal(migrated.ex.e1.done,true);assert.equal(migrated.xp,140);assert.equal(migrated.ex.e1.state.version,1);assert(!h.find('[data-ex-next]').disabled);
+  const id='G1U4L3';
+  for(const previousVersion of [undefined,1]){
+    h.qa.open(id,'e1');
+    const entry=[...h.storage].find(([,v])=>{try{return JSON.parse(v).ex?.e1?.state?.qs?.[0]?.code.startsWith(id)}catch{return false}});
+    assert(entry);const old=JSON.parse(entry[1]);
+    if(previousVersion===undefined)delete old.ex.e1.state.version;else old.ex.e1.state.version=previousVersion;
+    old.ex.e1.state.answers={0:old.ex.e1.state.qs[0].correct};old.ex.e1.done=true;old.xp=140;
+    const oldState=JSON.stringify(old.ex.e1.state);h.storage.set(entry[0],JSON.stringify(old));h=harness(h.storage);h.qa.open(id,'e1');
+    const migrated=h.qa.snapshot(id);assert.equal(JSON.stringify(migrated.ex.e1.previousState),oldState,'Archived practice preserves questions and selected answers');
+    assert.equal(migrated.ex.e1.done,true);assert.equal(migrated.xp,140);assert.equal(migrated.ex.e1.state.version,2);assert(!h.find('[data-ex-next]').disabled);
+    const saved=JSON.stringify(migrated.ex.e1);h=harness(h.storage);h.qa.open(id,'e1');assert.equal(JSON.stringify(h.qa.snapshot(id).ex.e1),saved,'Reload preserves migrated practice and archive');
+  }
   return {lessons:h.qa.lessonIds.length,sets,basic,applications,checks:['strict level and topic alignment','wrong and incomplete responses do not earn a pass','correct explanations visible','passed answers frozen','reload preserves answers and question order','completion opens next exercise or final exam','replay retains XP','old attempt archived and earned progress retained','all final exams retain 20 questions']};
 }
 console.log(runExerciseRegression());

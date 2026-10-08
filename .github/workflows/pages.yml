@@ -19,11 +19,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify learning content and saved progress
+        run: |
+          node tests/account-regression.mjs
+          node tests/navigation-regression.mjs
+          node tests/game-regression.mjs
+          node tests/onet-regression.mjs
+          node tests/final-exam-regression.mjs
+          node tests/final-exam-migration.mjs
+          node tests/simulation-regression.mjs
+          node tests/native-models-regression.mjs
+          node tests/readiness-regression.mjs
       - name: Prepare static site
         run: |
-          mkdir _site
-          cp index.html _site/
-          cp -R assets _site/
+          node scripts/build-site.mjs
           test -s _site/assets/theme/voxel-world.css
           test -s _site/assets/theme/voxel-ui.js
           test -s _site/assets/theme/ui-icons.js
@@ -45,6 +58,8 @@ jobs:
           test -s _site/assets/vendor/three/OrbitControls.js
           test -s _site/assets/vendor/three/RoomEnvironment.js
           test -s _site/assets/vendor/three/SVGLoader.js
+      - name: Verify deployed resources and execution order
+        run: node tests/deployment-regression.mjs
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:

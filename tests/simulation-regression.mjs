@@ -49,6 +49,34 @@ for(const id of h.qa.lessonIds){
   assert.equal(h.qa.snapshot(id).xp,0);
 }
 
+// Recover invalid saved controls before discrete models index their stages.
+{
+  const engine=h.context.window.SLH_SIM_ENGINE;
+  for(const spec of Object.values(specs)){
+    const defaults=JSON.stringify(engine.values(spec));
+    for(const saved of [null,[],false,'invalid'])assert.equal(JSON.stringify(engine.values(spec,saved)),defaults,spec.id+' invalid saved shape');
+    for(const invalid of [null,false,'',{},[],Infinity,NaN]){
+      const saved=Object.fromEntries(spec.controls.map(c=>[c.key,invalid]));
+      assert.equal(JSON.stringify(engine.values(spec,saved)),defaults,spec.id+' invalid control defaults');
+    }
+  }
+  assert.equal(engine.values(specs.G2U3L1,{t:1.5}).t,2,'discrete timeline aligns to step');
+  assert.equal(engine.values(specs.G3U3L1,{freq:.76}).freq,.8,'decimal control aligns to step');
+  assert.equal(engine.values(specs.G3U3L1,{freq:'1.2'}).freq,1.2,'numeric saved strings remain usable');
+  const lessonId='G2U3L1';
+  h.qa.open(lessonId,'lab');
+  const savedEntry=[...h.storage].find(([key])=>key.endsWith('_'+lessonId));
+  assert(savedEntry);
+  for(const controls of [null,{t:1.5}]){
+    const progress=JSON.parse(savedEntry[1]);
+    progress.simulation[lessonId].values=controls;
+    h.storage.set(savedEntry[0],JSON.stringify(progress));
+    h=harness(h.storage);h.qa.open(lessonId,'lab');
+    assert.equal(h.find('[data-sim-control="t"]').value,controls===null?'0':'2','saved data opens with a valid stage');
+    assert(!/undefined|NaN/.test(h.markup));
+  }
+}
+
 // Check quantitative relationships independently of drawing output.
 const model=(id,v)=>specs[id].model({...h.context.window.SLH_SIM_ENGINE.values(specs[id]),...v});
 assert.equal(model('G1U2L1',{m:100,vol:100}).metrics[0][1],'1 กรัม/ซม.³');
@@ -72,4 +100,4 @@ const legacy=JSON.parse(entry[1]);legacy.lab={done:true,text:'ข้อสรุ
 h.storage.set(entry[0],JSON.stringify(legacy));h=harness(h.storage);h.qa.open(id,'lab');
 assert.equal(h.qa.snapshot(id).lab.text,'ข้อสรุปเดิม');assert.equal(h.qa.snapshot(id).lab.done,true);
 assert.equal(h.qa.snapshot(id).xp,250);
-console.log({lessons:40,variations,checks:['topic-specific models','every control changes output','valid boundary output','no answers, grading or XP','saved controls survive navigation and reload','reset','quantitative examples','legacy work preserved']});
+console.log({lessons:40,variations,checks:['topic-specific models','every control changes output','valid boundary output','no answers, grading or XP','saved controls survive navigation and reload','reset','invalid saved controls recover and align to declared steps','quantitative examples','legacy work preserved']});

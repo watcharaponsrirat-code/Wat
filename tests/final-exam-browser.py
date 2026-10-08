@@ -29,7 +29,7 @@ try:
         for number,lesson in enumerate(ids):
             page.evaluate("id=>window.__SLH_QA__.open(id,'exam')",lesson)
             attempt=page.evaluate('id=>window.__SLH_QA__.snapshot(id).exam.current',lesson)
-            assert attempt['version']==2
+            assert attempt['version']==3
             assert page.locator('.qFeedback').count()==0
             if lesson=='G1U1L1':
                 page.set_viewport_size({'width':390,'height':844})
@@ -50,7 +50,7 @@ try:
             state=page.evaluate('id=>window.__SLH_QA__.snapshot(id).exam',lesson)
             assert state['last']==correct_count*5,(lesson,state['last'])
             assert state['passed']==(correct_count>=12)
-            assert state['history'][0]['version']==2
+            assert state['history'][0]['version']==3
             assert len(state['history'][0]['responses'])==20
             heading=page.get_by_role('heading',name='เฉลยและเหตุผลทุกข้อจากครั้งล่าสุด')
             assert heading.count()==1
