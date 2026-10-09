@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" fill="none">
+<defs><linearGradient id="glass" x2="1" y2="1"><stop stop-color="#eeffff"/><stop offset=".5" stop-color="#81e5ff"/><stop offset="1" stop-color="#1586cd"/></linearGradient><linearGradient id="water" x2=".6" y2="1"><stop stop-color="#3ce0ff"/><stop offset="1" stop-color="#0754c7"/></linearGradient></defs>
+<path d="M39 10 71 4 85 13 85 29 76 32 76 73 111 129 106 147 31 156 8 140 9 126 43 71 43 31 34 28 34 15Z" fill="#102e55" stroke="#102e55" stroke-width="8" stroke-linejoin="round"/>
+<path d="m40 15 31-5 9 6-31 6Z" fill="#efffff"/><path d="m49 22 31-6v10l-9 3v45l33 56-1 11-71 8-16-12 1-9 32-54V31l-9-5V15l9 7Z" fill="url(#glass)"/>
+<path d="m58 28 13 1v45l33 56-1 11-11-8-34-58Z" fill="#369bd1"/>
+<path d="m39 102 38-4 24 36-66 8-17-10Z" fill="url(#water)"/><path d="m39 102 14-6 29 1-5 8-33 5Z" fill="#91f5ff"/>
+<path d="m26 130 11-18 10-1-12 20Zm27-89 6-1v34l-6 9Z" fill="#e0fcff" opacity=".95"/>
+<path d="m62 117 8-1v8l-8 1Zm-18 12 7-1v6l-7 1Zm23-44 5-1v6l-5 1Z" fill="#bafaff"/>
+</svg>
