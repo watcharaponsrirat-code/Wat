@@ -11,7 +11,7 @@ export class ModelKit {
   constructor(group){
     this.group=group;this.items=new Map();this.active=new Set();this.labels=true;
     this.geometries={sphere:new T.SphereGeometry(1,40,28),box:new T.BoxGeometry(1,1,1),cylinder:new T.CylinderGeometry(1,1,1,40),cone:new T.ConeGeometry(1,1,40),torus:new T.TorusGeometry(1,.035,12,80)};
-    this.pending=false;this.fresh=true;this.values={};
+    this.shapeSignatures=new Map();this.pending=false;this.fresh=true;this.values={};
   }
   begin(){this.active.clear();this.values={}}
   mesh(key,type,pos,size,color=C.blue,opts={}){
@@ -31,6 +31,19 @@ export class ModelKit {
     item.q.setFromEuler(new T.Euler(...(opts.rotation||[0,0,0])));
     if(opts.quaternion)item.q.copy(opts.quaternion);
     this.pending=true;return item.mesh;
+  }
+  // Extruded, rounded silhouettes retain organ identity from front and oblique views.
+  shape(k,points,depth,pos,color,opts={}){
+    const type='shape:'+k,signature=JSON.stringify([points,depth]);
+    if(this.shapeSignatures.get(k)!==signature){
+      const shape=new T.Shape(),mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      shape.moveTo(...mid(points[points.length-1],points[0]));
+      points.forEach((p,i)=>shape.quadraticCurveTo(...p,...mid(p,points[(i+1)%points.length])));shape.closePath();
+      const geometry=new T.ExtrudeGeometry(shape,{depth,steps:1,curveSegments:8,bevelEnabled:true,bevelThickness:2,bevelSize:2,bevelSegments:2});geometry.translate(0,0,-depth/2);
+      this.geometries[type]?.dispose();this.geometries[type]=geometry;this.shapeSignatures.set(k,signature);
+      if(this.items.has(k))this.items.get(k).mesh.geometry=geometry;
+    }
+    return this.mesh(k,type,pos,opts.scale||[1,1,1],color,opts);
   }
   sphere(k,p,r,c,o){return this.mesh(k,'sphere',p,Array.isArray(r)?r:[r,r,r],c,o)}
   litSphere(key,p,r,color,light=[1,0,0]){
@@ -83,9 +96,9 @@ export class ModelKit {
       ctx.font='500 56px Tahoma,sans-serif';ctx.fillStyle='#234e63';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,canvas.width/2,51,canvas.width-32);
       const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
       const mesh=new T.Sprite(new T.SpriteMaterial({map:texture,depthTest:false,transparent:true,toneMapped:false}));mesh.name=k;mesh.renderOrder=20;mesh.userData.labelAspect=canvas.width/96;mesh.scale.set(width,width/mesh.userData.labelAspect,1);this.group.add(mesh);
-      item={mesh,type:'label',text};this.items.set(k,item);
+      item={mesh,type:'label',text,anchor:V(p)};this.items.set(k,item);
     }
-    item.mesh.position.set(...p);item.mesh.visible=this.labels;
+    item.anchor.set(...p);item.mesh.position.set(...p);item.mesh.visible=this.labels;
   }
   end(){for(const [key,item] of this.items)if(!this.active.has(key))item.mesh.visible=false;if(this.fresh){this.tick(1,true);this.fresh=false}}
   tick(dt,instant=false){
@@ -104,7 +117,7 @@ export class ModelKit {
     this.pending=moving;return moving;
   }
   setLabels(value){this.labels=value;for(const [key,item] of this.items)if(item.type==='label')item.mesh.visible=value&&this.active.has(key)}
-  remove(key){const item=this.items.get(key);if(!item)return;item.mesh.removeFromParent();if(item.owned)item.mesh.geometry.dispose();item.mesh.material.map?.dispose();item.mesh.material.dispose();this.items.delete(key)}
+  remove(key){const item=this.items.get(key);if(!item)return;if(item.leader){item.leader.removeFromParent();item.leader.geometry.dispose();item.leader.material.dispose()}item.mesh.removeFromParent();if(item.owned)item.mesh.geometry.dispose();item.mesh.material.map?.dispose();item.mesh.material.dispose();this.items.delete(key)}
   dispose(){for(const key of [...this.items.keys()])this.remove(key);for(const geometry of Object.values(this.geometries))geometry.dispose()}
 }
 
@@ -139,8 +152,34 @@ export function bar(k,id,x,value,max,color,label){const h=clamp(value/max)*180;k
 export function tree(k,id,x,z=0){k.cylinder(id+'-trunk',[x,-65,z],7,100,C.soil);k.mesh(id+'-crown','cone',[x,-5,z],[45,115,45],C.green,{roughness:.85})}
 export function animal(k,id,p,type='mouse',scale=1){
   const [x,y,z]=p,s=scale,col=type==='frog'?C.green:type==='grasshopper'?0x80a84c:0x9e8268;
-  if(type==='snake'){k.tube(id+'-body',[[x-35*s,y,z],[x-15*s,y+5*s,z+15*s],[x+15*s,y,z-10*s],[x+35*s,y+8*s,z]],6*s,col);return}
-  k.sphere(id+'-body',[x,y,z],[24*s,14*s,13*s],col);k.sphere(id+'-head',[x+24*s,y+6*s,z],13*s,col);
-  for(const sign of [-1,1]){k.sphere(id+'-eye'+sign,[x+31*s,y+11*s,z+sign*8*s],2*s,0x203747);k.rod(id+'-leg'+sign,[x,y,z+sign*8*s],[x-13*s,y-16*s,z+sign*18*s],3*s,col)}
-  if(type==='mouse')k.sphere(id+'-ear',[x+21*s,y+19*s,z],8*s,0xd4aa9b);
+  const pt=(a,b,c=0)=>[x+a*s,y+b*s,z+c*s];
+  if(type==='snake'){
+    k.tube(id+'-body',[pt(-40,0),pt(-24,5,14),pt(-2,0,-10),pt(22,6,7),pt(35,9)],5*s,0x6a9b55);
+    k.sphere(id+'-head',pt(39,10),[10*s,7*s,8*s],0x79ab63);
+    for(const side of [-1,1])k.sphere(id+'-eye'+side,pt(44,13,side*5),1.5*s,C.ink);
+    k.rod(id+'-tongue',pt(48,9),pt(57,9),.7*s,C.red);return;
+  }
+  if(type==='grasshopper'){
+    k.sphere(id+'-abdomen',pt(-7,0),[23*s,7*s,8*s],col);k.sphere(id+'-thorax',pt(10,2),[11*s,9*s,9*s],0x63963f);k.sphere(id+'-head',pt(24,6),9*s,col);
+    for(const side of [-1,1]){
+      k.sphere(id+'-eye'+side,pt(28,10,side*6),2*s,C.ink);
+      k.rod(id+'-antenna'+side,pt(27,13,side*3),pt(39,30,side*8),.7*s,C.ink);
+      k.tube(id+'-hindleg'+side,[pt(-10,-1,side*6),pt(-20,18,side*15),pt(-36,-15,side*20)],2.8*s,col);
+      for(let leg=0;leg<2;leg++)k.tube(id+'-leg'+side+leg,[pt(5+leg*12,-2,side*6),pt(leg*15,-9,side*15),pt(7+leg*15,-16,side*20)],1.4*s,col);
+      k.sphere(id+'-wing'+side,pt(-7,5,side*4),[21*s,2*s,5*s],0xb3c887,{rotation:[0,side*.12,-.1]});
+    }return;
+  }
+  if(type==='frog'){
+    k.sphere(id+'-body',pt(-4,0),[22*s,12*s,16*s],col);k.sphere(id+'-head',pt(17,6),[15*s,9*s,17*s],0x76b65e);
+    for(const side of [-1,1]){
+      k.sphere(id+'-eyeBump'+side,pt(20,14,side*10),5*s,0x76b65e);k.sphere(id+'-eye'+side,pt(23,16,side*11),2*s,C.ink);
+      k.sphere(id+'-thigh'+side,pt(-18,-2,side*17),[12*s,8*s,10*s],C.green);
+      k.tube(id+'-hindleg'+side,[pt(-18,-3,side*17),pt(-29,-11,side*22),pt(-7,-14,side*24)],3*s,C.green);
+      k.tube(id+'-foreleg'+side,[pt(14,0,side*12),pt(21,-10,side*19),pt(30,-13,side*20)],2.5*s,C.green);
+      for(let toe=0;toe<3;toe++)k.rod(id+'-toe'+side+toe,pt(30,-13,side*20),pt(37,-14,side*(16+toe*4)),.9*s,C.green);
+    }return;
+  }
+  k.sphere(id+'-body',pt(0,0),[24*s,14*s,13*s],col);k.sphere(id+'-head',pt(24,6),13*s,col);
+  for(const side of [-1,1]){k.sphere(id+'-eye'+side,pt(31,11,side*8),2*s,0x203747);k.rod(id+'-leg'+side,pt(0,0,side*8),pt(-13,-16,side*18),3*s,col);k.sphere(id+'-ear'+side,pt(21,19,side*8),7*s,0xd4aa9b)}
+  k.tube(id+'-tail',[pt(-21,1),pt(-38,-5,5),pt(-52,1,10)],1.6*s,0xc3a294);
 }

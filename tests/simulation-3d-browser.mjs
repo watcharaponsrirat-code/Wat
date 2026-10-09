@@ -46,6 +46,8 @@ try{
     for(const width of [1366,390,320]){
       await page.setViewportSize({width,height:1000});
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),id+' overflow '+width);
+      await page.locator('[data-sim-viewport]').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelector('[data-sim-viewport]').dataset.animating==='false');assert.equal(await page.locator('[data-sim-viewport]').getAttribute('data-label-overflow'),'false',id+' labels outside canvas '+width);assert.equal(await page.locator('[data-sim-viewport]').getAttribute('data-label-overlap'),'false',id+' overlapping labels '+width);
+      if(width===390)await page.locator('[data-sim-viewport]').screenshot({path:resolve(output,id+'-phone.png')});
       report.layouts++;
     }
     await page.setViewportSize({width:1366,height:1000});
@@ -80,7 +82,7 @@ try{
       await page.setViewportSize({width:1366,height:1000});
     }
     const before=await page.evaluate(id=>JSON.stringify(window.__SLH_QA__.snapshot(id)),id);
-    await page.locator('[data-sim-view="2d"]').click();assert(await page.locator('.simDiagram').isVisible());
+    await page.locator('[data-sim-view="2d"]').click();assert(await page.locator('.simDiagram').isVisible());await page.locator('.simDiagram').screenshot({path:resolve(output,id+'-2d.png')});
     await page.locator('[data-sim-view="3d"]').click();assert(await page.locator('[data-sim-viewport] canvas').isVisible());
     assert.equal(await page.evaluate(id=>JSON.stringify(window.__SLH_QA__.snapshot(id)),id),before,'Camera mode must not affect progress');
     report.lessons++;console.log('3D passed '+id);

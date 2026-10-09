@@ -6,7 +6,7 @@ import {models3d} from './models3d.js';
 
 export function mountScene(host,spec,initialValues){
   const build=models3d[spec.id];if(!build)throw Error('Missing native model: '+spec.id);
-  const radius=({G1U1L1:285,G1U2L1:250,G1U2L2:265,G1U3L1:315,G1U4L1:250,G2U2L1:250,G2U2L2:250,G2U3L2:280,G2U3L5:300,G3U5L1:255,G3U6L2:275})[spec.id]||335;
+  const radius=({G1U1L1:285,G1U2L1:250,G1U2L2:315,G1U3L1:315,G1U4L1:250,G2U2L1:250,G2U2L2:250,G2U3L2:315,G2U3L5:300,G3U5L1:255,G3U6L2:275})[spec.id]||335;
   const panel=host.closest('.simPanel'),canvas=document.createElement('canvas');
   canvas.setAttribute('aria-label',spec.title+' — หมุนสำรวจสามมิติ');canvas.setAttribute('role','img');canvas.tabIndex=0;
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'default'});
@@ -22,6 +22,8 @@ export function mountScene(host,spec,initialValues){
   const rim=new THREE.DirectionalLight(0x87cfff,2.3);rim.position.set(250,90,-300);scene.add(rim);
   const platform=new THREE.Mesh(new THREE.CylinderGeometry(radius+5,radius+15,14,96),new THREE.MeshStandardMaterial({color:0x24475a,roughness:.65,metalness:.2}));platform.position.y=-172;platform.receiveShadow=true;scene.add(platform);
   const edge=new THREE.Mesh(new THREE.TorusGeometry(radius+2,1.6,8,96),new THREE.MeshBasicMaterial({color:0x51b8c1}));edge.rotation.x=Math.PI/2;edge.position.y=-163;scene.add(edge);
+  const frontal=/^G2U3L[1-5]$/.test(spec.id)||['G1U3L1','G3U2L1'].includes(spec.id);
+  if(frontal){platform.visible=false;edge.visible=false}
   const camera=new THREE.PerspectiveCamera(40,1,1,5000),orbit=new OrbitControls(camera,canvas),kit=new ModelKit(group);
   orbit.enablePan=false;orbit.enableDamping=true;orbit.dampingFactor=.12;orbit.rotateSpeed=.65;orbit.zoomSpeed=.8;
   orbit.minAzimuthAngle=-Infinity;orbit.maxAzimuthAngle=Infinity;orbit.minPolarAngle=.06;orbit.maxPolarAngle=Math.PI-.06;
@@ -36,7 +38,41 @@ export function mountScene(host,spec,initialValues){
   const spherical=()=>new THREE.Spherical().setFromVector3(camera.position.clone().sub(orbit.target));
   function paint(){
     if(disposed||mode!=='3d'||document.hidden||!inView)return;
-    for(const item of kit.items.values())if(item.type==='label'&&item.mesh.visible){const pixels=host.clientWidth<450?20:23;const scale=2*camera.position.distanceTo(item.mesh.position)*Math.tan(THREE.MathUtils.degToRad(20))/Math.max(1,host.clientHeight)*pixels;item.mesh.scale.set(scale*item.mesh.userData.labelAspect,scale,1)}
+    // Keep callouts legible and separated in screen space, including a narrow phone.
+    const width=host.clientWidth,height=host.clientHeight,placed=[],visible=[];
+    camera.updateMatrixWorld();
+    for(const item of kit.items.values())if(item.type==='label'){
+      if(!item.mesh.visible){if(item.leader)item.leader.visible=false;continue}
+      item.mesh.position.copy(item.anchor);
+      const projected=item.anchor.clone().project(camera),aspect=item.mesh.userData.labelAspect;
+      const pixels=Math.max(12,Math.min(width<450?18:22,width*.58/aspect));
+      visible.push({item,projected,w:pixels*aspect,h:pixels,x:(projected.x+1)*width/2,y:(1-projected.y)*height/2});
+    }
+    visible.sort((a,b)=>a.y-b.y);
+    for(const label of visible){
+      const {item,projected,w,h,x,y}=label;let best=null;
+      for(let row=0;row<18;row++)for(const sign of row?[1,-1]:[1])for(const dx of [0,-w*.65-12,w*.65+12]){
+        const px=Math.max(w/2+5,Math.min(width-w/2-5,x+dx)),py=Math.max(h/2+5,Math.min(height-h/2-5,y+row*(h+7)*sign));
+        const rect={x:px-w/2,y:py-h/2,w,h};
+        if(placed.some(r=>rect.x<r.x+r.w+5&&rect.x+w+5>r.x&&rect.y<r.y+r.h+4&&rect.y+h+4>r.y))continue;
+        const score=(px-x)**2+(py-y)**2;
+        if(!best||score<best.score)best={...rect,px,py,score};
+      }
+      best||={x:x-w/2,y:y-h/2,w,h,px:x,py:y,score:0};placed.push(best);
+      item.mesh.position.set(best.px/width*2-1,1-best.py/height*2,projected.z).unproject(camera);
+      const depth=-item.mesh.position.clone().applyMatrix4(camera.matrixWorldInverse).z;
+      const scale=2*depth*Math.tan(THREE.MathUtils.degToRad(20))/Math.max(1,height)*h;
+      item.mesh.scale.set(scale*item.mesh.userData.labelAspect,scale,1);
+      if(!item.leader){
+        const geo=new THREE.BufferGeometry().setFromPoints([item.anchor,item.anchor]);
+        item.leader=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xb5d5de,transparent:true,opacity:.65,depthTest:false}));item.leader.renderOrder=19;scene.add(item.leader);
+      }
+      item.leader.visible=best.score>100;
+      if(item.leader.visible){const arr=item.leader.geometry.attributes.position;arr.setXYZ(0,...item.anchor.toArray());arr.setXYZ(1,...item.mesh.position.toArray());arr.needsUpdate=true;item.leader.geometry.computeBoundingSphere()}
+    }
+    host.dataset.labelCount=String(placed.length);
+    host.dataset.labelOverlap=String(placed.some((a,i)=>placed.slice(i+1).some(b=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y)));
+    host.dataset.labelOverflow=String(placed.some(r=>r.x<0||r.y<0||r.x+r.w>width+1||r.y+r.h>height+1));
     renderer.render(scene,camera);const s=spherical();
     host.dataset.cameraDistance=String(s.radius);host.dataset.azimuth=String(s.theta);host.dataset.polar=String(s.phi);
   }
@@ -60,7 +96,7 @@ export function mountScene(host,spec,initialValues){
     if(instant||reduced.matches){camera.position.setFromSpherical(to).add(orbit.target);orbit.update();tween=null;paint()}
     else {tween={from:spherical(),to,start:performance.now()};host.dataset.animating='true'}schedule();
   }
-  function resetCamera(instant=false){zoomFactor=1;orbit.autoRotate=false;panel.querySelector('[data-sim-camera="auto"]')?.setAttribute('aria-pressed','false');moveTo(new THREE.Spherical(fitDistance(),1.12,.42),instant)}
+  function resetCamera(instant=false){zoomFactor=1;orbit.autoRotate=false;panel.querySelector('[data-sim-camera="auto"]')?.setAttribute('aria-pressed','false');moveTo(new THREE.Spherical(fitDistance(),frontal?1.5:1.12,frontal?.04:.42),instant)}
   function resize(){
     if(disposed||!host.clientWidth||!host.clientHeight)return;
     renderer.setSize(host.clientWidth,host.clientHeight,false);camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();

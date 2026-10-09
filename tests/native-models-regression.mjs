@@ -11,7 +11,7 @@ const specs=context.window.SLH_SIMULATIONS;assert.deepEqual(Object.keys(models3d
 function build(id,overrides={}){
  const spec=specs[id],values=Object.fromEntries(spec.controls.map(c=>[c.key,c.value]));Object.assign(values,overrides);
  const objects=[];const kit={values:{}};
- for(const type of ['mesh','sphere','litSphere','box','cylinder','ring','rod','arrow','tube','label'])kit[type]=(...args)=>{objects.push({type,args})};
+ for(const type of ['shape','mesh','sphere','litSphere','box','cylinder','ring','rod','arrow','tube','label'])kit[type]=(...args)=>{objects.push({type,args})};
  models3d[id](kit,values);
  function finite(value){if(typeof value==='number')assert(Number.isFinite(value),id+' nonfinite');else if(value&&typeof value==='object')Object.values(value).forEach(finite)}
  finite(objects);finite(kit.values);assert(objects.length>2,id+' needs a distinct scene');
@@ -44,4 +44,19 @@ assert.equal(build('G3U6L1',{kind:0,voltage:6,r:10,on:1}).state.current,.3);
 assert.equal(build('G3U6L1',{kind:1,voltage:6,r:10,on:1}).state.current,1.2);
 assert.equal(build('G3U6L1',{on:0}).state.current,0);
 assert.equal(build('G3U6L2',{power:1000,hours:2}).state.energy,2);
+
+// Semantic landmarks prevent an organ from regressing to anonymous oval primitives.
+for(const key of ['torso','bodyOutline','rightLung','leftLung','trachea','diaphragm'])assert(build('G2U3L2').objects.some(o=>o.args[0]===key),'Missing respiratory landmark '+key);
+assert.equal(build('G2U3L2',{inhale:0}).objects.filter(o=>o.args[0]==='air').length,0);
+assert.equal(build('G2U3L2',{inhale:100}).objects.filter(o=>o.args[0]==='air').length,0);
+assert(build('G2U3L2',{inhale:50}).objects.some(o=>o.type==='arrow'&&o.args[0]==='air'));
+for(const [id,landmark] of [['G2U3L1','heartWall'],['G2U3L3','kidney'],['G2U3L5','uterusWall'],['G3U2L1','punnettBoard']])assert(build(id).objects.some(o=>o.args[0]===landmark));
+assert(!build('G2U3L5',{day:28}).objects.some(o=>o.args[0]==='ovum'),'Do not depict a surviving egg throughout the cycle');
+for(const kind of [0,1]){
+ const objects=build('G3U6L1',{kind}).objects,bulbs=kind?[[60,-100],[60,35]]:[[-60,-100],[120,-100]];
+ for(const [x,z] of bulbs)for(const o of objects.filter(o=>o.type==='rod')){
+  const [,a,b]=o.args;if(Math.abs(a[1]+92)<.01&&Math.abs(b[1]+92)<.01&&Math.abs(a[2]-z)<.01&&Math.abs(b[2]-z)<.01)assert(!(Math.min(a[0],b[0])<x-10&&Math.max(a[0],b[0])>x+10),'Wire must not bypass lamp terminals');
+ }
+}
+
 console.log({nativeModels:Object.keys(models3d).length,variations,checks:'finite geometry, every control affects scene, density, conservation, anatomy relationships, optics, moon phases, genetics, circuits and energy'});

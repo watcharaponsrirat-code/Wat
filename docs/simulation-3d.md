@@ -41,3 +41,7 @@ node tests/voxel-browser.mjs
 - The existing broad browser audit covers 2,400 activity layouts and a complete learning flow through results. Screenshots of every native scene are produced for visual review in `tmp/simulation-3d/`.
 
 The browser tests use isolated profiles and a local HTTP server. Install Playwright with Chrome/WebKit, or use the existing local runtime in `tmp/browser-check/`. `--smoke` checks four representative scenes. WebKit and emulated touch checks do not replace testing on physical devices.
+
+## Visual clarity revision — 9 October 2026
+
+All 40 builders now include clearer silhouettes, component labels or directional context. Anatomical models use extruded organ outlines and a frontal starting view. Labels are separated in screen space on desktop and mobile. See [simulation-clarity.md](simulation-clarity.md) for the anatomical, circuit and other corrections, references and validation.
