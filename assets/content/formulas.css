@@ -1,0 +1,27 @@
+/* Textbook equations wrap between terms and retain numerator/denominator grouping. */
+.readingPage .formula.scienceEquation,.scienceEquation{max-width:100%;min-width:0;padding:18px 14px;margin:18px 0;border:1px solid #bad7e4;border-left:4px solid #299ab9;border-radius:12px;background:#f6fbfd;color:#183052;font-size:18px;font-weight:400;line-height:1.65;text-align:center}
+.equationHeading{font-size:13px;font-weight:700;color:#456172;text-align:left;margin-bottom:12px}
+.equationRow{display:block;max-width:100%;min-width:0}
+.equationVisual{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.4em .5em;min-width:0;max-width:100%}
+.eq-term{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.eq-fraction{display:inline-grid;grid-template-rows:auto auto;vertical-align:middle;text-align:center;line-height:1.6;max-width:100%;min-width:0}
+.eq-numerator,.eq-denominator{display:block;padding:.13em .3em;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.eq-numerator{border-bottom:1.5px solid currentColor}
+.eq-var,.eq-symbol{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-weight:400}
+.eq-gap{display:inline-block;width:.16em}
+.equationSymbolRow{border-top:1px solid #d9e6ec;margin-top:16px;padding-top:12px}
+.equationSymbolRow .equationRow{font-size:23px}
+.equationCaption{display:block;font-size:13px;color:#506776;margin-bottom:6px}
+.equationLegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px;text-align:left;margin:16px 0 0;font-size:14px}
+.equationLegend>div{display:flex;gap:8px;align-items:baseline;min-width:0}
+.equationLegend dt{flex:0 0 28px;font-size:17px;text-align:center}
+.equationLegend dd{margin:0;overflow-wrap:anywhere}
+.readingPage .equationNote,.scienceEquation .equationNote{margin:14px 0 0;font-size:14px;line-height:1.8;text-align:left;color:#415b6d}
+.eq-inline{display:inline-block;vertical-align:middle;max-width:100%;min-width:0;line-height:1.55;font-size:1em}
+.eq-inline .equationVisual{display:inline-flex;gap:.13em .22em;justify-content:flex-start}
+.eq-inline .eq-fraction{font-size:.95em}
+.eq-inline .eq-term{overflow-wrap:normal}
+.eq-inline sup,.eq-inline sub,.scienceEquation sup,.scienceEquation sub{font-size:.7em;line-height:0;position:relative;vertical-align:baseline}
+.eq-inline sup,.scienceEquation sup{top:-.5em}
+.eq-inline sub,.scienceEquation sub{bottom:-.25em}
+@media(max-width:600px){.readingPage .formula.scienceEquation,.scienceEquation{font-size:16px;padding:14px 9px}.equationLegend{grid-template-columns:1fr}.equationRow>.equationVisual>.eq-term:first-child{flex-basis:100%}.equationSymbolRow .equationRow>.equationVisual>.eq-term:first-child{flex-basis:auto}.equationVisual{gap:.4em .35em}.equationRow .eq-fraction{max-width:185px}}

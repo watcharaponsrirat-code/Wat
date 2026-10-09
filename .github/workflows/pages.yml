@@ -34,6 +34,7 @@ jobs:
           node tests/simulation-regression.mjs
           node tests/native-models-regression.mjs
           node tests/readiness-regression.mjs
+          node tests/formula-regression.mjs
       - name: Prepare static site
         run: |
           node scripts/build-site.mjs

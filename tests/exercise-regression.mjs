@@ -62,7 +62,7 @@ export function runExerciseRegression(){
       state().qs.forEach((q,i)=>{const el=h.context.document.querySelectorAll('[data-ex-q="'+i+'"]').find(b=>b.dataset.exO===q.correct);el.onclick()});
       h.click('[data-ex-check]');assert.equal(h.qa.snapshot(id).ex[stage].done,true);assert(!h.find('[data-ex-next]').disabled);
       assert(h.find('[data-ex-check]').disabled);assert(h.find('[data-ex-q]').disabled);
-      for(const q of state().qs)assert(h.markup.includes(q.why.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')));
+      for(const q of state().qs)assert(h.markup.includes(h.context.window.SLH_MATH.text(q.why)),'Rendered explanation remains visible');
       const complete=JSON.stringify(state());h.find('[data-ex-q]').onclick();assert.equal(JSON.stringify(state()),complete,'passed answers cannot be edited');
       const xp=h.qa.snapshot(id).xp;
       h.click('[data-ex-next]');

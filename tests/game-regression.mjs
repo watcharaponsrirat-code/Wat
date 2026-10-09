@@ -102,7 +102,7 @@ export function runGameRegression(){
         for(let i=0;i<game.items.length;i++){
           const item=game.items[i],options=state().options[i];
           h.click('[data-arc-answer="'+options.findIndex(o=>o!==item.answer)+'"]');assert.equal(state().feedback.ok,false);assert(!h.find('[data-arc-next]').disabled);
-          h.click('[data-arc-answer="'+options.indexOf(item.answer)+'"]');assert.equal(state().feedback.ok,true);assert(h.markup.includes(item.explanation));
+          h.click('[data-arc-answer="'+options.indexOf(item.answer)+'"]');assert.equal(state().feedback.ok,true);assert(h.markup.includes(h.context.window.SLH_MATH.text(item.explanation)));
           if(i<game.items.length-1){assert(!h.find('[data-arc-next]').disabled);h.click('[data-arc-mission-next]')}
         }
       }
