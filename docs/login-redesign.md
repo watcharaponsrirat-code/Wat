@@ -28,9 +28,20 @@ The existing demonstration accounts and demo-storage notice are retained. Rememb
 
 Contact channel: pending the user's later addition. The current “ติดต่อครูผู้ดูแล” control opens an on-page instruction to contact the science teacher at school; no fabricated external contact destination.
 
+### Follow-up: fit the complete login into one screen
+
+The complete default login fits inside the viewport without vertical or horizontal scrolling at the tested phone, tablet, laptop, and desktop sizes. The school identity, title and form remain centered like the reference composition. From 900px wide, the student and wooden sign sit beside the form instead of adding another row below it. The content is capped at 1080px and the form at 400px.
+
+Crest/title sizes, line heights, form spacing and the mobile foreground respond to the available screen height. At heights up to 740px, the school identity becomes more compact and the optional foreground is hidden. Short landscape screens at least 560px wide use two columns so the entire card still fits. Inputs retain at least 16px text and 44px touch targets; no whole-page transform or browser zoom is used to shrink the controls. Safe-area padding and dynamic viewport minimum heights accommodate mobile browser chrome. Extra help, errors, an open keyboard or accessibility zoom can still grow the document and scroll naturally instead of clipping controls.
+
+Changed files: the scoped login stylesheet, its cache version (`v=4`) and matching landscape background selection in `index.html`, the existing login browser checks, and this report. No authentication or shared application logic changed.
+
+The browser suite covers 22 viewport sizes in both normal and reduced motion: 320×568, 360×640, 375×667, 375×812, 390×844, 430×932, 540×720, 600×800, 568×320, 640×360, 667×375, 844×390, 768×1024, 820×1180, 1024×768, 1180×820, 1280×720, 1366×768, 1536×864, 1880×914, 1920×1080, and 2560×1440. It checks the complete page height, full panel and demo notice, text clipping, control hit targets, visible foreground bounds and overlap, expanded help together with a real login error, and the 390×360 keyboard-space simulation. Screenshots use both dimensions in their names, for example `tmp/login-redesign/login-1880x914.png` and `login-390x844.png`.
+
 ## Validation
 
-- Chromium: 320, 375, 390, 430, 768 and 1366 CSS-pixel widths; no horizontal overflow; form controls remain within viewport and receive pointer hit tests.
+- Chromium: the 22 responsive viewport sizes listed above; the complete default login fits without scrolling in either direction, and controls receive pointer hit tests.
+- Current single-screen follow-up passed: all 22 layouts in normal/reduced motion, expanded help/error checks, original demo login/storage checks, login scope regression, a fresh build in `tmp/login-fit-20261010`, and deployment resource regression. Publishing uses the existing GitHub Pages workflow on `main`; the release serves `assets/login/login.css?v=4`.
 - Short 390 × 360 viewport: inputs and submit button remain reachable by scrolling (keyboard-space simulation).
 - Password show/hide retains value and selection; contact disclosure; disabled/busy button styles; reduced motion; image/font loading; consistent accessible labels.
 - Existing demo accounts: student and teacher success; incorrect password, unknown and inherited-property username rejection; Enter and button submit; logout and reload behavior.

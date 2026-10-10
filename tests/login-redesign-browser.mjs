@@ -20,7 +20,9 @@ const server=createServer(async(req,res)=>{
   }catch{res.writeHead(404);res.end()}
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
-let browser;const errors=[],report={layouts:[],checks:[],errors};
+const responsiveLayouts=[[320,568],[360,640],[375,667],[375,812],[390,844],[430,932],[540,720],[600,800],[568,320],[640,360],[667,375],[844,390],[768,1024],[820,1180],[1024,768],[1180,820],[1280,720],[1366,768],[1536,864],[1880,914],[1920,1080],[2560,1440]];
+const controls=['#loginUser','#loginPass','[data-login-password]','[data-action="login"]','[data-login-support]'];
+let browser;const errors=[],report={layouts:[],expandedLayouts:[],checks:[],errors};
 try{
   browser=await playwright.chromium.launch({channel:'chrome',headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,reducedMotion:'reduce'});
@@ -65,20 +67,64 @@ try{
     assert(await control.evaluate(el=>{
       const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
       const hit=document.elementFromPoint(x,y);
-      return r.width>0&&r.height>=40&&r.left>=-1&&r.right<=innerWidth+1&&hit&&(hit===el||el.contains(hit));
-    }),'Control must be visible and receive pointer input: '+selector);
+      return r.width>=44&&r.height>=44&&r.left>=-1&&r.right<=innerWidth+1&&r.top>=-1&&r.bottom<=innerHeight+1&&hit&&(hit===el||el.contains(hit));
+    }),'Control must have a 44px touch target, fit the viewport and receive pointer input: '+selector);
   };
-  for(const [width,height] of [[320,740],[375,812],[390,844],[430,932],[768,1024],[1366,1000]]){
+  const initialLayout=async(width,height)=>{
+    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal scroll at '+width+'x'+height);
+    const documentHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
+    assert(documentHeight<=height+1,'The entire default login page must fit without vertical scrolling at '+width+'x'+height+'; document height is '+documentHeight);
+    const titleBounds=await page.locator('.loginGameTitle>span').evaluateAll(els=>els.flatMap(el=>{
+      const range=document.createRange();range.selectNodeContents(el);
+      return [...range.getClientRects()].filter(r=>r.width>0).map(r=>({text:el.textContent,left:r.left,right:r.right,top:r.top,bottom:r.bottom,viewportWidth:innerWidth,viewportHeight:innerHeight}));
+    }));
+    assert(titleBounds.length>=2&&titleBounds.every(r=>r.left>=-1&&r.right<=r.viewportWidth+1&&r.top>=-1&&r.bottom<=r.viewportHeight+1),'Title text must not be clipped at '+width+'x'+height+': '+JSON.stringify(titleBounds));
+    const completePanel=await page.locator(['.loginPanel','.loginDemo','.loginField label',...controls].join(',')).evaluateAll(els=>els.map(el=>{
+      const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+      return {element:el.id||el.className,left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,visible:style.display!=='none'&&style.visibility!=='hidden'&&parseFloat(style.opacity)>0};
+    }));
+    assert(completePanel.every(r=>r.visible&&r.width>0&&r.height>0&&r.left>=-1&&r.right<=width+1&&r.top>=-1&&r.bottom<=height+1),'The complete login panel, labels, controls, support button and demo notice must fit before scrolling at '+width+'x'+height+': '+JSON.stringify(completePanel));
+    const brandingBounds=await page.locator('.schoolName span,.loginSlogan>span,.loginDemo span').evaluateAll(els=>els.flatMap(el=>{
+      const style=getComputedStyle(el),box=el.getBoundingClientRect();
+      if(!box.width||!box.height||style.visibility==='hidden'||parseFloat(style.opacity)===0)return [];
+      const range=document.createRange();range.selectNodeContents(el);
+      return [...range.getClientRects()].filter(r=>r.width>0).map(r=>({text:el.textContent,left:r.left,right:r.right,top:r.top,bottom:r.bottom}));
+    }));
+    assert(brandingBounds.every(r=>r.left>=-1&&r.right<=width+1&&r.top>=-1&&r.bottom<=height+1),'Visible school identity, slogan and demo text must not be clipped at '+width+'x'+height+': '+JSON.stringify(brandingBounds));
+    const decorations=await page.locator('.loginBrand>img,.loginStudent,.loginKnowledgeSign').evaluateAll(els=>els.flatMap(el=>{
+      const style=getComputedStyle(el),r=el.getBoundingClientRect();
+      if(!r.width||!r.height||style.visibility==='hidden'||parseFloat(style.opacity)===0)return [];
+      const box=(rect,name,tolerance=1)=>({name,left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,tolerance});
+      const bounds=[box(r,el.className||'school crest')];
+      if(el.matches('.loginKnowledgeSign')){
+        const pseudo=getComputedStyle(el,'::after');
+        if(pseudo.content!=='none'&&pseudo.display!=='none'){
+          // A hidden absolute probe measures the post under the sign's rotation.
+          const probe=document.createElement('span');probe.setAttribute('aria-hidden','true');
+          for(const property of ['position','left','right','top','bottom','width','height','box-sizing','margin','border','padding','transform','transform-origin'])probe.style.setProperty(property,pseudo.getPropertyValue(property));
+          probe.style.visibility='hidden';probe.style.pointerEvents='none';el.append(probe);
+          bounds.push(box(probe.getBoundingClientRect(),'loginKnowledgeSign::after',4));probe.remove();
+        }
+      }
+      return bounds;
+    }));
+    assert(decorations.every(r=>r.left>=-r.tolerance&&r.right<=width+r.tolerance&&r.top>=-r.tolerance&&r.bottom<=height+r.tolerance),'Visible crest and foreground decorations must fit fully at '+width+'x'+height+': '+JSON.stringify(decorations));
+    const panel=completePanel.find(r=>r.element.includes('loginPanel'));
+    const decorationOverlaps=decorations.filter(r=>r.name.startsWith('loginStudent')||r.name.startsWith('loginKnowledgeSign')).filter(r=>Math.min(r.right,panel.right)-Math.max(r.left,panel.left)>1&&Math.min(r.bottom,panel.bottom)-Math.max(r.top,panel.top)>1);
+    assert.deepEqual(decorationOverlaps,[],'Visible foreground decorations must not overlap the login panel at '+width+'x'+height);
+    assert(await page.locator('#loginUser,#loginPass').evaluateAll(els=>els.every(el=>parseFloat(getComputedStyle(el).fontSize)>=16)),'Both input fonts remain at least 16px at '+width+'x'+height);
+  };
+  for(const [width,height] of responsiveLayouts){
     await page.setViewportSize({width,height});
     await page.waitForFunction(()=>[...document.querySelectorAll('.loginPage img')].every(img=>img.complete&&img.naturalWidth>0));
-    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal scroll at '+width);
-    for(const selector of ['#loginUser','#loginPass','[data-login-password]','[data-action="login"]','[data-login-support]'])await hitControl(selector);
-    assert(await page.locator('#loginPass').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=16),'Password text remains readable');
+    await initialLayout(width,height);
+    for(const selector of controls)await hitControl(selector);
     await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
-    await page.screenshot({path:resolve(output,'login-'+width+'.png'),fullPage:true});
-    report.layouts.push({width,height,overflow:false,controls:'accessible'});
+    await page.screenshot({path:resolve(output,'login-'+width+'x'+height+'.png'),fullPage:true});
+    report.layouts.push({width,height,horizontalOverflow:false,verticalOverflow:false,completePageVisible:'verified',controls:'44px targets and accessible',title:'inside viewport',foreground:'visible artwork fits and does not overlap panel'});
   }
-  report.checks.push('six responsive widths and unblocked controls','real logo and image decode','bundled portable title font','original demo disclosure','no unsupported remember/signup');
+  report.checks.push('22 phone, landscape, tablet, laptop and desktop layouts','complete default page, panel and demo notice fit without scrolling at every size','title and branding text bounds, 44px touch targets and 16px input fonts','visible foreground artwork fits without overlapping the panel','real logo and image decode','bundled portable title font','original demo disclosure','no unsupported remember/signup');
   await page.setViewportSize({width:390,height:360});
   await page.locator('#loginPass').focus();
   await hitControl('#loginPass');await hitControl('[data-action="login"]');
@@ -128,6 +174,38 @@ try{
     await page.getByLabel('รหัสผ่าน',{exact:true}).fill(pass);
     if(enter)await password.press('Enter');else await submit.click();
   };
+  for(const [width,height] of [[320,568],[844,390],[768,1024],[1366,768]]){
+    await page.setViewportSize({width,height});
+    await login('M20105','responsive-wrong');
+    assert.match(await page.locator('#loginMsg').innerText(),/ไม่ถูกต้อง/);
+    await help.click();assert.equal(await help.getAttribute('aria-expanded'),'true');
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Expanded help/error must not cause horizontal scroll at '+width+'x'+height);
+    for(const selector of controls)await hitControl(selector);
+    for(const selector of ['#loginMsg','#loginSupport']){
+      const message=page.locator(selector);await message.scrollIntoViewIfNeeded();
+      assert(await message.evaluate(el=>{
+        const r=el.getBoundingClientRect(),panel=el.closest('.loginPanel').getBoundingClientRect();
+        const range=document.createRange();range.selectNodeContents(el);
+        const lines=[...range.getClientRects()].filter(line=>line.width>0);
+        const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+        return r.width>0&&r.height>0&&r.top>=-1&&r.bottom<=innerHeight+1&&r.left>=-1&&r.right<=innerWidth+1&&
+          r.left>=panel.left&&r.right<=panel.right&&r.top>=panel.top&&r.bottom<=panel.bottom&&
+          lines.every(line=>line.left>=r.left-1&&line.right<=r.right+1&&line.top>=r.top-1&&line.bottom<=r.bottom+1)&&
+          hit&&(hit===el||el.contains(hit));
+      }),'Expanded text must be reachable and unclipped: '+selector+' at '+width+'x'+height);
+    }
+    const overlapping=await page.evaluate(selectors=>{
+      const boxes=selectors.map(selector=>({selector,rect:document.querySelector(selector).getBoundingClientRect()}));
+      return boxes.flatMap((a,i)=>boxes.slice(i+1).filter(b=>Math.min(a.rect.right,b.rect.right)-Math.max(a.rect.left,b.rect.left)>1&&Math.min(a.rect.bottom,b.rect.bottom)-Math.max(a.rect.top,b.rect.top)>1).map(b=>[a.selector,b.selector]));
+    },[...controls,'#loginMsg','#loginSupport']);
+    assert.deepEqual(overlapping,[],'Expanded messages and form controls must not overlap at '+width+'x'+height);
+    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    await page.screenshot({path:resolve(output,'login-expanded-'+width+'x'+height+'.png'),fullPage:true});
+    report.expandedLayouts.push({width,height,help:'reachable and unclipped',error:'reachable and unclipped',overlap:false});
+    await help.click();assert.equal(await help.getAttribute('aria-expanded'),'false');
+  }
+  await page.setViewportSize({width:390,height:844});
+  report.checks.push('expanded help and real login errors remain reachable without overlap on small phone, landscape, tablet and laptop');
   for(const [user,pass] of [['unknown','1234'],['toString','1234'],['constructor','1234'],['__proto__','1234'],['M20105','wrong'],['M20105',' 1234']]){
     await login(user,pass);assert(await page.locator('.loginPage').isVisible());
     assert.match(await page.locator('#loginMsg').innerText(),/ไม่ถูกต้อง/);
@@ -155,7 +233,7 @@ try{
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(()=>document.activeElement?.blur());
   await page.locator('.loginPanel').evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
-  const moving='.loginCloud,.loginLeaf,.loginFlask,.loginGlobe,.loginStudent';
+  const moving='.loginCloud:visible,.loginLeaf:visible,.loginFlask:visible,.loginGlobe:visible,.loginStudent:visible';
   const transforms=()=>page.locator(moving).evaluateAll(els=>els.map(el=>getComputedStyle(el).transform));
   const fixedBoxes=()=>page.locator('.loginBrand>img,.schoolName,#loginForm,[data-action="login"]').evaluateAll(els=>els.map(el=>{
     const {x,y,width,height}=el.getBoundingClientRect();return {x,y,width,height};
@@ -163,7 +241,7 @@ try{
   const initialMotion=await transforms(),initialBoxes=await fixedBoxes();
   await page.waitForTimeout(750);
   const laterMotion=await transforms();
-  assert(initialMotion.every((matrix,i)=>matrix!==laterMotion[i]),'Every ambient decoration visibly changes transform');
+  assert(initialMotion.every((matrix,i)=>matrix!==laterMotion[i]),'Every visible ambient decoration changes transform');
   assert.deepEqual(await fixedBoxes(),initialBoxes,'The school identity and form stay still during ambient motion');
   await page.locator('#loginPass').focus();
   assert(await page.locator(moving).evaluateAll(els=>els.every(el=>getComputedStyle(el).animationPlayState==='paused')));
@@ -173,17 +251,17 @@ try{
   await page.locator('#loginPass').blur();
   await page.waitForTimeout(350);
   assert.notDeepEqual(await transforms(),pausedMotion,'Ambient motion resumes after leaving the form');
-  for(const [width,height] of [[320,740],[375,812],[390,844],[430,932],[768,1024],[1366,1000]]){
+  for(const [width,height] of responsiveLayouts){
     await page.setViewportSize({width,height});
-    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Normal-motion horizontal scroll at '+width);
-    for(const selector of ['#loginUser','#loginPass','[data-login-password]','[data-action="login"]','[data-login-support]'])await hitControl(selector);
+    await initialLayout(width,height);
+    for(const selector of controls)await hitControl(selector);
   }
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
   await page.screenshot({path:resolve(output,'login-motion-390.png'),fullPage:true});
   await page.emulateMedia({reducedMotion:'reduce'});
   assert(await page.locator(moving).evaluateAll(els=>els.every(el=>getComputedStyle(el).animationName==='none')),'Reduced motion still disables all ambient animation');
-  report.checks.push('transparent crest without identity glow','ambient movement with stationary school identity and form','motion pauses on form focus and resumes on blur','six normal-motion layout and hit-target checks');
+  report.checks.push('transparent crest without identity glow','ambient movement with stationary school identity and form','motion pauses on form focus and resumes on blur','22 normal-motion complete-page fit and hit-target checks');
   assert.deepEqual(errors,[]);
 }finally{
   await browser?.close();server.close();
