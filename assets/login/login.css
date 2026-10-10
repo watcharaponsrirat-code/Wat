@@ -28,13 +28,13 @@
 .loginPage .loginArtwork::before, .loginPage .loginArtwork::after { content: ""; position: absolute; top: 0; bottom: 0; width: 22%; background: url('./voxel-scene-v1.webp') left bottom / auto 100% no-repeat; mask-image: linear-gradient(to right, #000 65%, transparent); }
 .loginPage .loginArtwork::before { left: 0; }
 .loginPage .loginArtwork::after { right: 0; background-position: right bottom; mask-image: linear-gradient(to left, #000 65%, transparent); }
-.loginPage::after { content: ""; position: absolute; inset: 0; z-index: -2; pointer-events: none; background: radial-gradient(ellipse 47% 31% at 50% 12%, #e5faff9e, transparent 90%); }
+.loginPage::after { display: none; }
 .loginPage .loginWrap { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; max-width: 760px; min-height: 0; margin: 0 auto; position: relative; z-index: 1; }
 .loginPage .loginWrap > * { min-width: 0; }
 .loginPage .loginBrand { width: 100%; padding: 0; text-align: center; }
 .loginPage .loginBrand::after { display: none; }
-.loginPage .loginBrand > img { display: block; width: 64px; height: 102px; margin: 0 auto; padding: 0; border: 0; border-radius: 3px; background: #fff; object-fit: contain; box-shadow: 0 0 30px 18px #e9fcff8c; }
-.loginPage .schoolName { display: block; margin: 12px 0 23px; max-width: none; color: #092866; font-size: clamp(16px, 4.7vw, 24px); font-weight: 900; line-height: 1.4; text-shadow: 0 2px 0 #e3f7ff, 0 0 14px #dcfaff; }
+.loginPage .loginBrand > img { display: block; width: 64px; height: 102px; margin: 0 auto; padding: 0; border: 0; border-radius: 0; background: transparent; object-fit: contain; box-shadow: none; filter: none; }
+.loginPage .schoolName { display: block; margin: 12px 0 23px; max-width: none; color: #092866; font-size: clamp(16px, 4.7vw, 24px); font-weight: 900; line-height: 1.4; text-shadow: none; }
 .loginPage .schoolName span { display: block; }
 .loginPage .loginTitleScene { width: 100%; max-width: 640px; margin: auto; position: relative; padding: 0 26px; }
 .loginPage .loginGameTitle { margin: 0; position: relative; z-index: 1; color: #fff; font-family: "SLH Login Anton", Impact, "Arial Black", sans-serif; font-weight: 400; font-size: inherit; line-height: 1; letter-spacing: .5px; text-shadow: none; transform: rotate(-2deg); }
@@ -42,8 +42,8 @@
 .loginPage .loginScience { font-size: clamp(54px, 18vw, 124px); color: #eff4ff; background: linear-gradient(#fff 0%, #f1f4fa 30%, #acb8d0 70%, #e0e8f8 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 -2px 0 #152238) drop-shadow(2px 0 0 #152238) drop-shadow(-2px 0 0 #152238) drop-shadow(0 5px 0 #182034) drop-shadow(0 9px 0 #354052); }
 .loginPage .loginLearning { font-size: clamp(32px, 10.5vw, 72px); margin-top: 5px; color: var(--login-gold); background: linear-gradient(#fff281, #ffd53d 40%, #f7a518 88%, #fdd14e); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 -2px 0 #282020) drop-shadow(2px 0 0 #282020) drop-shadow(-2px 0 0 #282020) drop-shadow(0 5px 0 #5d2d09); letter-spacing: .15px; }
 .loginPage .loginFlask, .loginPage .loginGlobe { position: absolute; z-index: 0; bottom: -5px; width: clamp(43px, 13vw, 96px); height: auto; pointer-events: none; filter: drop-shadow(0 5px 3px #183c8f45); }
-.loginPage .loginFlask { left: -4px; transform: rotate(-8deg); }
-.loginPage .loginGlobe { right: -6px; transform: rotate(9deg); }
+.loginPage .loginFlask { left: -4px; transform: rotate(-8deg); animation: login-flask-float 5s ease-in-out infinite; }
+.loginPage .loginGlobe { right: -6px; transform: rotate(9deg); animation: login-globe-float 6.5s ease-in-out -2s infinite; }
 .loginPage .loginSlogan { display: flex; align-items: center; justify-content: center; gap: 6px; position: relative; z-index: 2; width: fit-content; max-width: 100%; margin: 18px auto 0; padding: 10px 9px; color: #fff; font-size: clamp(12px, 3.2vw, 20px); line-height: 1.65; font-weight: 800; border: 2px solid #77340d; border-radius: 5px; background: repeating-linear-gradient(2deg, transparent 0 9px, #54210224 10px 12px, transparent 13px 21px), linear-gradient(110deg, #b96922, var(--login-wood) 55%, #b16622); box-shadow: inset 0 3px 0 #efb463, inset 0 -3px 0 #62310c, 0 4px 0 #622b0c, 0 9px 16px #14354638; text-shadow: 0 2px 1px #5b2a0d; transform: rotate(-1deg); }
 .loginPage .loginSlogan > i { width: 6px; height: 6px; flex: 0 0 6px; background: #dbe8ed; border: 1px solid #596a7b; border-radius: 2px; box-shadow: 1px 2px 0 #4b260c; }
 .loginPage .loginSlogan > span { min-width: 0; }
@@ -88,22 +88,27 @@
 .loginPage .loginDemo { display: flex; align-items: flex-start; gap: 7px; margin: 6px 0 0; padding-top: 12px; border-top: 1px solid #e8edf3; color: #5e6e83; font-size: 11px; font-weight: 400; line-height: 1.8; }
 .loginPage .loginDemo .loginIcon { width: 15px; height: 15px; margin-top: 3px; }
 .loginPage .loginForeground { position: relative; width: calc(100% + 20px); max-width: 900px; height: 240px; flex: 0 0 240px; pointer-events: none; }
-.loginPage .loginStudent { position: absolute; z-index: 1; left: -17px; bottom: -2px; width: 155px; max-width: 55%; height: auto; filter: drop-shadow(2px 9px 7px #234c2529); }
+.loginPage .loginStudent { position: absolute; z-index: 1; left: -17px; bottom: -2px; width: 155px; max-width: 55%; height: auto; filter: drop-shadow(2px 9px 7px #234c2529); transform-origin: 50% 90%; animation: login-student-idle 6s ease-in-out -1s infinite; }
 .loginPage .loginKnowledgeSign { position: absolute; right: 1px; top: 92px; width: 172px; max-width: 55%; padding: 13px 10px; border: 3px solid #6d330f; border-radius: 4px; background: repeating-linear-gradient(0deg, transparent 0 28px, #6e310c57 29px 32px), linear-gradient(120deg, #b87530, #92400e 55%, #ad6227); box-shadow: inset 0 4px 0 #e6a449, 0 6px 0 #672b0c, 0 9px 15px #1744164d; color: #fff; text-align: center; transform: rotate(-8deg); }
 .loginPage .loginKnowledgeSign::after { content: ""; position: absolute; z-index: -1; top: 100%; left: 45%; width: 16px; height: 56px; background: linear-gradient(90deg, #663410 0 25%, #9d5f25 25% 90%, #c58b43 90%); box-shadow: 3px 2px 0 #4f300c; }
 .loginPage .loginKnowledgeSign p { margin: 0; font-size: clamp(19px, 5.5vw, 30px); font-weight: 900; line-height: 1.5; text-shadow: 0 2px 1px #512611; }
 .loginPage .loginSignBolt { position: absolute; top: 9px; width: 8px; height: 8px; border-radius: 2px; border: 1px solid #55606b; background: #d2e0e7; box-shadow: 1px 2px 0 #4f2c12; transform: rotate(25deg); }
 .loginPage .loginSignBoltOne { left: 8px; }.loginPage .loginSignBoltTwo { right: 8px; }
 .loginPage .loginAtmosphere { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: clip; }
-.loginPage .loginCloud { position: absolute; width: clamp(95px, 20vw, 230px); opacity: .8; animation: login-cloud-drift 24s ease-in-out infinite alternate; pointer-events: none; }
-.loginPage .loginCloudOne { left: -24px; top: 160px; }.loginPage .loginCloudTwo { right: -42px; top: 36px; animation-delay: -13s; animation-duration: 31s; width: clamp(115px, 26vw, 280px); }
-.loginPage .loginLeaf { position: absolute; width: 28px; height: 18px; background: #58b824; box-shadow: 7px -5px #99df2e, -6px 5px #258523; transform: rotate(17deg); animation: login-leaf-sway 7s ease-in-out infinite alternate; }
+.loginPage .loginCloud { position: absolute; width: clamp(95px, 20vw, 230px); opacity: .8; animation: login-cloud-drift 18s ease-in-out -4s infinite alternate; pointer-events: none; }
+.loginPage .loginCloudOne { left: -24px; top: 160px; }.loginPage .loginCloudTwo { right: -42px; top: 36px; animation-delay: -13s; animation-duration: 24s; animation-direction: alternate-reverse; width: clamp(115px, 26vw, 280px); }
+.loginPage .loginLeaf { position: absolute; width: 28px; height: 18px; background: #58b824; box-shadow: 7px -5px #99df2e, -6px 5px #258523; transform: rotate(17deg); transform-origin: 0 100%; animation: login-leaf-sway 4s ease-in-out infinite alternate; }
 .loginPage .loginLeafOne { top: 430px; left: -10px; }.loginPage .loginLeafTwo { top: 790px; right: -8px; animation-delay: -3s; }
 .loginPage .loginStickyBrand { display: none !important; }
 body[data-scene="login"] .blockParticles { display: none; }
+/* Keep the scene calm while the learner is using any form control. */
+.loginPage:has(.loginPanel:focus-within) :is(.loginCloud, .loginLeaf, .loginFlask, .loginGlobe, .loginStudent) { animation-play-state: paused; }
 @keyframes login-card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes login-cloud-drift { from { transform: translateX(-9px); } to { transform: translateX(16px); } }
-@keyframes login-leaf-sway { from { transform: rotate(13deg); } to { transform: rotate(21deg) translateY(3px); } }
+@keyframes login-cloud-drift { from { transform: translateX(-30px); } to { transform: translateX(45px); } }
+@keyframes login-leaf-sway { from { transform: rotate(10deg); } to { transform: rotate(24deg) translate(3px, 5px); } }
+@keyframes login-flask-float { 0%, 100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-8px) rotate(-5deg); } }
+@keyframes login-globe-float { 0%, 100% { transform: translateY(0) rotate(9deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
+@keyframes login-student-idle { 0%, 100% { transform: rotate(-.7deg); } 50% { transform: rotate(.7deg) translateY(-2px); } }
 @keyframes login-spin { to { transform: rotate(360deg); } }
 @media (min-width: 375px) {
   .loginPage { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }

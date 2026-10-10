@@ -12,6 +12,14 @@
 
 Real school crest: `assets/branding/33852269be64c916.png`, unchanged. No AI-generated crest.
 
+### Follow-up: transparent identity and livelier motion
+
+The original crest already contains transparency. Removed the CSS white background, logo glow, school-name text shadow and radial page halo; the source logo pixels and meaningful white details remain unchanged. No logo image was generated or edited for this follow-up. Backup branch: `backup/login-before-motion-07d2756`.
+
+Clouds now drift farther, the flask and globe float, leaves sway, and the student gently shifts from an anchor at the feet. Only decorative transforms animate. The school identity and form remain still after the initial card entrance. Ambient motion pauses whenever the login panel contains keyboard focus and resumes when focus leaves; `prefers-reduced-motion` disables it. The login stylesheet URL is versioned to avoid stale cached effects.
+
+Verified normal-motion and reduced-motion layouts at all six widths, actual changes to decorative transforms over time, stable form/control geometry, pause/resume during password entry, and the absence of logo background/glow. Existing valid/invalid demo login, storage and progress checks still pass. Updated files are limited to the login stylesheet, its import in `index.html`, this report and the login browser test.
+
 Artwork, foreground student, school identity, HTML title/signs, HTML login form and SVG controls are separate layers. Thai text remains selectable HTML. CSS is scoped to `.loginPage`, with a login-scene-only rule to hide the existing particle overlay.
 
 The title uses the locally hosted Anton font so Android/iOS do not depend on the availability of Windows Impact. The font is used only for the login title; see `assets/login/LICENSE.anton.txt`. Source: https://github.com/google/fonts/tree/main/ofl/anton.

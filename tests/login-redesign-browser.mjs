@@ -47,6 +47,12 @@ try{
       [...document.fonts].some(font=>font.family==='SLH Login Anton'&&font.status==='loaded');
   }),'The bundled title font must load without relying on installed desktop fonts');
   assert(await page.locator('.loginPanel').innerText().then(t=>t.includes('โหมดสาธิต')));
+  assert(await page.locator('.loginBrand>img').evaluate(img=>{
+    const style=getComputedStyle(img);
+    return style.backgroundColor==='rgba(0, 0, 0, 0)'&&style.boxShadow==='none'&&style.filter==='none';
+  }),'The transparent original crest must not receive a white rectangle or glow');
+  assert.equal(await page.locator('.schoolName').evaluate(el=>getComputedStyle(el).textShadow),'none');
+  assert.equal(await page.locator('.loginPage').evaluate(el=>getComputedStyle(el,'::after').display),'none');
   assert(await page.locator('.loginGameTitle>span').evaluateAll(els=>els.every(el=>{
     const style=getComputedStyle(el);
     // The old title's brown shadow otherwise paints over transparent gradient glyphs.
@@ -144,6 +150,40 @@ try{
   assert(await page.evaluate(()=>localStorage.getItem(window.__LOGIN_TEST__.key)===window.__LOGIN_TEST__.seed),'Existing student progress remains byte-identical');
   assert.deepEqual(await page.evaluate(()=>window.__LOGIN_TEST__.writes),[],'Login must not write session/password/progress storage');
   report.checks.push('seeded progress preserved','no new storage writes');
+
+  // Exercise actual motion too: the main interaction checks above use reduced motion.
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.evaluate(()=>document.activeElement?.blur());
+  await page.locator('.loginPanel').evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
+  const moving='.loginCloud,.loginLeaf,.loginFlask,.loginGlobe,.loginStudent';
+  const transforms=()=>page.locator(moving).evaluateAll(els=>els.map(el=>getComputedStyle(el).transform));
+  const fixedBoxes=()=>page.locator('.loginBrand>img,.schoolName,#loginForm,[data-action="login"]').evaluateAll(els=>els.map(el=>{
+    const {x,y,width,height}=el.getBoundingClientRect();return {x,y,width,height};
+  }));
+  const initialMotion=await transforms(),initialBoxes=await fixedBoxes();
+  await page.waitForTimeout(750);
+  const laterMotion=await transforms();
+  assert(initialMotion.every((matrix,i)=>matrix!==laterMotion[i]),'Every ambient decoration visibly changes transform');
+  assert.deepEqual(await fixedBoxes(),initialBoxes,'The school identity and form stay still during ambient motion');
+  await page.locator('#loginPass').focus();
+  assert(await page.locator(moving).evaluateAll(els=>els.every(el=>getComputedStyle(el).animationPlayState==='paused')));
+  await page.evaluate(()=>new Promise(requestAnimationFrame));
+  const pausedMotion=await transforms();await page.waitForTimeout(350);
+  assert.deepEqual(await transforms(),pausedMotion,'Ambient motion pauses while entering the password');
+  await page.locator('#loginPass').blur();
+  await page.waitForTimeout(350);
+  assert.notDeepEqual(await transforms(),pausedMotion,'Ambient motion resumes after leaving the form');
+  for(const [width,height] of [[320,740],[375,812],[390,844],[430,932],[768,1024],[1366,1000]]){
+    await page.setViewportSize({width,height});
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Normal-motion horizontal scroll at '+width);
+    for(const selector of ['#loginUser','#loginPass','[data-login-password]','[data-action="login"]','[data-login-support]'])await hitControl(selector);
+  }
+  await page.setViewportSize({width:390,height:844});
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+  await page.screenshot({path:resolve(output,'login-motion-390.png'),fullPage:true});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  assert(await page.locator(moving).evaluateAll(els=>els.every(el=>getComputedStyle(el).animationName==='none')),'Reduced motion still disables all ambient animation');
+  report.checks.push('transparent crest without identity glow','ambient movement with stationary school identity and form','motion pauses on form focus and resumes on blur','six normal-motion layout and hit-target checks');
   assert.deepEqual(errors,[]);
 }finally{
   await browser?.close();server.close();
