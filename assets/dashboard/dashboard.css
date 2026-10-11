@@ -1,0 +1,163 @@
+/* Isolated dashboard skin. Shared learning and login styles are intentionally untouched. */
+@font-face{font-family:DashAnton;src:url('../login/anton-regular.woff2') format('woff2');font-display:swap}
+body:has(.dashboardPage){background:#57bdf2}
+body:has(.dashboardPage)::before,body:has(.dashboardPage)::after,body:has(.dashboardPage) #skyFX{display:none}
+.dashboardPage{--dash-ink:#122b62;--dash-muted:#516782;--dash-green:#13b947;position:relative;isolation:isolate;min-height:100svh;color:var(--dash-ink);background:linear-gradient(180deg,#71d2ff12,#39a2dc0a 50%,#175e4529),url('../login/voxel-scene-v1.webp') center top/cover fixed;font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;line-height:1.5}
+.dashboardPage *{box-sizing:border-box}
+.dashboardPage button,.dashboardPage select{font:inherit}
+.dashboardPage button{cursor:pointer;touch-action:manipulation}
+.dashboardPage button:focus-visible,.dashboardPage summary:focus-visible,.dashboardPage select:focus-visible{outline:3px solid #125bf1;outline-offset:4px}
+.dashboardPage .dashIcon{width:24px;height:24px;flex:none;display:block}
+.dashboardPage .dashShell{width:min(100%,1180px);margin:auto;padding:14px 12px calc(112px + env(safe-area-inset-bottom,0px))}
+.dashboardPage .dashEnvironment{position:absolute;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+.dashboardPage .dashCloud{position:absolute;top:120px;right:-25px;width:150px;height:auto;opacity:.65;animation:dash-cloud 32s ease-in-out infinite alternate}
+.dashboardPage .dashSunlight{position:absolute;inset:0;background:radial-gradient(ellipse at 95% 6%,#fffbd76b,transparent 52%);opacity:.5;animation:dash-sunlight 14s ease-in-out infinite alternate}
+.dashboardPage .dashHeader{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:6px;position:relative;padding-top:29px;margin-bottom:12px;align-items:center}
+.dashboardPage .dashSchoolSign,.dashboardPage .dashBrandSign{background:url('./wood-sign-v1.webp') center/100% 100% no-repeat;display:flex;align-items:center;justify-content:center;min-width:0;min-height:74px;padding:9px 11px;filter:drop-shadow(0 4px 2px #50301544)}
+.dashboardPage .dashSchoolSign{gap:6px}
+.dashboardPage .dashSchoolSign>img{width:31px;height:51px;object-fit:contain;filter:drop-shadow(0 1px 2px #442300);flex:none}
+.dashboardPage .dashSchoolSign p{font-size:clamp(10px,2.85vw,14px);font-weight:800;color:#fffbea;text-shadow:0 2px 2px #502407;margin:0;text-align:center;line-height:1.5}
+.dashboardPage .dashSchoolSign p span{display:block;font-size:.88em}
+.dashboardPage .dashBrandSign{gap:2px;transform:rotate(-2deg)}
+.dashboardPage .dashBrandSign>img{width:27px;height:42px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 1px #24180255)}
+.dashboardPage .dashBrandSign>div{display:flex;flex-direction:column;align-items:center;line-height:1.02}
+.dashboardPage .dashBrandSign b{font-family:DashAnton,Impact,sans-serif;font-size:clamp(24px,7vw,36px);letter-spacing:.3px;color:#f4faff;-webkit-text-stroke:1px #26334d;text-shadow:0 3px 0 #1a2945,1px 4px 0 #182c45}
+.dashboardPage .dashBrandSign span{font-family:DashAnton,Impact,sans-serif;font-size:clamp(12px,3.4vw,18px);color:#ffe651;text-shadow:1px 2px 0 #703305;letter-spacing:.2px;margin-top:4px;white-space:nowrap}
+.dashboardPage .dashLogout{position:absolute;right:0;top:-3px;display:flex;align-items:center;gap:6px;min-height:30px;padding:3px 9px;border:1px solid #fff8;border-radius:30px;background:#ffffffeb;color:#274861;box-shadow:0 2px 5px #16426c22;font-size:11px;font-weight:700}
+.dashboardPage .dashLogout .dashIcon{width:14px;height:14px}
+.dashboardPage .dashHud{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:6px;align-items:stretch;background:#fffdf1df;border:2px solid #fff;border-radius:19px;padding:7px;box-shadow:0 5px 0 #496e8b21,0 12px 20px #144a6426;margin-bottom:14px}
+.dashboardPage .dashIdentity{display:flex;gap:6px;align-items:center;min-width:0}
+.dashboardPage .dashIdentity>div:last-child{min-width:0}
+.dashboardPage .dashIdentity strong{display:block;font-size:clamp(14px,3.5vw,19px);font-weight:900;overflow-wrap:anywhere}
+.dashboardPage .dashIdentity span{display:block;font-size:10px;font-weight:600;line-height:1.4}
+.dashboardPage .dashAvatar{width:38px;height:46px;flex:none;overflow:hidden;background:linear-gradient(145deg,#88e394,#b4efff);border:2px solid white;border-radius:12px}
+.dashboardPage .dashAvatar img{width:90px;max-width:none;height:auto;transform:translate(-35px,0)}
+.dashboardPage .dashStat{min-width:0;border:1px solid #d8eafa;background:linear-gradient(145deg,#fff,#f2f8ff);box-shadow:0 3px 0 #becbd737;border-radius:12px;padding:8px 5px;display:flex;align-items:center;gap:4px}
+.dashboardPage .dashStat>.dashIcon{width:19px;height:24px;color:#1386e4;display:none}
+.dashboardPage .dashStat>div{width:100%;min-width:0}
+.dashboardPage .dashStat>div>span{display:block;font-size:10px;font-weight:700;white-space:nowrap}
+.dashboardPage .dashStat strong{display:block;font-size:23px;line-height:1.25;font-weight:850;font-variant-numeric:tabular-nums}
+.dashboardPage .dashStat strong small{font-size:.66em}
+.dashboardPage .dashTrack{height:12px;background:#dbe6f7;border:1px solid #cddaf0;border-radius:30px;overflow:hidden;box-shadow:inset 0 2px 3px #4e6a9520}
+.dashboardPage .dashTrack>span{height:100%;display:block;border-radius:30px;background:linear-gradient(#84ec46 0,#36d531 35%,#0cac32 85%,#009b39);box-shadow:inset 0 2px 0 #c5ff8677}
+.dashboardPage .dashStat .dashTrack{height:8px;margin-top:4px}
+.dashboardPage .dashMain{display:grid;grid-template-columns:minmax(0,1fr);gap:13px}
+.dashboardPage .dashWelcome.heroWorld{display:grid;grid-template-columns:49% minmax(0,1fr);gap:0;align-items:center;position:relative;min-height:176px;height:auto;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible;animation:none;isolation:isolate}
+.dashboardPage .dashWelcome.heroWorld::before,.dashboardPage .dashWelcome.heroWorld::after{display:none}
+.dashboardPage .dashCharacter{width:123%;aspect-ratio:800/665;position:relative;align-self:end;margin-left:-7%;filter:drop-shadow(0 8px 4px #1341413b);animation:dash-idle 5s ease-in-out infinite;transform-origin:65% 95%}
+.dashboardPage .dashCharacter img{position:absolute;inset:0;display:block;width:100%;height:auto;max-width:none}
+.dashboardPage .dashCharacterBody{clip-path:polygon(39% 0,100% 0,100% 100%,0 100%,0 61%,29% 61%,34% 48%,39% 44%)}
+.dashboardPage .dashCharacterArm{clip-path:polygon(0 0,39% 0,39% 44%,34.1% 48%,29.1% 61%,0 61%);transform-origin:33% 54%;animation:dash-wave 5s ease-in-out infinite}
+.dashboardPage .dashCharacter.isPaused,.dashboardPage .dashCharacter.isPaused img{animation-play-state:paused}
+.dashboardPage .dashBubble{position:relative;z-index:1;background:#fffffff5;border:2px solid #fff;border-radius:21px 21px 21px 5px;padding:14px 11px 15px;box-shadow:0 5px 0 #91b6c34d,0 10px 18px #29616320;margin-left:-3px;margin-bottom:22px;transform:rotate(-2deg);min-width:0}
+.dashboardPage .dashBubble::before{content:"";position:absolute;left:-13px;bottom:15px;border-top:12px solid transparent;border-bottom:4px solid transparent;border-right:14px solid #fff}
+.dashboardPage .dashEyebrow{font-size:9px;font-weight:700;letter-spacing:.3px;color:#47718c}
+.dashboardPage .dashBubble h1{font-size:clamp(23px,6.5vw,34px);line-height:1.3;letter-spacing:-.7px;margin:2px 0 7px;font-weight:900}
+.dashboardPage .dashBubble p{font-size:clamp(12px,3.2vw,15px);line-height:1.8;margin:0;font-weight:600;overflow-wrap:anywhere}
+.dashboardPage .dashGreetingSun{position:absolute;right:9px;top:-14px;width:31px;height:31px;color:#ffce1b;filter:drop-shadow(0 2px 0 white)}
+.dashboardPage .dashPanel{border:2px solid #fff;border-radius:22px;background:linear-gradient(140deg,#fff 0%,#fff 70%,#f2faff 100%);box-shadow:0 5px 0 #5a777b25,0 10px 24px #154b6926;min-width:0}
+.dashboardPage .dashMission{padding:15px 15px 10px}
+.dashboardPage .dashSectionHeading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dashboardPage .dashSectionHeading h2{display:flex;align-items:center;gap:8px;font-size:21px;line-height:1.35;margin:0;font-weight:850}
+.dashboardPage .dashSectionHeading h2 .dashIcon{color:#0088ed;width:25px;height:29px}
+.dashboardPage .dashSectionHeading>strong{font-size:26px;font-weight:850;line-height:1;font-variant-numeric:tabular-nums}
+.dashboardPage .dashSectionHeading>strong small{font-size:.7em;color:#596e8b}
+.dashboardPage .dashMissionLesson{margin:7px 0 11px;font-size:11px;color:var(--dash-muted);line-height:1.6;overflow-wrap:anywhere}
+.dashboardPage .dashMissionBody{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:7px;align-items:center;padding:11px 10px;border:1px solid #dfebf5;border-radius:15px;background:linear-gradient(115deg,#fafdff,#fff)}
+.dashboardPage .dashMissionList{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.dashboardPage .dashMissionList li{display:flex;align-items:center;gap:9px;min-width:0}
+.dashboardPage .dashCheck{height:21px;width:21px;border:1.5px solid #9aadc7;border-radius:50%;flex:none;background:white;display:grid;place-items:center}
+.dashboardPage .isDone .dashCheck{border-color:#1bb857;background:linear-gradient(#5cde5d,#09a84c);color:white;box-shadow:0 2px 3px #0f914933}
+.dashboardPage .dashCheck .dashIcon{width:16px;height:16px;stroke-width:3}
+.dashboardPage .dashMissionList b{font-size:12px;line-height:1.4;display:block;font-weight:700}
+.dashboardPage .dashMissionList small{font-size:10px;color:var(--dash-muted);display:block}
+.dashboardPage .dashMissionArt{align-self:center;text-align:center}
+.dashboardPage .dashMissionArt img{display:block;width:100%;height:auto;filter:drop-shadow(0 7px 5px #198c9833)}
+.dashboardPage .dashMissionArt span{display:block;background:#fff6b7;border-radius:10px;font-size:11px;font-weight:700;line-height:1.5;padding:6px 3px;margin-top:7px;color:#725010}
+.dashboardPage .dashMissionLink{display:flex;align-items:center;justify-content:center;gap:7px;margin:6px 0 0;padding:7px;width:100%;min-height:38px;background:transparent;border:0;color:#1472b3;font-size:12px;font-weight:700;border-radius:8px;transition:background .15s,transform .15s}
+.dashboardPage .dashMissionLink .dashIcon{width:15px;height:15px}
+.dashboardPage .dashMissionLink:hover{background:#e8f5ff}
+.dashboardPage .dashMenus{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.dashboardPage .dashMenu.quick{position:relative;display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:5px;min-height:115px;padding:12px 9px;text-align:left;border:4px solid #fffffff2;border-radius:20px;color:var(--dash-ink);box-shadow:inset 0 2px 0 #fff9,inset 0 -4px 0 #13437613,0 4px 0 #53666e30,0 9px 18px #174f6426;overflow:visible;transition:transform .16s,box-shadow .16s,filter .16s;background:var(--dash-card);animation:none}
+.dashboardPage .dashMenu.quick::before,.dashboardPage .dashMenu.quick::after{display:none}
+.dashboardPage .dashMenuGold{--dash-card:linear-gradient(130deg,#fff2ac,#ffe157 65%,#ffc337);--dash-accent:#d68a06}
+.dashboardPage .dashMenuBlue{--dash-card:linear-gradient(130deg,#b8edff,#71c9ff 65%,#46b1fb);--dash-accent:#0572e7}
+.dashboardPage .dashMenuMint{--dash-card:linear-gradient(130deg,#c2ffd1,#80edb4 65%,#5ce3a8);--dash-accent:#07a75d}
+.dashboardPage .dashMenuPurple{--dash-card:linear-gradient(130deg,#ebd9ff,#c4a2fd 65%,#b68aef);--dash-accent:#7844d4}
+.dashboardPage .dashMenu>img{width:64px;height:75px;object-fit:contain;filter:drop-shadow(0 6px 3px #29384d33);margin-left:-4px}
+.dashboardPage .dashMenuCopy{display:block;min-width:0}
+.dashboardPage .dashMenuCopy b{font-size:13px;line-height:1.6;letter-spacing:-.25px;font-weight:850;overflow-wrap:anywhere}
+.dashboardPage .dashMenuCopy>span{display:block;font-size:10px;line-height:1.5;margin-top:2px;color:#27446c}
+.dashboardPage .dashMenuArrow{position:absolute;right:7px;bottom:7px;width:17px;height:17px;padding:3px;background:var(--dash-accent);color:white;border-radius:50%;stroke-width:3}
+.dashboardPage .dashMenu.quick:hover{transform:translateY(-2px);filter:brightness(1.025)}
+.dashboardPage .dashMenu.quick:active{transform:translateY(3px) scale(.985);box-shadow:inset 0 2px 0 #fff9,0 1px 0 #53666e30,0 3px 7px #174f6426}
+.dashboardPage .dashProgress{padding:14px}
+.dashboardPage .dashOverall{display:flex;align-items:center;gap:12px;padding:2px 0 13px}
+.dashboardPage .dashOverall>.dashIcon{width:27px;height:34px;color:#0787ed;stroke-width:2.8}
+.dashboardPage .dashOverall>div{flex:1;min-width:0}
+.dashboardPage .dashOverall h2{font-size:13px;margin:0 0 7px;line-height:1.5}
+.dashboardPage .dashProgressLine{display:flex;align-items:center;gap:10px}
+.dashboardPage .dashProgressLine .dashTrack{flex:1;height:15px}
+.dashboardPage .dashProgressLine strong{font-size:19px;line-height:1}
+.dashboardPage .dashOverall p{font-size:10px;color:var(--dash-muted);margin:5px 0 0}
+.dashboardPage .dashResume{display:flex;align-items:center;gap:9px;border-top:1px solid #dce8f1;padding-top:12px}
+.dashboardPage .dashResumeIcon{display:grid;place-items:center;width:36px;height:40px;flex:none;border:1px solid #d6e6f4;background:#fff;border-radius:12px;color:#e64d57}
+.dashboardPage .dashResume>div{flex:1;min-width:0}
+.dashboardPage .dashResume [data-dashboard-resume-label]{font-size:10px;color:var(--dash-muted);font-weight:600}
+.dashboardPage .dashResume h3{font-size:13px;line-height:1.6;margin:2px 0;font-weight:800;overflow-wrap:anywhere}
+.dashboardPage .dashResume small{font-size:10px;color:var(--dash-muted)}
+.dashboardPage .dashResumeButton{flex:none;display:flex;align-items:center;justify-content:center;gap:3px;min-height:44px;max-width:95px;background:linear-gradient(#39cf58,#0aaa43);border:1px solid #05903a;border-radius:12px;padding:8px 9px;color:white;font-size:12px;font-weight:800;box-shadow:inset 0 2px 0 #ffffff4d,0 3px 0 #00813b;transition:transform .15s}
+.dashboardPage .dashResumeButton .dashIcon{width:14px;height:14px}
+.dashboardPage .dashResumeButton:hover{background:linear-gradient(#39cf58,#0aaa43);filter:brightness(1.05)}
+.dashboardPage .dashResumeButton:active{transform:translateY(2px)}
+.dashboardPage .dashGrades{margin-top:14px;padding:0 15px;background:#fffffff1}
+.dashboardPage .dashGrades summary{display:flex;align-items:center;justify-content:space-between;list-style:none;cursor:pointer;font-size:12px;font-weight:700;min-height:47px;gap:10px}
+.dashboardPage .dashGrades summary::-webkit-details-marker{display:none}
+.dashboardPage .dashGrades summary>.dashIcon{width:16px;height:16px;transform:rotate(90deg)}
+.dashboardPage .dashGrades[open] summary>.dashIcon{transform:rotate(-90deg)}
+.dashboardPage .dashGradeList{display:grid;gap:8px;padding:0 0 13px}
+.dashboardPage .dashGradeList button{padding:12px;background:#eff8ff;border:1px solid #caddf1;border-radius:12px;text-align:left;color:var(--dash-ink);min-height:52px}
+.dashboardPage .dashGradeList button b{font-size:14px}
+.dashboardPage .dashGradeList button span{display:block;font-size:12px;color:var(--dash-muted);margin-top:3px}
+.dashboardPage .dashFootnote{text-align:center;font-size:10px;color:#fff;font-weight:600;text-shadow:0 1px 4px #1b5046;margin:14px 0 0}
+.dashboardPage .dashNav.bottomNav{position:fixed;left:50%;right:auto;bottom:max(9px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:calc(100% - 20px);max-width:700px;min-height:69px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:5px;background:#fffffff5;border:2px solid #fff;border-radius:21px;box-shadow:0 6px 0 #3b59642b,0 8px 30px #173a514d;z-index:50;backdrop-filter:blur(10px);animation:none}
+.dashboardPage .dashNav::before,.dashboardPage .dashNav::after{display:none}
+.dashboardPage .dashNav .bottomItem{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;min-width:0;min-height:56px;padding:5px 2px;border:0;border-radius:14px;color:#456085;background:transparent;font-size:10px;font-weight:700;text-shadow:none;box-shadow:none;transition:background .15s,transform .15s}
+.dashboardPage .dashNav .bottomItem>.dashIcon{width:23px;height:23px}
+.dashboardPage .dashNav .bottomItem.active{background:linear-gradient(130deg,#40d443,#07a84f);color:#fff;box-shadow:inset 0 2px 0 #fff5,0 3px 5px #18944733;transform:none}
+.dashboardPage .dashNav .bottomItem:hover{background:#e8f5ed}
+.dashboardPage .dashNav .bottomItem.active:hover{background:#12b348}
+.dashboardPage .dashNav .bottomItem:active{transform:scale(.96)}
+.dashboardPage .dashExerciseDialog{max-width:min(480px,calc(100% - 28px));width:480px;max-height:calc(100svh - 40px);overflow:auto;padding:23px;border:2px solid white;border-radius:24px;background:#f8fcff;color:var(--dash-ink);box-shadow:0 24px 80px #12335555}
+.dashboardPage .dashExerciseDialog::backdrop{background:#092a5066;backdrop-filter:blur(3px)}
+.dashboardPage .dashExerciseForm header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dashboardPage .dashExerciseForm h2{font-size:23px;margin:0}
+.dashboardPage .dashExerciseForm header button{height:44px;width:44px;flex:none;display:grid;place-items:center;border:0;background:#e5effa;border-radius:50%;color:var(--dash-ink)}
+.dashboardPage .dashExerciseForm p{font-size:13px;color:var(--dash-muted);margin:8px 0 20px}
+.dashboardPage .dashExerciseForm label{display:block;font-size:13px;font-weight:700;margin:12px 0}
+.dashboardPage .dashExerciseForm select{display:block;width:100%;min-height:48px;font-size:16px;padding:8px 10px;margin-top:5px;border:1px solid #bdd2e9;border-radius:10px;background:#fff;color:var(--dash-ink)}
+.dashboardPage .dashExerciseStart{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:1px solid #066dd2;border-radius:12px;background:linear-gradient(#26a9fc,#087bdd);color:white;font-weight:800;box-shadow:0 3px 0 #06559d;margin-top:22px}
+@keyframes dash-idle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(.5deg)}}
+@keyframes dash-wave{0%,12%,55%,100%{transform:rotate(0)}22%,42%{transform:rotate(-7deg)}32%,48%{transform:rotate(3deg)}}
+@keyframes dash-cloud{to{transform:translateX(-75px)}}
+@keyframes dash-sunlight{to{opacity:.8}}
+@media(min-width:375px){.dashboardPage .dashAvatar{width:44px;height:53px}.dashboardPage .dashAvatar img{width:104px;transform:translate(-40px,0)}.dashboardPage .dashHud{gap:7px;padding:9px}.dashboardPage .dashMenu.quick{grid-template-columns:65px minmax(0,1fr);min-height:121px;padding:12px 9px;gap:6px}.dashboardPage .dashMenu>img{width:72px;height:80px}.dashboardPage .dashMenuCopy b{font-size:14px}.dashboardPage .dashMenuCopy>span{font-size:10px}.dashboardPage .dashMissionList b{font-size:13px}.dashboardPage .dashMissionList small{font-size:11px}}
+@media(min-width:600px){.dashboardPage .dashShell{padding-left:26px;padding-right:26px}.dashboardPage .dashHeader{grid-template-columns:1.2fr 1fr 100px;padding-top:0;gap:16px}.dashboardPage .dashSchoolSign,.dashboardPage .dashBrandSign{min-height:92px}.dashboardPage .dashSchoolSign>img{width:41px;height:65px}.dashboardPage .dashSchoolSign p{font-size:16px}.dashboardPage .dashBrandSign b{font-size:43px}.dashboardPage .dashBrandSign span{font-size:21px}.dashboardPage .dashBrandSign>img{width:38px;height:56px}.dashboardPage .dashLogout{position:static;justify-content:center;min-height:44px;flex-wrap:wrap;font-size:11px}.dashboardPage .dashHud{padding:11px;gap:12px;grid-template-columns:1.3fr 1fr 1fr}.dashboardPage .dashIdentity{gap:12px}.dashboardPage .dashAvatar{width:63px;height:67px}.dashboardPage .dashAvatar img{width:141px;transform:translate(-49px,0)}.dashboardPage .dashIdentity strong{font-size:24px}.dashboardPage .dashIdentity span{font-size:13px}.dashboardPage .dashStat{padding:9px 12px;gap:10px}.dashboardPage .dashStat>.dashIcon{display:block;width:27px;height:32px}.dashboardPage .dashStat>div>span{font-size:12px}.dashboardPage .dashStat strong{font-size:29px}.dashboardPage .dashStat .dashTrack{height:10px}.dashboardPage .dashWelcome.heroWorld{min-height:245px;grid-template-columns:47% 1fr;max-width:690px;width:100%;margin:auto}.dashboardPage .dashCharacter{width:110%;margin-left:0}.dashboardPage .dashBubble{padding:23px 22px;margin-bottom:40px;margin-left:0}.dashboardPage .dashBubble h1{font-size:39px}.dashboardPage .dashEyebrow{font-size:12px}.dashboardPage .dashBubble p{font-size:18px}.dashboardPage .dashGreetingSun{width:42px;height:42px}.dashboardPage .dashMission{padding:20px 23px 12px}.dashboardPage .dashSectionHeading h2{font-size:26px}.dashboardPage .dashMissionLesson{font-size:13px}.dashboardPage .dashMissionBody{grid-template-columns:1fr 145px;padding:15px}.dashboardPage .dashMissionList{gap:11px}.dashboardPage .dashMissionList b{font-size:16px}.dashboardPage .dashMissionList small{font-size:12px}.dashboardPage .dashCheck{width:25px;height:25px}.dashboardPage .dashMissionArt img{max-height:130px;object-fit:contain}.dashboardPage .dashMissionArt span{font-size:12px}.dashboardPage .dashMissionLink{font-size:14px;min-height:44px}.dashboardPage .dashMenu.quick{grid-template-columns:100px minmax(0,1fr);min-height:139px;padding:14px 17px;gap:12px}.dashboardPage .dashMenu>img{width:106px;height:104px}.dashboardPage .dashMenuCopy b{font-size:21px}.dashboardPage .dashMenuCopy>span{font-size:13px}.dashboardPage .dashMenuArrow{width:23px;height:23px;right:12px;bottom:12px}.dashboardPage .dashOverall h2{font-size:16px}.dashboardPage .dashResume h3{font-size:16px}.dashboardPage .dashOverall p,.dashboardPage .dashResume small,.dashboardPage .dashResume [data-dashboard-resume-label]{font-size:12px}.dashboardPage .dashResumeButton{max-width:120px;font-size:14px;padding:9px 14px}.dashboardPage .dashGrades summary{font-size:14px}.dashboardPage .dashGradeList{grid-template-columns:repeat(3,minmax(0,1fr))}.dashboardPage .dashNav .bottomItem{font-size:12px;min-height:62px}.dashboardPage .dashNav .bottomItem>.dashIcon{width:26px;height:26px}}
+@media(min-width:1000px){.dashboardPage{background-image:linear-gradient(180deg,#5abfee08,#72bdcb08 65%,#357b5640),url('../login/voxel-scene-wide-v1.webp');background-position:center;background-size:cover}.dashboardPage .dashShell{padding-top:20px;padding-left:24px;padding-right:24px}.dashboardPage .dashHeader{grid-template-columns:1.1fr 1fr 130px;gap:40px;margin-bottom:18px}.dashboardPage .dashSchoolSign,.dashboardPage .dashBrandSign{min-height:93px;padding:12px 24px}.dashboardPage .dashSchoolSign{gap:15px}.dashboardPage .dashSchoolSign p{font-size:19px}.dashboardPage .dashBrandSign b{font-size:46px}.dashboardPage .dashBrandSign span{font-size:23px}.dashboardPage .dashBrandSign>img{width:49px;height:64px}.dashboardPage .dashLogout{font-size:12px}.dashboardPage .dashHud{margin-bottom:20px;grid-template-columns:1.5fr 1fr 1fr;padding:12px 16px}.dashboardPage .dashStat{padding:8px 16px;gap:16px}.dashboardPage .dashMain{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:20px}.dashboardPage .dashWelcome.heroWorld{height:100%;max-width:none;min-height:275px;grid-template-columns:48% 1fr}.dashboardPage .dashCharacter{width:124%;margin-left:-8%;align-self:center;max-width:355px}.dashboardPage .dashBubble{margin:0 0 15px 0;padding:22px 20px}.dashboardPage .dashBubble h1{font-size:35px}.dashboardPage .dashBubble p{font-size:16px}.dashboardPage .dashMission{padding:16px 18px 8px}.dashboardPage .dashSectionHeading h2{font-size:23px}.dashboardPage .dashMissionLesson{margin:5px 0 9px;font-size:12px}.dashboardPage .dashMissionBody{grid-template-columns:minmax(0,1fr) 112px;padding:11px 12px}.dashboardPage .dashMissionList{gap:9px}.dashboardPage .dashMissionList b{font-size:14px}.dashboardPage .dashMissionList small{font-size:11px}.dashboardPage .dashMissionArt img{max-height:104px}.dashboardPage .dashMissionArt span{font-size:11px}.dashboardPage .dashMissionLink{min-height:34px;font-size:12px}.dashboardPage .dashMenus{gap:13px}.dashboardPage .dashMenu.quick{grid-template-columns:75px minmax(0,1fr);gap:9px;min-height:120px;padding:12px 13px}.dashboardPage .dashMenu>img{width:81px;height:86px}.dashboardPage .dashMenuCopy b{font-size:17px}.dashboardPage .dashMenuCopy>span{font-size:11px}.dashboardPage .dashMenuArrow{height:20px;width:20px;right:8px;bottom:8px}.dashboardPage .dashProgress{padding:22px;display:flex;flex-direction:column;justify-content:center;gap:15px}.dashboardPage .dashOverall{padding-bottom:13px;gap:16px}.dashboardPage .dashOverall>.dashIcon{height:39px;width:35px}.dashboardPage .dashOverall h2{font-size:16px}.dashboardPage .dashOverall p{font-size:11px}.dashboardPage .dashResume{padding-top:20px;gap:10px}.dashboardPage .dashResume h3{font-size:15px}.dashboardPage .dashResumeButton{font-size:13px}.dashboardPage .dashGrades{margin-top:20px}.dashboardPage .dashFootnote{margin-top:12px}.dashboardPage .dashCloud{top:155px;right:8%;width:230px}}
+@media(min-width:1000px) and (max-height:780px){.dashboardPage .dashShell{padding-top:8px}.dashboardPage .dashHeader{margin-bottom:10px}.dashboardPage .dashSchoolSign,.dashboardPage .dashBrandSign{min-height:80px}.dashboardPage .dashHud{margin-bottom:13px;padding:8px 12px}.dashboardPage .dashAvatar{height:59px}.dashboardPage .dashMain{gap:15px}.dashboardPage .dashWelcome.heroWorld{min-height:260px}.dashboardPage .dashMenu.quick{min-height:111px}.dashboardPage .dashMissionBody{padding-top:8px;padding-bottom:8px}.dashboardPage .dashMissionList{gap:7px}.dashboardPage .dashGrades{margin-top:15px}}
+@media(prefers-reduced-motion:reduce){.dashboardPage *,.dashboardPage *::before,.dashboardPage *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* Reserve a real dock row so navigation never covers the scrollable dashboard. */
+body:has(.dashboardPage){overflow:hidden}
+.dashboardPage{height:100svh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.dashboardPage .dashShell{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;padding-bottom:24px;scrollbar-width:thin;scrollbar-color:#ffffff90 transparent}
+.dashboardPage .dashNav.bottomNav{position:relative;left:auto;right:auto;bottom:auto;transform:none;flex:none;margin:4px auto max(9px,env(safe-area-inset-bottom,0px))}
+.dashboardPage .dashCharacter{width:110%;margin-left:-6%}
+@media(max-width:599px){
+ .dashboardPage .dashMenu.quick{grid-template-columns:minmax(0,1fr);grid-template-rows:74px auto;gap:5px;padding:9px 12px 17px;min-height:148px;text-align:center}
+ .dashboardPage .dashMenu>img{width:85px;height:74px;justify-self:center;margin:0}
+ .dashboardPage .dashMenuCopy b{font-size:14px;line-height:1.6;overflow-wrap:normal;word-break:normal}
+ .dashboardPage .dashMenuCopy>span{font-size:10px;line-height:1.6}
+ .dashboardPage .dashMenuArrow{right:7px;bottom:6px;width:16px;height:16px}
+ .dashboardPage .dashMenuCopy>span{padding-bottom:2px}
+}
+@media(min-width:1000px){.dashboardPage .dashCharacter{width:112%;margin-left:-6%}}
