@@ -70,7 +70,7 @@
             <button type="button" class="dashMissionLink" data-lesson="${e(id)}">${action}กิจกรรม${icon('arrow')}</button>
           </section>
           <section class="dashMenus" aria-label="เลือกกิจกรรมวิทยาศาสตร์">
-            ${menu('Gold','books','เลือกบทเรียน','เรียนรู้วิทยาศาสตร์','data-nav="lessons"')}
+            ${menu('Gold','books','เลือกระดับชั้น','เลือก ม.1 • ม.2 • ม.3','data-dashboard-grades')}
             ${menu('Blue','notebook','แบบฝึกหัด','ฝึกทักษะและทบทวน','data-dashboard-exercises')}
             ${menu('Mint','flask','Simulation','จำลองการทดลอง','data-shortcut="lab"')}
             ${menu('Purple','gamepad','เกมวิทยาศาสตร์','เรียนรู้ผ่านเกม','data-shortcut="games"')}
@@ -80,7 +80,6 @@
             <div class="dashResume"><span class="dashResumeIcon">${icon('target')}</span><div><span data-dashboard-resume-label>${p.exam.passed ? 'ทบทวนบทเรียน' : started(p) ? 'บทเรียนที่กำลังเรียน' : 'เริ่มการเรียนรู้'}</span><h3 data-dashboard-resume-title>${e(focus.lesson.title)}</h3><small>ม.${focus.meta.grade} · ${e(stage)}</small></div><button type="button" class="dashResumeButton" data-dashboard-resume data-lesson="${e(id)}">${action}${icon('arrow')}</button></div>
           </section>
         </div>
-        <details class="dashGrades dashPanel"><summary>เลือกระดับชั้นอื่น${icon('arrow')}</summary><div class="dashGradeList">${Object.keys(ctx.curriculum).map(g => `<button type="button" data-grade="${g}"><b>มัธยมศึกษาปีที่ ${g}</b><span>${ctx.curriculum[g].flatMap(u => u.lessons).length} บทเรียน${+g === ctx.user.grade ? ' · ชั้นเรียนของฉัน' : ''}</span></button>`).join('')}</div></details>
         <p class="dashFootnote">ความก้าวหน้าบันทึกในเบราว์เซอร์นี้</p>
       </div>
       <nav class="dashNav bottomNav" aria-label="เมนูหลัก">${[['home','หน้าหลัก'],['lessons','บทเรียน'],['results','ผลการเรียน'],['mission','ภารกิจ'],['about','เกี่ยวกับเรา']].map(([key,label]) => `<button type="button" class="bottomItem ${key === 'home' ? 'active' : ''}" data-nav="${key}"${key === 'home' ? ' aria-current="page"' : ''}>${icon(key)}<span>${label}</span></button>`).join('')}</nav>
@@ -97,6 +96,7 @@
     const populate = () => { lesson.innerHTML = ctx.curriculum[grade.value].map(unit => `<optgroup label="${ctx.escape(unit.title)}">${unit.lessons.map(l => `<option value="${ctx.escape(l.id)}">${ctx.escape(l.title)}</option>`).join('')}</optgroup>`).join(''); };
     populate();
     grade.addEventListener('change', populate);
+    root.querySelector('[data-dashboard-grades]').addEventListener('click', ctx.openGrades);
     root.querySelector('[data-dashboard-exercises]').addEventListener('click', () => dialog.showModal());
     root.querySelector('[data-dashboard-close]').addEventListener('click', () => dialog.close());
     form.addEventListener('submit', event => {

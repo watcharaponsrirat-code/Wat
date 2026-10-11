@@ -41,22 +41,31 @@ try{
   });
   assert(!layout.horizontal,`${width}: horizontal overflow`);assert.deepEqual(layout.collisions,[]);assert.deepEqual(layout.textOverflow,[],`${width}: text overflow`);assert(layout.character.width>130&&layout.character.height>120);assert(layout.images,`${width}: image decode`);
   await page.screenshot({path:resolve(out,`dashboard-${width}x${height}.png`),fullPage:true});
-  await page.locator('.dashGrades summary').click();
-  await page.locator('.dashGradeList [data-grade="3"]').scrollIntoViewIfNeeded();
-  await page.locator('.dashShell').evaluate(e=>e.scrollTop=e.scrollHeight);
-  const clear=await page.evaluate(()=>document.querySelector('.dashGradeList [data-grade="3"]').getBoundingClientRect().bottom<=document.querySelector('.dashNav').getBoundingClientRect().top);
-  assert(clear,`${width}: navigation hides last button`);await page.locator('.dashGrades summary').click();
+  assert.equal(await page.locator('.dashGrades').count(),0);
+  assert(!(await page.locator('body').innerText()).includes('เลือกระดับชั้นอื่น'));
+  await page.locator('[data-dashboard-grades]').click();
+  await page.locator('.gradeSelectionPage').waitFor();
+  assert.equal(await page.locator('.gradeCard').count(),3);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}: grade page overflow`);
+  await page.locator('.gradeCard[data-grade="3"] button').scrollIntoViewIfNeeded();
+  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));
+  const clear=await page.evaluate(()=>document.querySelector('.gradeCard[data-grade="3"] button').getBoundingClientRect().bottom<=document.querySelector('.bottomNav').getBoundingClientRect().top);
+  assert(clear,`${width}: navigation hides last grade button`);
+  await page.screenshot({path:resolve(out,`grade-selection-${width}x${height}.png`),fullPage:true});
+  await page.locator('[data-action=back]').click();
+  assert.equal(await page.locator('.dashboardPage').count(),1,'Grade selection Back returns to Dashboard');
   await page.locator('.dashMenus').scrollIntoViewIfNeeded();
   await page.locator('.dashMenu img').evaluateAll(images=>Promise.all(images.map(i=>i.decode())));
   await page.screenshot({path:resolve(out,`dashboard-menu-${width}x${height}.png`)});
   report.viewports.push({width,height,...layout,bottomContentClear:clear});
  }
  await page.setViewportSize({width:390,height:844});await page.locator('.dashShell').evaluate(e=>e.scrollTop=0);
- await page.locator('.dashMenus [data-nav=lessons]').click();await page.locator('[data-unit="0"]').waitFor();await home();
+ assert.equal(await page.locator('[data-dashboard-grades] b').innerText(),'เลือกระดับชั้น');
+ assert.equal(await page.locator('[data-dashboard-grades] .dashMenuCopy>span').innerText(),'เลือก ม.1 • ม.2 • ม.3');
  for(const mode of ['lab','games']){await page.locator(`[data-shortcut=${mode}]`).focus();await page.locator(`[data-shortcut=${mode}]`).press(mode==='lab'?'Enter':'Space');await page.locator('[data-activity-grade="2"]').waitFor();assert((await page.locator('[data-activity-lesson]').count())>0);await page.locator(`[data-activity-stage="${mode==='lab'?'lab':'g1'}"]`).first().click();await page.locator('.stageDot.active').waitFor();assert.equal(await page.locator('.stageDot.active').getAttribute('data-stage'),mode==='lab'?'lab':'g1');await home()}
  for(const stage of ['e1','e2','e3']){await page.locator('[data-dashboard-exercises]').click();assert(await page.locator('.dashExerciseDialog').isVisible());await page.locator('.dashExerciseDialog [name=grade]').selectOption('1');await page.locator('.dashExerciseDialog [name=lesson]').selectOption('G1U1L1');await page.locator('.dashExerciseDialog [name=stage]').selectOption(stage);await page.locator('.dashExerciseStart').click();assert.equal(await page.locator('.stageDot.active').getAttribute('data-stage'),stage);await home()}
  await page.locator('[data-dashboard-exercises]').click();await page.locator('[data-dashboard-close]').click();assert(!await page.locator('.dashExerciseDialog').isVisible());
- for(const grade of ['1','2','3']){await page.locator('.dashGrades summary').click();await page.locator(`[data-grade="${grade}"]`).click();assert((await page.locator('[data-unit]').count())>0);await home()}
+ for(const grade of ['1','2','3']){await page.locator('[data-dashboard-grades]').click();await page.locator(`.gradeCard[data-grade="${grade}"] button`).click();assert((await page.locator('[data-unit]').count())>0);assert((await page.locator('main h1').innerText()).startsWith(`ม.${grade}`));await page.locator('[data-action=back]').click();assert.equal(await page.locator('.gradeSelectionPage').count(),1);await page.locator('[data-action=back]').click();assert.equal(await page.locator('.dashboardPage').count(),1)}
  for(const nav of ['home','lessons','results','mission','about']){await page.locator(`.dashNav [data-nav=${nav}]`).click();if(nav==='home'){await page.locator('.dashboardPage').waitFor()}else if(nav==='about'){assert((await page.locator('#modalRoot').innerHTML()).length>0);await page.reload();await login()}else{assert.equal(await page.locator('.dashboardPage').count(),0);await home()}}
  report.checks.push('All four menu cards, three exercise sets, all grade selectors, five navigation items, dialog close');
  // Test fixtures live only in this disposable browser profile, never in the app bundle.
@@ -77,6 +86,7 @@ try{
  await home();await page.locator('.dashMissionLink').click();assert.equal(await page.locator('.stageDot.active').getAttribute('data-stage'),'e2');await home();
  report.checks.push('Real nonzero metrics from stored progress, mission status, read-only rerender, exact exercise answers and resume survive home/logout/reload');
  await page.locator('[data-action=logout]').click();await login('teacher');assert.equal(await page.locator('[data-dashboard-grade]').innerText(),'ครูผู้สอน');assert.equal(await page.locator('[data-dashboard-completed]').innerText(),'0/40');
+ for(const grade of ['1','2','3']){await page.locator('[data-dashboard-grades]').click();await page.locator(`.gradeCard[data-grade="${grade}"] button`).click();assert((await page.locator('main h1').innerText()).startsWith(`ม.${grade}`));await home()}
  await page.locator('[data-action=logout]').click();await login();
  assert.equal(await page.locator('.dashCharacterArm').evaluate(e=>getComputedStyle(e).animationName),'none');
  await page.emulateMedia({reducedMotion:'no-preference'});await page.locator('.dashShell').evaluate(e=>e.scrollTop=0);

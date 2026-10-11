@@ -8,9 +8,9 @@ const after=await readFile('index.html','utf8');
 const strip=source=>{
  const start=source.indexOf('function renderDashboard(){'),end=source.indexOf('function unitImage(',start);
  assert(start>0&&end>start);
- return (source.slice(0,start)+'DASHBOARD_RENDERER\n'+source.slice(end)).split('\n').filter(line=>!line.includes('assets/dashboard/dashboard.')).map(line=>line.replace(/\r$/,'')).join('\n');
+ return (source.slice(0,start)+'DASHBOARD_RENDERER\n'+source.slice(end)).replace("else if(SESSION.screen==='grades')renderGrades();",'').split('\n').filter(line=>!line.includes('assets/dashboard/dashboard.')).map(line=>line.replace(/\r$/,'')).join('\n');
 };
-assert.equal(strip(after),strip(before),'All index code outside dashboard and imports must be identical');
+assert.equal(strip(after),strip(before),'All index code outside dashboard, its grade-selection route and imports must be identical');
 const protectedFiles=execFileSync('git',['ls-tree','-r','--name-only',baseline,'assets/login','assets/content','assets/exams','assets/exercises','assets/games','assets/labs','assets/lessons','assets/simulations','assets/theme','assets/units','tests'],{encoding:'utf8'}).trim().split('\n');
 const changed=execFileSync('git',['diff','--name-only',baseline],{encoding:'utf8'}).trim().split('\n');
 assert.deepEqual(changed.filter(path=>protectedFiles.includes(path)&&path!=='tests/readiness-regression.mjs'),[],'No existing protected files modified outside dashboard QA assertions');
