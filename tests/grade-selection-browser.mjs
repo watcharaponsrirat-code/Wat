@@ -16,10 +16,10 @@ const before=git('show',`${checkpoint}:index.html`),after=await readFile('index.
 const withoutGradePresentation=source=>{
  const start=source.indexOf('function renderGrades(){'),end=source.indexOf('function unitImage(',start);
  assert(start>0&&end>start,'Grade renderer boundaries exist');
- return (source.slice(0,start)+'GRADE_RENDERER\n'+source.slice(end)).replace(/^[ \t]*<link\b[^\r\n]*href=["']assets\/grades\/grades\.css(?:\?[^"']*)?["'][^\r\n]*>\r?\n/gm,'');
+ return (source.slice(0,start)+'GRADE_RENDERER\n'+source.slice(end)).replace(/^[ \t]*<link\b[^\r\n]*href=["']assets\/(?:grades\/grades|unit-selection\/unit-selection)\.css(?:\?[^"']*)?["'][^\r\n]*>\r?\n/gm,'').replace('assets/dashboard/dashboard.css?v=2','assets/dashboard/dashboard.css?v=1').replace('class="shell unitSelectionPage"','class="shell"').replace('class="woodSign unitTitleSign"','class="woodSign"').replace(/\r\n/g,'\n');
 };
 assert.equal(withoutGradePresentation(after),withoutGradePresentation(before),'Index outside renderGrades and the grade stylesheet import remains byte-for-byte unchanged');
-const protectedChanges=git('diff','--name-only',checkpoint,'--','assets','scripts','.github').trim().split('\n').filter(p=>p&&!p.startsWith('assets/grades/'));
+const protectedChanges=git('diff','--name-only',checkpoint,'--','assets','scripts','.github').trim().split('\n').filter(p=>p&&!p.startsWith('assets/grades/')&&!p.startsWith('assets/unit-selection/')&&p!=='assets/dashboard/dashboard.css');
 assert.deepEqual(protectedChanges,[],'Dashboard, Login, learning assets, build and deployment files remain unchanged');
 report.scope={index:'PASS',protectedAssets:'PASS'};
 

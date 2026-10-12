@@ -153,3 +153,7 @@ body:has(.dashboardPage){overflow:hidden}
  .dashboardPage .dashMenuCopy>span{padding-bottom:2px}
 }
 @media(min-width:1000px){.dashboardPage .dashCharacter{width:112%;margin-left:-6%}}
+/* Anchor the cropped portrait to the welcome edge, including during its existing idle motion. */
+.dashboardPage .dashWelcome.heroWorld{clip-path:inset(-100vmax -100vmax 0 -100vmax)}
+.dashboardPage .dashWelcome .dashCharacter{align-self:end;top:8px}
+.dashboardPage .dashWelcome.heroWorld::after{content:"";display:block;position:absolute;inset:auto 0 0;height:0;border:0;border-bottom:4px solid #ffffffbf;background:none;box-shadow:none;z-index:2;pointer-events:none}

@@ -1,0 +1,71 @@
+/* Only the unit selection backdrop and title sign. Unit cards and navigation inherit their original styles. */
+body:has(.unitSelectionPage) #app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: #50b9f2 url('./unit-scene-v1.webp') center center / cover no-repeat;
+}
+
+.unitSelectionPage .sectionTitle {
+  margin: 16px 0 22px;
+}
+
+.unitSelectionPage .unitTitleSign {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: min(100%, 800px);
+  min-width: 0;
+  min-height: 145px;
+  aspect-ratio: 3.3;
+  padding: 27px 15% 24px;
+  border: 0;
+  border-radius: 0;
+  background: url('./unit-sign-v1.webp') center / 100% 100% no-repeat;
+  box-shadow: none;
+  filter: drop-shadow(0 7px 5px #293b4e45);
+  color: #fffdf0;
+  text-shadow: 0 2px 2px #43250e;
+  text-align: center;
+}
+
+.unitSelectionPage .unitTitleSign::before,
+.unitSelectionPage .unitTitleSign::after {
+  display: none;
+}
+
+.unitSelectionPage .unitTitleSign h1 {
+  margin: 0;
+  font-size: clamp(18px, 3.2vw, 31px);
+  line-height: 1.5;
+  font-weight: 800;
+}
+
+.unitSelectionPage .unitTitleSign .subWood {
+  margin: 0;
+  color: #fff6da;
+  font-size: clamp(11px, 1.6vw, 16px);
+  line-height: 1.6;
+}
+
+@media (min-width: 700px) {
+  .unitSelectionPage .sectionTitle {
+    margin-top: 12px;
+    margin-bottom: 28px;
+  }
+
+  .unitSelectionPage .unitTitleSign {
+    padding: 42px 115px 38px;
+  }
+}
+
+@media (min-aspect-ratio: 1/1) and (min-width: 700px) {
+  body:has(.unitSelectionPage) #app::before {
+    background-image: url('./unit-scene-wide-v1.webp');
+    background-position: center 58%;
+  }
+}
