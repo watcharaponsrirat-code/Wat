@@ -1,0 +1,518 @@
+/* Grade selection presentation only. The existing grade routes and progress remain unchanged. */
+.gradeSelectionScreen {
+  --grade-ink: #172d59;
+  --grade-muted: #375477;
+  min-height: 100svh;
+  color: var(--grade-ink);
+  background:
+    linear-gradient(180deg, #d8f4ffed 0%, #edfbffe0 32%, #effce4ce 100%),
+    url('../login/voxel-scene-v1.webp') center top / cover no-repeat;
+}
+
+.gradeSelectionScreen .gradeSelectionPage {
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 22px 12px calc(116px + env(safe-area-inset-bottom));
+}
+
+.gradeSelectionScreen .gradeHeading {
+  margin: 0 auto 23px;
+  text-align: center;
+}
+
+.gradeSelectionScreen .gradeHeading h1 {
+  margin: 0 0 5px;
+  color: var(--grade-ink);
+  font-size: clamp(27px, 6.7vw, 36px);
+  font-weight: 900;
+  line-height: 1.5;
+  text-shadow: 0 2px 0 #ffffffbc;
+}
+
+.gradeSelectionScreen .gradeHeading p {
+  margin: 0;
+  color: var(--grade-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.gradeSelectionScreen .gradeGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+.gradeSelectionScreen .gradeAdventure {
+  --grade-accent: #267ad6;
+  --grade-shadow: #4a91c957;
+  position: relative;
+  display: grid;
+  grid-template-columns: 42% minmax(0, 1fr);
+  align-items: center;
+  min-width: 0;
+  min-height: 190px;
+  isolation: isolate;
+  overflow: hidden;
+  border: 6px solid #fff;
+  border-radius: 26px;
+  color: var(--grade-ink);
+  background: linear-gradient(125deg, #e9f9ff, #c6e9ff 55%, #8ecefb);
+  box-shadow: 0 5px 0 var(--grade-shadow), 0 12px 25px #234f7026;
+  transform: none;
+  animation: none;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.gradeSelectionScreen .gradeAdventure--2 {
+  --grade-accent: #af6c08;
+  --grade-shadow: #b9933757;
+  background: linear-gradient(125deg, #fffbe3, #ffe99a 57%, #ffd268);
+  box-shadow: 0 5px 0 var(--grade-shadow), 0 12px 25px #71561f20;
+}
+
+.gradeSelectionScreen .gradeAdventure--3 {
+  --grade-accent: #7b50c9;
+  --grade-shadow: #8d71b857;
+  background: linear-gradient(125deg, #f8f3ff, #e6d5ff 55%, #cfb5fa);
+  box-shadow: 0 5px 0 var(--grade-shadow), 0 12px 25px #55406e22;
+}
+
+.gradeSelectionScreen .gradeAdventure::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 19px;
+  box-shadow: inset 0 2px 0 #ffffffb5, inset 0 -3px 0 #ffffff2e;
+  pointer-events: none;
+}
+
+.gradeSelectionScreen .gradeArtwork {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: 100%;
+  min-height: 178px;
+  padding: 5px 0 5px 3px;
+  background: radial-gradient(ellipse at 48% 64%, #ffffff8a 0%, #ffffff00 70%);
+}
+
+.gradeSelectionScreen .gradeArtwork img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 183px;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 4px #1d425223);
+}
+
+.gradeSelectionScreen .gradeCopy {
+  min-width: 0;
+  padding: 14px 38px 14px 3px;
+}
+
+.gradeSelectionScreen .gradeCopy h2 {
+  margin: 0 0 6px;
+  color: var(--grade-ink);
+  font-size: clamp(17px, 4.8vw, 22px);
+  font-weight: 900;
+  line-height: 1.5;
+  overflow-wrap: normal;
+}
+
+.gradeSelectionScreen .gradeCopy p {
+  margin: 0;
+  color: #27405f;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+.gradeSelectionScreen .gradeLearningProgress {
+  margin-top: 12px;
+}
+
+.gradeSelectionScreen .gradeLearningProgress > span {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2px 5px;
+  margin-bottom: 5px;
+  color: #294563;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.gradeSelectionScreen .gradeLearningProgress b {
+  color: var(--grade-ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.gradeSelectionScreen .gradeTrack {
+  height: 9px;
+  overflow: hidden;
+  border: 1px solid #ffffffcb;
+  border-radius: 20px;
+  background: #ffffff8c;
+  box-shadow: inset 0 1px 3px #2439571c;
+}
+
+.gradeSelectionScreen .gradeTrack > span {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #62d949, #1c9a39);
+  box-shadow: inset 0 1px 0 #b6f298;
+}
+
+.gradeSelectionScreen .gradeRelationText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.gradeSelectionScreen .gradeEnter {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  box-shadow: none;
+  color: white;
+  touch-action: manipulation;
+}
+
+.gradeSelectionScreen .gradeEnter svg {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 29px;
+  height: 29px;
+  padding: 6px;
+  border: 1px solid #ffffffbc;
+  border-radius: 50%;
+  background: var(--grade-accent);
+  box-shadow: 0 2px 0 #ffffff82, 0 3px 6px #2a36552a;
+  color: #fff;
+  stroke-width: 2.7;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.gradeSelectionScreen .gradeEnter:focus-visible {
+  outline: 3px solid #173d77;
+  outline-offset: -6px;
+}
+
+.gradeSelectionScreen .gradeAdventure:focus-within {
+  box-shadow: 0 0 0 3px #173d77, 0 7px 0 var(--grade-shadow), 0 14px 28px #234f702b;
+}
+
+.gradeSelectionScreen .gradeAdventure:active {
+  transform: translateY(3px) scale(.995);
+  box-shadow: 0 2px 0 var(--grade-shadow), 0 5px 12px #234f7020;
+}
+
+/* Keep the existing navigation and all account controls visible. */
+.gradeSelectionScreen .topbar {
+  border-bottom: 2px solid #ffffffb5;
+  background: #f6fcfff5;
+  box-shadow: 0 3px 12px #34699613;
+}
+
+.gradeSelectionScreen .brandTitle {
+  color: var(--grade-ink);
+}
+
+.gradeSelectionScreen .topBtn,
+.gradeSelectionScreen .profilePill {
+  border-color: #cfdeef;
+  border-radius: 10px;
+  color: var(--grade-ink);
+  background: #fff;
+  box-shadow: 0 2px 0 #bdcee33b;
+}
+
+.gradeSelectionScreen .bottomNav {
+  bottom: 0;
+  width: 100%;
+  max-width: 780px;
+  gap: 3px;
+  padding: 6px 6px max(7px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  border: 2px solid #fff;
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+  background: #fffffffa;
+  box-shadow: 0 -3px 20px #18385c24;
+}
+
+.gradeSelectionScreen .bottomItem {
+  min-height: 61px;
+  padding: 5px 2px;
+  border-radius: 13px;
+  color: #455a7c;
+  font-size: 10px;
+}
+
+.gradeSelectionScreen .bottomItem.active {
+  color: #fff;
+  background: linear-gradient(155deg, #50bb44, #169b49);
+  box-shadow: inset 0 1px 0 #b4ef95, 0 2px 4px #17864826;
+}
+
+.gradeSelectionScreen .bottomItem .worldIcon {
+  width: 27px;
+  height: 27px;
+  animation: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gradeSelectionScreen .gradeAdventure:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 var(--grade-shadow), 0 17px 29px #234f702c;
+  }
+
+  .gradeSelectionScreen .gradeAdventure:active {
+    transform: translateY(2px) scale(.995);
+    box-shadow: 0 2px 0 var(--grade-shadow), 0 5px 12px #234f7020;
+  }
+}
+
+@media (max-width: 359px) {
+  .gradeSelectionScreen .gradeSelectionPage {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .gradeSelectionScreen .gradeHeading p {
+    font-size: 12px;
+  }
+
+  .gradeSelectionScreen .gradeAdventure {
+    grid-template-columns: 39% minmax(0, 1fr);
+    min-height: 184px;
+    border-width: 5px;
+    border-radius: 23px;
+  }
+
+  .gradeSelectionScreen .gradeCopy {
+    padding-right: 33px;
+    padding-left: 0;
+  }
+
+  .gradeSelectionScreen .gradeCopy h2 {
+    font-size: 16px;
+  }
+
+  .gradeSelectionScreen .gradeCopy p {
+    font-size: 12px;
+  }
+
+  .gradeSelectionScreen .gradeEnter svg {
+    right: 5px;
+    width: 26px;
+    height: 26px;
+    padding: 5px;
+  }
+
+  .gradeSelectionScreen .bottomItem {
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 600px) {
+  .gradeSelectionScreen .gradeSelectionPage {
+    padding-top: 28px;
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .gradeSelectionScreen .gradeGrid {
+    gap: 23px;
+  }
+
+  .gradeSelectionScreen .gradeAdventure {
+    grid-template-columns: 39% minmax(0, 1fr);
+    min-height: 216px;
+    border-width: 7px;
+    border-radius: 30px;
+  }
+
+  .gradeSelectionScreen .gradeArtwork {
+    min-height: 202px;
+    padding: 5px 12px;
+  }
+
+  .gradeSelectionScreen .gradeArtwork img {
+    max-height: 207px;
+  }
+
+  .gradeSelectionScreen .gradeCopy {
+    padding: 18px 58px 18px 8px;
+  }
+
+  .gradeSelectionScreen .gradeCopy h2 {
+    font-size: 26px;
+  }
+
+  .gradeSelectionScreen .gradeCopy p {
+    font-size: 16px;
+  }
+
+  .gradeSelectionScreen .gradeLearningProgress {
+    margin-top: 14px;
+  }
+
+  .gradeSelectionScreen .gradeLearningProgress > span,
+  .gradeSelectionScreen .gradeLearningProgress b {
+    font-size: 12px;
+  }
+
+  .gradeSelectionScreen .gradeEnter svg {
+    right: 15px;
+    width: 34px;
+    height: 34px;
+    padding: 7px;
+  }
+
+  .gradeSelectionScreen .bottomNav {
+    bottom: 12px;
+    width: calc(100% - 32px);
+    border: 2px solid #fff;
+    border-radius: 22px;
+  }
+
+  .gradeSelectionScreen .bottomItem {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .gradeSelectionScreen {
+    background-image:
+      linear-gradient(180deg, #d8f4fff2 0%, #edfbffe3 35%, #effce4d5 100%),
+      url('../login/voxel-scene-wide-v1.webp');
+    background-position: center top;
+  }
+
+  .gradeSelectionScreen .gradeSelectionPage {
+    padding-top: 28px;
+  }
+
+  .gradeSelectionScreen .gradeHeading {
+    margin-bottom: 27px;
+  }
+
+  .gradeSelectionScreen .gradeHeading h1 {
+    font-size: 36px;
+  }
+
+  .gradeSelectionScreen .gradeHeading p {
+    font-size: 16px;
+  }
+
+  .gradeSelectionScreen .gradeGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    max-width: none;
+    gap: 24px;
+  }
+
+  .gradeSelectionScreen .gradeAdventure {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 427px;
+    border-width: 7px;
+    border-radius: 30px;
+  }
+
+  .gradeSelectionScreen .gradeArtwork {
+    flex: 0 0 226px;
+    height: 226px;
+    min-height: 0;
+    padding: 12px 19px 0;
+  }
+
+  .gradeSelectionScreen .gradeArtwork img {
+    width: 100%;
+    height: 100%;
+    max-height: 226px;
+  }
+
+  .gradeSelectionScreen .gradeCopy {
+    flex: 1;
+    padding: 10px 23px 24px;
+  }
+
+  .gradeSelectionScreen .gradeCopy h2 {
+    margin-bottom: 7px;
+    font-size: clamp(22px, 2vw, 25px);
+  }
+
+  .gradeSelectionScreen .gradeCopy p {
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .gradeSelectionScreen .gradeLearningProgress {
+    margin-top: 17px;
+    padding-right: 38px;
+  }
+
+  .gradeSelectionScreen .gradeTrack {
+    height: 10px;
+  }
+
+  .gradeSelectionScreen .gradeEnter svg {
+    top: auto;
+    right: 16px;
+    bottom: 21px;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradeSelectionScreen .gradeAdventure {
+    transition: none;
+    animation: none;
+  }
+
+  .gradeSelectionScreen .gradeAdventure:hover,
+  .gradeSelectionScreen .gradeAdventure:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .gradeSelectionScreen .gradeAdventure {
+    border-color: CanvasText;
+  }
+
+  .gradeSelectionScreen .gradeEnter svg {
+    border: 1px solid ButtonText;
+    color: ButtonText;
+  }
+
+  .gradeSelectionScreen .gradeEnter:focus-visible {
+    outline-color: Highlight;
+  }
+}

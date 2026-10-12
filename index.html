@@ -52,6 +52,7 @@ button.quick:focus-visible,.activityGrades button:focus-visible,.activityChoices
 <link rel="stylesheet" href="assets/content/formulas.css">
 <link rel="stylesheet" href="assets/login/login.css?v=4">
 <link rel="stylesheet" href="assets/dashboard/dashboard.css?v=1">
+<link rel="stylesheet" href="assets/grades/grades.css?v=1">
 <script src="assets/dashboard/dashboard.js?v=1"></script>
 <script defer src="assets/theme/block-effects.js?v=3"></script>
 <script defer src="assets/theme/voxel-ui.js?v=1"></script>
@@ -192,7 +193,21 @@ function renderDashboard(){
  app.innerHTML=window.SLH_DASHBOARD.render(context);
  window.SLH_DASHBOARD.attach(app,context);
 }
-function renderGrades(){app.innerHTML=topbar('lessons')+`<main class="shell gradeSelectionPage"><div class="sectionTitle"><div class="woodSign"><h1>เลือกระดับชั้น</h1><div class="subWood">เลือก ม.1 • ม.2 • ม.3 เพื่อเข้าสู่บทเรียน</div></div></div><div class="grid gradeGrid">${[1,2,3].map(g=>{const pct=gradePct(g);return `<article class="gradeCard" data-grade="${g}"><div class="gradePic g${g}"></div><div class="gradeBody"><h3>มัธยมศึกษาปีที่ ${g}</h3>${relationBadge(g)}<p>${g===1?'พื้นฐานวิทยาศาสตร์ สิ่งมีชีวิต สาร พลังงาน และโลก':g===2?'การดำรงชีวิตของสิ่งมีชีวิต สาร การเปลี่ยนแปลง พลังงานและการเคลื่อนที่':'พันธุศาสตร์ คลื่น แสง ระบบสุริยะ ไฟฟ้า ระบบนิเวศ และการประยุกต์'}</p><div class="progress"><span style="width:${pct}%"></span></div><small>${pct}%</small><div style="margin-top:10px"><button class="pixelBtn ${g===2?'yellow':g===3?'purple':'green'} full">${statusText({exam:{passed:pct===100},contentIndex:pct?1:0,resume:pct?'content':'content'})}</button></div></div></article>`}).join('')}</div></main>`+bottom('lessons')}
+function renderGrades(){
+ const descriptions={1:'พื้นฐานวิทยาศาสตร์<br>รอบตัวเรา',2:'การดำรงชีวิตและ<br>การเปลี่ยนแปลง',3:'วิทยาศาสตร์สู่อนาคต<br>และเทคโนโลยี'};
+ const relations={review:'ทบทวน',current:'ระดับปัจจุบัน',advance:'เรียนล่วงหน้า'};
+ app.innerHTML=`<div class="gradeSelectionScreen">`+topbar('lessons')+`<main class="shell gradeSelectionPage" aria-labelledby="grade-heading">
+  <header class="gradeHeading"><h1 id="grade-heading">เลือกระดับชั้น</h1><p>เริ่มต้นเส้นทางการเรียนรู้วิทยาศาสตร์</p></header>
+  <div class="grid gradeGrid">${[1,2,3].map(g=>{const pct=gradePct(g);return `<article class="gradeCard gradeAdventure gradeAdventure--${g}" data-grade="${g}">
+   <div class="gradeArtwork" aria-hidden="true"><img src="assets/grades/grade-${g}-v1.webp" alt="" width="768" height="768" decoding="async" ${g===1?'fetchpriority="high"':'loading="lazy"'}></div>
+   <div class="gradeCopy"><h2 id="grade-title-${g}">มัธยมศึกษาปีที่ ${g}</h2><p id="grade-description-${g}">${descriptions[g]}</p>
+    <div class="gradeLearningProgress"><span id="grade-progress-${g}">ความก้าวหน้า <b>${pct}%</b></span><div class="gradeTrack" aria-hidden="true"><span style="width:${pct}%"></span></div></div>
+    <span class="gradeRelationText" id="grade-relation-${g}">${relations[gradeRelation(g)]||''}</span>
+   </div>
+   <button type="button" class="gradeEnter" aria-labelledby="grade-title-${g}" aria-describedby="grade-description-${g} grade-progress-${g} grade-relation-${g}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></button>
+  </article>`}).join('')}</div>
+ </main>`+bottom('lessons')+`</div>`;
+}
 function unitImage(grade,index,title){const key="G"+grade+"U"+(index+1);return `<div class="unitIcon"><img src="assets/units/${key}.jpg" alt="${esc(title)}" width="320" height="320" loading="lazy" decoding="async"></div>`;}
 function renderActivities(){
  const mode=SESSION.activity, title={lab:'🧪 ทดลองเลย',games:'🎮 เกมวิทยาศาสตร์',onet:'📘 O-NET Challenge'}[mode];
