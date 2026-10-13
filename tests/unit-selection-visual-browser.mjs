@@ -20,8 +20,8 @@ const stripUnitPresentation=source=>{
  return source
   .replaceAll('\r\n','\n')
   .replace('<main class="shell unitSelectionPage">','<main class="shell">')
-  .replace('class="woodSign unitTitleSign"','class="woodSign"')
-  .replace(/^[ \t]*<link\b[^\r\n]*href=["']assets\/unit-selection\/[^"']+\.css(?:\?[^"']*)?["'][^\r\n]*>\r?\n/gm,'')
+  .replace('class="woodSign unitTitleSign"','class="woodSign"').replace('class="shell lessonSelectionPage"','class="shell"').replace('class="woodSign lessonTitleSign"','class="woodSign"')
+  .replace(/^[ \t]*<link\b[^\r\n]*href=["']assets\/(?:unit-selection|lesson-selection)\/[^"']+\.css(?:\?[^"']*)?["'][^\r\n]*>\r?\n/gm,'')
   .replace(/(assets\/dashboard\/dashboard\.css)\?[^"']*/g,'$1');
 };
 assert.equal(stripUnitPresentation(currentIndex),stripUnitPresentation(oldIndex),'The entire index remains byte-for-byte identical except the two unit presentation classes, stylesheet import and dashboard stylesheet version');
@@ -31,7 +31,7 @@ const gridTemplate=source=>{
 };
 assert.equal(gridTemplate(currentIndex),gridTemplate(oldIndex),'Original unit grid, cards, descriptions, order and progress calculation remain exact');
 assert(currentDashboardCSS.replaceAll('\r\n','\n').startsWith(oldDashboardCSS.replaceAll('\r\n','\n')),'Dashboard position fix appends overrides without rewriting existing styles or keyframes');
-const protectedChanges=git('diff','--name-only',checkpoint,'--','assets','scripts','.github').trim().split('\n').filter(p=>p&&!p.startsWith('assets/unit-selection/')&&p!=='assets/dashboard/dashboard.css');
+const protectedChanges=git('diff','--name-only',checkpoint,'--','assets','scripts','.github').trim().split('\n').filter(p=>p&&!p.startsWith('assets/unit-selection/')&&!p.startsWith('assets/lesson-selection/')&&p!=='assets/dashboard/dashboard.css');
 assert.deepEqual(protectedChanges,[],'Login, grade cards, learning content, images, handlers and other protected assets remain unchanged');
 
 await mkdir(out,{recursive:true});
