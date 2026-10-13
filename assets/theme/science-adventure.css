@@ -1,0 +1,369 @@
+/* Premium Science Adventure — presentation only.
+ * Current opt-in: G1U1L1 reading page, identified by its existing section ID.
+ * Future pages may opt in with .scienceAdventure after review. No global tokens.
+ * Existing labels, DOM, data-stage handlers and inline progress widths are retained.
+ */
+:where(.scienceAdventure, body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1)) {
+  --va-ink: #173a53;
+  --va-muted: #526654;
+  --va-forest: #24553a;
+  --va-paper: #fffefa;
+  --va-cream: #fff9e8;
+  --va-line: #e2e5d4;
+  --va-gold: #dfb961;
+  --va-green: #27932b;
+  --va-blue: #147eb5;
+  --va-radius: 18px;
+  --va-card-shadow: 0 3px 0 #9b8b5c18, 0 8px 20px #3549220a;
+  --va-panel-shadow: 0 5px 0 #84612445, 0 14px 32px #233f4130;
+  --va-scene: url('../lesson-selection/lesson-scene-v1.webp');
+  --va-sign: url('../lesson-selection/lesson-sign-v1.webp');
+  --va-icon-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5C8 2 4 3 2 4v16c4-1 7-1 10 1 3-2 6-2 10-1V4c-2-1-6-2-10 1Zm0 0v16M5 8h4m-4 4h4m6-4h4m-4 4h4'/%3E%3C/svg%3E");
+  --va-icon-flask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 2h6m-5 0v7L4 19a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3L14 9V2M7 15h10M10 18h.1m4-1h.1'/%3E%3C/svg%3E");
+  --va-icon-game: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10c4 0 6 11 3 13-2 1-4-4-5-4H9c-1 0-3 5-5 4C1 18 3 7 7 7ZM6 11v5m-2-2h5m7-2h.1m3 3h.1M10 7l1-4h3'/%3E%3C/svg%3E");
+  --va-icon-clipboard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 4H4v18h16V4h-4M8 2h8v5H8ZM8 11h8m-8 4h8m-8 4h5'/%3E%3C/svg%3E");
+  --va-icon-target: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Cpath d='m12 12 9-9m-4 0h4v4'/%3E%3C/svg%3E");
+  --va-icon-chart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h4v10H3Zm7-10h4v20h-4Zm7 5h4v15h-4Z'/%3E%3C/svg%3E");
+  --va-icon-exam: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 5V2H3v20h15v-4M6 6h7M6 10h5m-5 4h2m-2 4h2m3-3 8-8 3 3-8 8h-3v-3Z'/%3E%3C/svg%3E");
+  --va-icon-trophy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3h10v7a5 5 0 0 1-10 0V3Zm0 2H3v3a4 4 0 0 0 4 4m10-7h4v3a4 4 0 0 1-4 4m-5 3v5m-5 2h10m-9-2h8'/%3E%3C/svg%3E");
+}
+
+/* Artwork is separate from HTML; opaque reading surfaces quiet the central scene. */
+body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: #79cef1 var(--va-scene) center center / cover no-repeat;
+}
+
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) {
+  color: var(--va-ink);
+  max-width: 1120px;
+  padding: 14px 28px calc(124px + env(safe-area-inset-bottom));
+}
+
+/* Activity shell: the existing title becomes the wood sign using CSS grid only. */
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHUD {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  position: relative;
+  isolation: isolate;
+  top: auto;
+  padding: 0;
+  margin: 0 0 28px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHUD::before {
+  content: '';
+  grid-area: 2 / 1 / 6 / 2;
+  z-index: -1;
+  border: 3px solid #fff7d4;
+  border-radius: var(--va-radius);
+  background: var(--va-paper);
+  box-shadow: inset 0 -7px 0 #eee9cf80, var(--va-panel-shadow);
+  pointer-events: none;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .hudTop { display: contents; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title) {
+  grid-area: 1 / 1;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  width: min(100%, 900px);
+  min-height: 164px;
+  margin: 0 0 20px;
+  padding: 30px 130px 38px;
+  color: #fffef3;
+  font-size: clamp(22px, 2.6vw, 32px);
+  font-weight: 800;
+  line-height: 1.55;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 2px #66320a, 0 1px 6px #542b14;
+  filter: drop-shadow(0 6px 3px #283c4033);
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-style: solid;
+  border-width: 0;
+  border-image-source: var(--va-sign);
+  border-image-slice: 104 300 240 300 fill;
+  border-image-width: 40px 128px 90px;
+  border-image-repeat: stretch;
+  pointer-events: none;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .hudTop > span {
+  grid-area: 2 / 1;
+  padding: 20px 26px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--va-forest);
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .progress {
+  grid-area: 3 / 1;
+  height: 14px;
+  margin: 0 26px;
+  border: 1px solid #c4d2b9;
+  border-radius: 6px;
+  background: #ebefdf;
+  box-shadow: inset 0 2px 3px #526a3320;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .progress > span {
+  border-radius: 4px;
+  background: repeating-linear-gradient(90deg, #ffffff12 0 18px, transparent 18px 38px), linear-gradient(#83d645, #2a9a21);
+  box-shadow: inset 0 2px 0 #d9ff9470;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHint {
+  grid-area: 4 / 1;
+  margin: 12px 26px 16px;
+  color: var(--va-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDots {
+  grid-area: 5 / 1;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0 16px 22px;
+  padding: 0;
+  overflow: visible;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot {
+  --va-stage-icon: var(--va-icon-book);
+  --va-stage-color: #168cd2;
+  min-width: 0;
+  min-height: 102px;
+  padding: 10px 3px 9px;
+  border: 1px solid #dae3d4;
+  border-radius: 10px;
+  background: linear-gradient(#fff, #fcfdf6);
+  box-shadow: 0 3px 0 #cbd6bd;
+  color: var(--va-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot small {
+  margin-top: 4px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #53665a;
+  overflow-wrap: anywhere;
+}
+/* Empty masked pseudo-elements are decorative and do not change accessible labels. */
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot::before,
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.done:not(.active)::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 7px;
+  background: var(--va-stage-color);
+  mask: var(--va-stage-icon) center / contain no-repeat;
+  -webkit-mask: var(--va-stage-icon) center / contain no-repeat;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='lab'] { --va-stage-icon: var(--va-icon-flask); --va-stage-color: #8750cc; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot:is([data-stage='g1'], [data-stage='g2'], [data-stage='g3']) { --va-stage-icon: var(--va-icon-game); --va-stage-color: #476690; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='e1'] { --va-stage-icon: var(--va-icon-clipboard); --va-stage-color: #3d72c1; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='e2'] { --va-stage-icon: var(--va-icon-target); --va-stage-color: #db5754; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='e3'] { --va-stage-icon: var(--va-icon-chart); --va-stage-color: #bb811a; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='exam'] { --va-stage-icon: var(--va-icon-exam); --va-stage-color: #3d72c1; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='result'] { --va-stage-icon: var(--va-icon-trophy); --va-stage-color: #d99115; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.done:not(.active) { background: #eff8e5; border-color: #8fbd78; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.active {
+  --va-stage-color: #fffbd7;
+  color: #fff;
+  border-color: #258a30;
+  background: linear-gradient(#28822d, #21772a);
+  box-shadow: inset 0 2px 0 #c4ec7580, 0 3px 0 #187b28;
+  text-shadow: 0 1px 1px #225c23;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.active small { color: #fff; }
+
+/* Reading surfaces. Original paragraphs, figures, tables and order remain untouched. */
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage {
+  max-width: none;
+  margin: 0 0 24px;
+  border: 3px solid #e7cc89;
+  border-radius: 22px;
+  background: var(--va-cream);
+  box-shadow: inset 0 0 0 3px #fffef8, var(--va-panel-shadow);
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader {
+  padding: 32px 38px 24px;
+  border: 0;
+  border-bottom: 1px solid #e7e7d5;
+  background: radial-gradient(ellipse at 100% 0, #e8f5dc 0, transparent 65%), linear-gradient(115deg, #fffef6, #f6fbf4);
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader .badge {
+  padding: 9px 15px;
+  border: 1px solid #f4da8e;
+  border-radius: 9px;
+  background: #fff0b3;
+  color: #76501c;
+  font-size: 14px;
+  line-height: 1.6;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader h1 {
+  margin: 17px 0 12px;
+  color: var(--va-forest);
+  font-size: clamp(27px, 3vw, 39px);
+  font-weight: 800;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader p { max-width: 780px; margin-bottom: 0; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody { padding: 24px; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.readingSection, .contentBody > section:first-child, .va-card) {
+  padding: clamp(20px, 3vw, 34px);
+  margin: 0 0 20px;
+  border: 1px solid var(--va-line);
+  border-radius: var(--va-radius);
+  background: #fff;
+  box-shadow: var(--va-card-shadow);
+  scroll-margin-top: 150px;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage h2 {
+  margin: 0 0 20px;
+  color: var(--va-ink);
+  font-size: clamp(22px, 2.15vw, 27px);
+  line-height: 1.55;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody > section:first-child h2::before {
+  content: '';
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  margin-right: 12px;
+  vertical-align: -.2em;
+  background: var(--va-blue);
+  mask: var(--va-icon-book) center / contain no-repeat;
+  -webkit-mask: var(--va-icon-book) center / contain no-repeat;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage :is(p, li) { color: #304b50; line-height: 1.95; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingSection > p:last-child,
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody > section:first-child p:last-child { margin-bottom: 0; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingOutline {
+  margin: 0 0 24px;
+  padding: 24px 30px;
+  border: 1px solid #cfdcba;
+  border-left: 5px solid #79b847;
+  border-radius: var(--va-radius);
+  background: #f4f9eb;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingOutline a {
+  padding-block: 6px;
+  color: #226444;
+  text-decoration-color: #9eba8f;
+  text-underline-offset: 4px;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .infoCard {
+  margin: 24px auto;
+  padding: 16px;
+  border: 1px solid #d9e2d6;
+  border-radius: 14px;
+  background: #fafcf5;
+  box-shadow: none;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .infoCard h3 { color: var(--va-forest); }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .lessonImage { display: block; width: 100%; height: auto; object-fit: contain; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.callout, .va-feedback) {
+  margin: 16px 0;
+  padding: 16px 20px;
+  border-left: 5px solid var(--va-gold);
+  border-radius: 10px;
+  background: #fff8df;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.callout.warn, .va-feedback--retry) { border-left-color: #d6976c; background: #fff2e9; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .va-feedback--success { border-left-color: #6bac4b; background: #eff9e8; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.readingWorked, .va-result) {
+  padding: 28px;
+  margin: 0 0 24px;
+  border: 1px solid #cbdcb8;
+  border-radius: var(--va-radius);
+  background: #f2f9eb;
+  box-shadow: var(--va-card-shadow);
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingSources { padding: 24px 12px 0; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingComplete {
+  padding: 30px 24px;
+  border: 1px solid #c3d9ac;
+  border-top: 5px solid #81b94d;
+  border-radius: var(--va-radius);
+  background: linear-gradient(120deg, #f1f9e5, #f5fbef);
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.pixelBtn, .va-button) {
+  min-height: 48px;
+  padding: 13px 23px;
+  border: 1px solid #218a31;
+  border-radius: 10px;
+  background: linear-gradient(#28822d, #21772a);
+  color: #fff;
+  box-shadow: inset 0 2px 0 #bcf47a80, 0 4px 0 #176c2a, 0 7px 12px #2e6f2520;
+  text-shadow: 0 1px 1px #2b6427;
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: normal;
+  transition: transform 150ms ease, filter 150ms ease;
+}
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .va-button--secondary { background: linear-gradient(#42afe0, #1783bb); border-color: #1a75a4; box-shadow: inset 0 2px 0 #a4e2f580, 0 4px 0 #195e85; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(button, a):focus-visible { outline: 3px solid #155e98; outline-offset: 4px; }
+:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):active { transform: translateY(2px); }
+@media (hover: hover) and (pointer: fine) {
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):hover { filter: brightness(1.04); transform: translateY(-2px); }
+}
+@media (min-aspect-ratio: 1/1) and (min-width: 700px) {
+  :where(.scienceAdventure, body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1)) { --va-scene: url('../lesson-selection/lesson-scene-wide-v1.webp'); }
+}
+@media (max-width: 1050px) {
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDots { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot { min-height: 94px; }
+}
+@media (max-width: 600px) {
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) { padding: 10px 12px calc(110px + env(safe-area-inset-bottom)); }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHUD { margin-bottom: 22px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title) { min-height: 144px; margin-bottom: 14px; padding: 27px 48px 36px; font-size: 22px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title)::before { border-image-width: 24px 55px 51px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .hudTop > span { padding: 18px 17px 9px; font-size: 13px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .progress { margin: 0 17px; height: 12px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHint { margin: 10px 17px 13px; font-size: 11px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDots { gap: 5px; margin: 0 10px 18px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot { min-height: 98px; padding: 9px 2px 7px; font-size: 11px; border-radius: 8px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot small { font-size: 9px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot::before,
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.done:not(.active)::before { width: 24px; height: 24px; margin-bottom: 5px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage { border-width: 2px; border-radius: 16px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader { padding: 24px 20px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader .badge { padding: 7px 10px; font-size: 12px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody { padding: 12px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.readingSection, .contentBody > section:first-child, .readingWorked, .readingComplete, .readingOutline) { padding: 20px 16px; border-radius: 12px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage :is(p, li) { font-size: 16px; line-height: 1.95; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage h2 { font-size: 21px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingOutline ol { padding-left: 22px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .infoCard { padding: 9px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .callout { padding: 13px 14px; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingComplete .pixelBtn { width: 100%; padding: 13px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.readingMode #reading-G1U1L1S1) { scroll-behavior: auto; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) *,
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) *::before,
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):is(:hover, :active) { transform: none; }
+}
+@media (forced-colors: active) {
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title) { color: CanvasText; background: Canvas; text-shadow: none; filter: none; border: 1px solid CanvasText; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title)::before { display: none; }
+  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.active { outline: 2px solid Highlight; outline-offset: -3px; }
+}
