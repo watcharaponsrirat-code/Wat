@@ -1,0 +1,112 @@
+/* Shared bottom navigation, using the approved dashboard appearance.
+ * Only decorative icons and paint/layout are changed. Existing buttons,
+ * labels, data-nav handlers, active state and accessible names stay intact.
+ */
+#app .bottomNav {
+  --nav-home: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9'/%3E%3C/svg%3E");
+  --nav-lessons: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5C8 2 4 3 2 4v16c4-1 7-1 10 1 3-2 6-2 10-1V4c-2-1-6-2-10 1Zm0 0v16'/%3E%3C/svg%3E");
+  --nav-results: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 21V12h4v9m2 0V7h4v14m2 0V3h4v18'/%3E%3C/svg%3E");
+  --nav-mission: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='4' width='15' height='18' rx='2'/%3E%3Cpath d='M9 4V2h7v4H9m0 6 2 2 5-5m-7 9h7'/%3E%3C/svg%3E");
+  --nav-about: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6h16M4 12h16M4 18h16'/%3E%3C/svg%3E");
+  position: fixed;
+  left: 50%;
+  right: auto;
+  bottom: max(9px, env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: calc(100% - 20px);
+  max-width: 700px;
+  min-height: 69px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+  padding: 5px;
+  background: #fffffff5;
+  border: 2px solid #fff;
+  border-radius: 21px;
+  box-shadow: 0 6px 0 #3b59642b, 0 8px 30px #173a514d;
+  z-index: 50;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  animation: none;
+  font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  line-height: 1.5;
+}
+#app .bottomNav::before,
+#app .bottomNav::after,
+#app .bottomNav .bottomItem::after { display: none; }
+
+#app .bottomNav .bottomItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 5px 2px;
+  border: 0;
+  border-radius: 14px;
+  color: #456085;
+  background: transparent;
+  font-size: 10px;
+  font-family: inherit;
+  line-height: 1.5;
+  font-weight: 700;
+  text-shadow: none;
+  box-shadow: none;
+  transform: none;
+  transition: background .15s, transform .15s;
+}
+/* Both existing renderers keep their original decorative SVGs in the DOM.
+ * Their shared masks use the exact five dashboard SVG paths above.
+ */
+#app .bottomNav .bottomItem > :is(.navIco, svg) { display: none; }
+#app .bottomNav .bottomItem::before {
+  content: '';
+  display: block;
+  flex: none;
+  width: 23px;
+  height: 23px;
+  background: currentColor;
+  -webkit-mask: var(--nav-icon) center / contain no-repeat;
+  mask: var(--nav-icon) center / contain no-repeat;
+  pointer-events: none;
+}
+#app .bottomNav [data-nav=home] { --nav-icon: var(--nav-home); }
+#app .bottomNav [data-nav=lessons] { --nav-icon: var(--nav-lessons); }
+#app .bottomNav [data-nav=results] { --nav-icon: var(--nav-results); }
+#app .bottomNav [data-nav=mission] { --nav-icon: var(--nav-mission); }
+#app .bottomNav [data-nav=about] { --nav-icon: var(--nav-about); }
+#app .bottomNav .bottomItem.active {
+  background: linear-gradient(130deg, #40d443, #07a84f);
+  color: #fff;
+  box-shadow: inset 0 2px 0 #fff5, 0 3px 5px #18944733;
+}
+#app .bottomNav .bottomItem:hover:not(.active) { background: #e8f5ed; }
+#app .bottomNav .bottomItem.active:hover { background: #12b348; }
+#app .bottomNav .bottomItem:active { transform: scale(.96); }
+#app .bottomNav .bottomItem:focus-visible { outline: 3px solid #155e98; outline-offset: -3px; }
+
+/* Preserve the dashboard's dedicated dock row and independent content scroll. */
+#app .dashboardPage .bottomNav {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  transform: none;
+  flex: none;
+  margin: 4px auto max(9px, env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 600px) {
+  #app .bottomNav .bottomItem { min-height: 62px; font-size: 12px; }
+  #app .bottomNav .bottomItem::before { width: 26px; height: 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app .bottomNav .bottomItem { transition: none; }
+  #app .bottomNav .bottomItem:active { transform: none; }
+}
+@media (forced-colors: active) {
+  #app .bottomNav .bottomItem { color: ButtonText; }
+  #app .bottomNav .bottomItem.active { outline: 2px solid Highlight; outline-offset: -2px; }
+  #app .bottomNav .bottomItem::before { background: ButtonText; forced-color-adjust: none; }
+}

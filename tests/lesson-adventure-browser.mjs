@@ -15,10 +15,10 @@ const stages=smoke?smoke.split(','):['content','lab','g1','g2','g3','e1','e2','e
 const sizes=smoke?[[390,844],[1366,768]]:[[375,812],[390,844],[430,932],[768,1024],[1280,720],[1366,768],[1440,900]];
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8',maxBuffer:16*1024*1024});
 const oldIndex=git('show',checkpoint+':index.html'),newIndex=await readFile('index.html','utf8');
-const canonical=s=>s.replaceAll('\r\n','\n').replace(/^[ \t]*<link[^\n]*href="assets\/theme\/adventure-[^"\n]+"[^\n]*>\n/gm,'').replace('science-adventure.css?v=2','science-adventure.css?v=1');
+const canonical=s=>s.replaceAll('\r\n','\n').replace(/^[ \t]*<link[^\n]*href="assets\/theme\/(?:adventure-[^"\n]+|navigation\.css\?v=1)"[^\n]*>\n/gm,'').replace('science-adventure.css?v=2','science-adventure.css?v=1');
 assert.equal(canonical(newIndex),canonical(oldIndex),'All original HTML, scientific data, application code and DOM templates remain exact');
 const changes=git('diff','--name-only',checkpoint,'--','assets','index.html','scripts','.github').trim().split('\n').filter(Boolean);
-assert(changes.every(p=>p==='index.html'||p==='assets/theme/science-adventure.css'||/^assets\/theme\/adventure-[\w-]+\.css$/.test(p)),`Protected source changed: ${changes}`);
+assert(changes.every(p=>p==='index.html'||p==='assets/theme/science-adventure.css'||p==='assets/theme/navigation.css'||/^assets\/theme\/adventure-[\w-]+\.css$/.test(p)),`Protected source changed: ${changes}`);
 await mkdir(out,{recursive:true});
 const report={checkpoint,mode:flowOnly?'flows':smoke||'full',lessons:[],viewports:sizes,layouts:0,exactContent:0,exactStates:0,readerImages:0,simControls:0,checks:[],screenshots:[],errors:[],failures:[]};
 const oldCss=git('show',checkpoint+':assets/theme/science-adventure.css');
