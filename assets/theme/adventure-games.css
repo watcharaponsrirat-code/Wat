@@ -1,0 +1,209 @@
+/* Premium Science Adventure: arcade presentation only.
+ * Shared --va-* tokens come from science-adventure.css.
+ * Keep engine.js, board geometry, card visibility, diagrams and input behavior intact.
+ */
+.shell:where(:has(> .stageHUD)) .gameStage.arcade {
+  color: var(--va-ink);
+  border-color: #e7cc89;
+  border-radius: 22px;
+  background: var(--va-cream);
+  box-shadow: inset 0 0 0 3px #fffef8, var(--va-panel-shadow);
+}
+
+.shell:where(:has(> .stageHUD)) .arcade-trail {
+  border-bottom-color: #e4d7af;
+  background: linear-gradient(110deg, #fff7da, #f5f8e9);
+}
+.shell:where(:has(> .stageHUD)) .arcade-trail span {
+  border-color: #dce2cd;
+  border-radius: 9px;
+  background: var(--va-paper);
+  color: var(--va-muted);
+  box-shadow: 0 2px 0 #c7c9a72b;
+}
+.shell:where(:has(> .stageHUD)) .arcade-trail .is-current {
+  border-color: #2d743d;
+  background: linear-gradient(#328244, #245f34);
+  color: #fffef3;
+  box-shadow: inset 0 2px 0 #c9ed9c54, 0 3px 0 #1f5230;
+}
+.shell:where(:has(> .stageHUD)) .arcade-header {
+  border-bottom-color: var(--va-line);
+  background: radial-gradient(ellipse at 100% 0, #e8f5dc 0, transparent 65%), linear-gradient(115deg, #fffef6, #f6fbf4);
+}
+.shell:where(:has(> .stageHUD)) .arcade-header h2 { color: var(--va-forest); }
+.shell:where(:has(> .stageHUD)) .arcade-header p { color: #304b50; }
+.shell:where(:has(> .stageHUD)) .arcade-header small { color: var(--va-muted); }
+.shell:where(:has(> .stageHUD)) .arcade-icon {
+  border-color: var(--va-gold);
+  border-radius: 14px;
+  background: linear-gradient(#fff9dc, #fcecb2);
+  box-shadow: inset 0 2px 0 #fffefa, 0 4px 0 #c7a5535c;
+}
+.shell:where(:has(> .stageHUD)) .arcade-status {
+  border-color: #e5dcc1;
+  background: #fff8e1;
+  color: #72501c;
+}
+.shell:where(:has(> .stageHUD)) .arcade-status span { color: #6a634c; }
+.shell:where(:has(> .stageHUD)) .arcade-board { background: var(--va-paper); }
+
+/* Memory: paint existing back/open/matched states without exposing hidden cards. */
+.shell:where(:has(> .stageHUD)) .arcade-card {
+  border-color: #346d45;
+  border-radius: 13px;
+  background: repeating-linear-gradient(45deg, #ffffff08 0 12px, transparent 12px 24px), linear-gradient(145deg, #438b4f, #245b37);
+  color: #fffef3;
+  box-shadow: inset 0 3px 0 #c2e39470, inset 0 0 0 5px #ffffff09, 0 5px 0 #204c30;
+}
+.shell:where(:has(> .stageHUD)) .arcade-card .card-symbol { color: #ffe6a2; }
+.shell:where(:has(> .stageHUD)) .arcade-card.is-open {
+  border-color: #9dc5d4;
+  background: #f6fcff;
+  color: var(--va-ink);
+  box-shadow: inset 0 2px 0 #fff, 0 5px 0 #bdd3d9;
+}
+.shell:where(:has(> .stageHUD)) .arcade-card.is-matched {
+  border-color: #86b164;
+  background: #edf8e4;
+  color: var(--va-forest);
+  box-shadow: inset 0 2px 0 #fff, 0 5px 0 #adc58e;
+}
+.shell:where(:has(> .stageHUD)) .arcade-card.is-matched small { color: #316338; }
+
+/* Route, categorization, evidence and mission pieces keep their original layout. */
+.shell:where(:has(> .stageHUD)) .arcade-route {
+  border-color: #b8caa6;
+  border-radius: 14px;
+  background: #f4f9eb;
+}
+.shell:where(:has(> .stageHUD)) .arcade-step {
+  border-radius: 10px;
+  background: #fffefa;
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .arcade-step b { background: var(--va-forest); color: #fff; }
+.shell:where(:has(> .stageHUD)) .arcade-empty { color: var(--va-muted); }
+.shell:where(:has(> .stageHUD)) .arcade-sort-card {
+  border-color: var(--va-line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .arcade-sort-card h3 { color: var(--va-ink); }
+.shell:where(:has(> .stageHUD)) .arcade :is(.tile, .arcade-chip, .arcade-evidence-card, .arcade-edge, .choice, .arcade-adjust) {
+  border-color: #d5dece;
+  border-radius: 10px;
+  background: linear-gradient(#fff, #fcfdf7);
+  color: var(--va-ink);
+  box-shadow: inset 0 2px 0 #fff, 0 3px 0 #cdd7bf8c;
+}
+.shell:where(:has(> .stageHUD)) .arcade :is(.tile.sel, .arcade-chip.is-selected, .arcade-evidence-card.is-selected, .choice.sel) {
+  border-color: #378ba5;
+  background: #eaf7fa;
+  color: #175368;
+  box-shadow: inset 3px 0 0 #378ba5, 0 3px 0 #b6d2d8;
+}
+.shell:where(:has(> .stageHUD)) .arcade .tile.sel { outline-color: #378ba5; }
+.shell:where(:has(> .stageHUD)) .arcade-check { background: #eef2e7; color: #496843; }
+.shell:where(:has(> .stageHUD)) .arcade-evidence-card.is-selected .arcade-check { background: #cbe9ee; color: #15566c; }
+.shell:where(:has(> .stageHUD)) .arcade-pill {
+  border-radius: 8px;
+  background: #fff0b3;
+  color: #76501c;
+  box-shadow: inset 0 0 0 1px #f0d58f;
+}
+.shell:where(:has(> .stageHUD)) .arcade-mission h3 { color: var(--va-ink); }
+.shell:where(:has(> .stageHUD)) .arcade-choices .choice b { color: #326b4d; }
+
+/* Control surfaces. Scientific SVG artwork, values and meter positions stay unchanged. */
+.shell:where(:has(> .stageHUD)) .arcade-simulator {
+  border-color: var(--va-line);
+  border-radius: var(--va-radius);
+  background: #f4f9ef;
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .arcade-target > span {
+  border-radius: 11px;
+  background: #fffefa;
+  color: var(--va-muted);
+  box-shadow: inset 0 0 0 1px #e1e5d6;
+}
+.shell:where(:has(> .stageHUD)) .arcade-target strong { color: var(--va-forest); }
+.shell:where(:has(> .stageHUD)) .arcade-formula { background: #edf5f8; color: var(--va-ink); }
+.shell:where(:has(> .stageHUD)) .arcade-meter { background: #dce6d2; box-shadow: inset 0 2px 3px #536f3320; }
+.shell:where(:has(> .stageHUD)) .arcade-meter span { background: linear-gradient(90deg, #60af53, #297f59); }
+.shell:where(:has(> .stageHUD)) .arcade-meter i { background: #294a3a; }
+.shell:where(:has(> .stageHUD)) .arcade-control input { accent-color: var(--va-green); }
+.shell:where(:has(> .stageHUD)) .arcade-genetics th { background: #fff0c1; color: #715421; }
+.shell:where(:has(> .stageHUD)) .arcade-genetics td { background: #f0f6e9; }
+.shell:where(:has(> .stageHUD)) .arcade-genetics select {
+  border-color: #bcccaf;
+  border-radius: 9px;
+  background: #fffefa;
+  color: var(--va-ink);
+  box-shadow: inset 0 2px 2px #596b3520;
+}
+.shell:where(:has(> .stageHUD)) .circuit-source {
+  border-color: #d7bb72;
+  background: #fff6d7;
+  color: #715421;
+  box-shadow: inset 0 2px 0 #fff, 0 3px 0 #d7bb7233;
+}
+.shell:where(:has(> .stageHUD)) .circuit-branches { border-color: #92a791; }
+.shell:where(:has(> .stageHUD)) .circuit-branch { border-color: #bdcdb7; background: #f4f7ed; }
+.shell:where(:has(> .stageHUD)) .circuit-branch.is-lit { border-color: #d3a221; background: #fff9dc; }
+.shell:where(:has(> .stageHUD)) .arcade-switch {
+  border-color: #bdcdb7;
+  border-radius: 10px;
+  background: #fffefa;
+  color: var(--va-ink);
+  box-shadow: inset 0 2px 0 #fff, 0 3px 0 #cdd7bf8c;
+}
+.shell:where(:has(> .stageHUD)) .arcade-switch.is-selected { border-color: #43885a; background: #e8f5e3; color: #285d3a; }
+.shell:where(:has(> .stageHUD)) .circuit-return { color: var(--va-muted); }
+.shell:where(:has(> .stageHUD)) .arcade-web {
+  border-color: #cbdcb8;
+  border-radius: var(--va-radius);
+  background: #f3f8eb;
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .arcade-web-instruction { color: var(--va-forest); }
+.shell:where(:has(> .stageHUD)) .arcade-web-edges { border-color: #aabe99; }
+.shell:where(:has(> .stageHUD)) .arcade-edge b { color: #367348; }
+
+/* Feedback is bound only to the real engine result states. */
+.shell:where(:has(> .stageHUD)) .arcade-feedback {
+  border-radius: 13px;
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .arcade-feedback.is-success {
+  border-color: #94bb78;
+  background: #eff9e8;
+  color: #2e5f36;
+}
+.shell:where(:has(> .stageHUD)) .arcade-feedback.is-retry {
+  border-color: #d9ad82;
+  background: #fff3e6;
+  color: #814b29;
+}
+.shell:where(:has(> .stageHUD)) .arcade-win {
+  border-color: var(--va-gold);
+  border-radius: 14px;
+  background: linear-gradient(115deg, #fff4c9, #f4f9e7);
+  color: #73521d;
+  box-shadow: inset 0 2px 0 #fffdf2, 0 4px 0 #c7a55333;
+}
+.shell:where(:has(> .stageHUD)) .arcade-win::before { color: var(--va-forest); }
+.shell:where(:has(> .stageHUD)) .arcade-hint {
+  border-left-color: var(--va-gold);
+  background: #fff8df;
+  color: #6a542e;
+}
+.shell:where(:has(> .stageHUD)) :is(.arcade-footer, .arcade-previous) { color: var(--va-muted); }
+.shell:where(:has(> .stageHUD)) .arcade-footer { border-color: var(--va-line); background: #f5f8ed; }
+
+/* Existing responsive board grids and reduced-motion behavior remain in games.css. */
+@media (max-width: 600px) {
+  .shell:where(:has(> .stageHUD)) .gameStage.arcade { border-radius: 16px; }
+}

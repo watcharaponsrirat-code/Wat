@@ -1,0 +1,228 @@
+/* Science Adventure laboratory presentation.
+ * Uses the approved reader tokens inherited from the shared lesson shell.
+ * The original viewport/canvas/diagram sizes, visibility rules, grids, state
+ * attributes and simulation handlers remain owned by the existing engine.
+ */
+.shell:where(:has(> .stageHUD)) .simPanel {
+  color: var(--va-ink);
+  border: 3px solid #e7cc89;
+  border-radius: 22px;
+  background: var(--va-cream);
+  box-shadow: inset 0 0 0 3px #fffef8, var(--va-panel-shadow);
+}
+
+.shell:where(:has(> .stageHUD)) .simPanel .simHeader {
+  padding: 32px 38px 24px;
+  border-top: 0;
+  border-bottom: 1px solid #e7e7d5;
+  background: radial-gradient(ellipse at 100% 0, #e8f5dc 0, transparent 65%), linear-gradient(115deg, #fffef6, #f6fbf4);
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simEyebrow {
+  padding: 7px 11px;
+  border: 1px solid #f4da8e;
+  border-radius: 9px;
+  color: #76501c;
+  background: #fff0b3;
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: .06em;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simHeader h1 {
+  margin: 17px 0 12px;
+  color: var(--va-forest);
+  font-size: clamp(27px, 3vw, 39px);
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.shell:where(:has(> .stageHUD)) .simHeader p {
+  color: #304b50;
+  font-size: 16px;
+  line-height: 1.85;
+}
+.shell:where(:has(> .stageHUD)) .simTopics { margin-top: 16px; }
+.shell:where(:has(> .stageHUD)) .simTopics span {
+  padding: 6px 10px;
+  border-color: var(--va-line);
+  border-radius: 9px;
+  color: var(--va-forest);
+  background: var(--va-paper);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* Keep the dark model backdrop: transparent 3D canvases rely on its contrast.
+ * Only the surrounding frame and toolbar surfaces adopt the shared paper.
+ */
+.shell:where(:has(> .stageHUD)) .simStudio {
+  border-color: #c4ab69;
+  border-radius: var(--va-radius);
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .simStudioTop {
+  border-bottom-color: #d8c999;
+  color: var(--va-forest);
+  background: var(--va-paper);
+}
+.shell:where(:has(> .stageHUD)) .simLiveDot {
+  background: var(--va-green);
+  box-shadow: 0 0 0 4px #72ad3920;
+}
+.shell:where(:has(> .stageHUD)) .simViewSwitch {
+  border: 1px solid #d7dfc7;
+  background: #eef3e4;
+}
+.shell:where(:has(> .stageHUD)) .simViewSwitch button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--va-forest);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.shell:where(:has(> .stageHUD)) .simViewSwitch button[aria-pressed=true] {
+  border-color: #21772a;
+  color: #fff;
+  background: linear-gradient(#28822d, #21772a);
+  box-shadow: inset 0 2px 0 #bcf47a40, 0 2px 0 #176c2a;
+}
+.shell:where(:has(> .stageHUD)) .simCameraTools {
+  border-top-color: #d8c999;
+  background: var(--va-paper);
+}
+.shell:where(:has(> .stageHUD)) .simCameraTools button {
+  min-width: 44px;
+  min-height: 44px;
+  border-color: #d3dcc6;
+  border-radius: 9px;
+  color: var(--va-ink);
+  background: linear-gradient(#fff, #fcfdf6);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 0 #cbd6bd;
+  line-height: 1.6;
+}
+.shell:where(:has(> .stageHUD)) .simCameraTools button[aria-pressed=true] {
+  border-color: #8fbd78;
+  color: var(--va-forest);
+  background: #eff8e5;
+  box-shadow: inset 0 0 0 1px #b8d6a6, 0 2px 0 #aac28d;
+}
+.shell:where(:has(> .stageHUD)) .simStudioHint {
+  color: var(--va-muted);
+  background: var(--va-paper);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* Native input controls retain their values, ranges, options and appearance. */
+.shell:where(:has(> .stageHUD)) .simPanel .simControls {
+  border: 1px solid var(--va-line);
+  border-top: 4px solid #dfb961;
+  border-radius: var(--va-radius);
+  background: #fff;
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simControls h2 {
+  color: var(--va-forest);
+  font-size: 21px;
+  line-height: 1.55;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simControl {
+  border-bottom-color: var(--va-line);
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simControl > span {
+  color: var(--va-ink);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simControl output {
+  padding: 4px 9px;
+  border: 1px solid #d6e3c9;
+  border-radius: 7px;
+  color: var(--va-forest);
+  background: #eff7e7;
+  font-size: 13px;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simControl input[type=range] {
+  min-height: 44px;
+  accent-color: #28822d;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simControl select {
+  min-height: 44px;
+  border-color: #becdb2;
+  border-radius: 9px;
+  color: var(--va-ink);
+  background-color: var(--va-paper);
+  font-size: 16px;
+  line-height: 1.6;
+  box-shadow: inset 0 2px 0 #f0f2e8;
+}
+.shell:where(:has(> .stageHUD)) .simControl small,
+.shell:where(:has(> .stageHUD)) .simPanel .simFree {
+  color: var(--va-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+/* Measurement labels and notes remain native HTML from the simulation model. */
+.shell:where(:has(> .stageHUD)) .simPanel .simMetrics > div {
+  border-color: var(--va-line);
+  border-top-color: #8ab65a;
+  border-radius: 12px;
+  background: var(--va-paper);
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simMetrics span {
+  color: var(--va-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simMetrics strong { color: var(--va-forest); }
+.shell:where(:has(> .stageHUD)) .simPanel .simObservation {
+  border: 1px solid #cfdcba;
+  border-left: 5px solid #79b847;
+  border-radius: 10px;
+  color: #304b50;
+  background: #f4f9eb;
+  font-size: 15px;
+  line-height: 1.85;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simAssumption {
+  border-color: #e9d9a6;
+  border-radius: 12px;
+  color: #655333;
+  background: #fff8df;
+  font-size: 14px;
+  line-height: 1.85;
+}
+.shell:where(:has(> .stageHUD)) .simPanel .simAssumption > b { color: #76501c; }
+
+.shell:where(:has(> .stageHUD)) .simPanel :is(button, input, select):focus-visible {
+  outline: 3px solid #155e98;
+  outline-offset: 3px;
+}
+.shell:where(:has(> .stageHUD)) .simViewSwitch button:focus-visible { outline-offset: -3px; }
+.shell:where(:has(> .stageHUD)) :is(.simCameraTools, .simViewSwitch) button:disabled {
+  opacity: .55;
+  box-shadow: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .shell:where(:has(> .stageHUD)) .simCameraTools button:not(:disabled):hover {
+    border-color: #8fbd78;
+    color: var(--va-forest);
+    background: #eaf4df;
+  }
+}
+@media (max-width: 850px) {
+  .shell:where(:has(> .stageHUD)) .simPanel .simHeader { padding: 24px 20px; }
+}
+@media (max-width: 600px) {
+  .shell:where(:has(> .stageHUD)) .simPanel { border-width: 2px; border-radius: 16px; }
+  .shell:where(:has(> .stageHUD)) .simPanel .simControls { border-radius: 12px; }
+  .shell:where(:has(> .stageHUD)) .simStudio { border-radius: 12px; }
+  .shell:where(:has(> .stageHUD)) .simStudioTop { gap: 6px; }
+  .shell:where(:has(> .stageHUD)) .simViewSwitch button { padding-inline: 9px; }
+}

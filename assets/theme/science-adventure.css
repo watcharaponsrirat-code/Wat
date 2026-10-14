@@ -1,9 +1,9 @@
 /* Premium Science Adventure — presentation only.
- * Current opt-in: G1U1L1 reading page, identified by its existing section ID.
- * Future pages may opt in with .scienceAdventure after review. No global tokens.
+ * Every lesson opts in through its existing .shell > .stageHUD structure.
+ * No lesson IDs, route changes, duplicate templates or global root tokens.
  * Existing labels, DOM, data-stage handlers and inline progress widths are retained.
  */
-:where(.scienceAdventure, body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1)) {
+:where(.scienceAdventure, body:has(.scienceAdventure, .shell > .stageHUD)) {
   --va-ink: #173a53;
   --va-muted: #526654;
   --va-forest: #24553a;
@@ -29,7 +29,7 @@
 }
 
 /* Artwork is separate from HTML; opaque reading surfaces quiet the central scene. */
-body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
+body:has(.scienceAdventure, .shell > .stageHUD) #app::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -38,14 +38,16 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   background: #79cef1 var(--va-scene) center center / cover no-repeat;
 }
 
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) {
   color: var(--va-ink);
   max-width: 1120px;
   padding: 14px 28px calc(124px + env(safe-area-inset-bottom));
 }
+/* Override the old exam-only shell width so the shared frame never changes. */
+body[data-scene] .shell:where(:has(> .stageHUD)) { max-width: 1120px; }
 
 /* Activity shell: the existing title becomes the wood sign using CSS grid only. */
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHUD {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageHUD {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   position: relative;
@@ -57,7 +59,7 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   background: none;
   box-shadow: none;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHUD::before {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageHUD::before {
   content: '';
   grid-area: 2 / 1 / 6 / 2;
   z-index: -1;
@@ -67,8 +69,8 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   box-shadow: inset 0 -7px 0 #eee9cf80, var(--va-panel-shadow);
   pointer-events: none;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .hudTop { display: contents; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title) {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .hudTop { display: contents; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.hudTop > b, .va-title) {
   grid-area: 1 / 1;
   position: relative;
   isolation: isolate;
@@ -89,7 +91,7 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   text-shadow: 0 2px 2px #66320a, 0 1px 6px #542b14;
   filter: drop-shadow(0 6px 3px #283c4033);
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title)::before {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.hudTop > b, .va-title)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -102,14 +104,14 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   border-image-repeat: stretch;
   pointer-events: none;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .hudTop > span {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .hudTop > span {
   grid-area: 2 / 1;
   padding: 20px 26px 10px;
   font-size: 15px;
   font-weight: 700;
   color: var(--va-forest);
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .progress {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .progress {
   grid-area: 3 / 1;
   height: 14px;
   margin: 0 26px;
@@ -118,19 +120,19 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   background: #ebefdf;
   box-shadow: inset 0 2px 3px #526a3320;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .progress > span {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .progress > span {
   border-radius: 4px;
   background: repeating-linear-gradient(90deg, #ffffff12 0 18px, transparent 18px 38px), linear-gradient(#83d645, #2a9a21);
   box-shadow: inset 0 2px 0 #d9ff9470;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHint {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageHint {
   grid-area: 4 / 1;
   margin: 12px 26px 16px;
   color: var(--va-muted);
   font-size: 13px;
   line-height: 1.7;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDots {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDots {
   grid-area: 5 / 1;
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 7px;
@@ -138,7 +140,7 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   padding: 0;
   overflow: visible;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot {
   --va-stage-icon: var(--va-icon-book);
   --va-stage-color: #168cd2;
   min-width: 0;
@@ -154,7 +156,7 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   line-height: 1.6;
   transition: transform 150ms ease, box-shadow 150ms ease;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot small {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot small {
   margin-top: 4px;
   font-size: 10px;
   line-height: 1.6;
@@ -162,8 +164,8 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   overflow-wrap: anywhere;
 }
 /* Empty masked pseudo-elements are decorative and do not change accessible labels. */
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot::before,
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.done:not(.active)::before {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot::before,
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot.done:not(.active)::before {
   content: '';
   display: block;
   width: 28px;
@@ -173,15 +175,15 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   mask: var(--va-stage-icon) center / contain no-repeat;
   -webkit-mask: var(--va-stage-icon) center / contain no-repeat;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='lab'] { --va-stage-icon: var(--va-icon-flask); --va-stage-color: #8750cc; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot:is([data-stage='g1'], [data-stage='g2'], [data-stage='g3']) { --va-stage-icon: var(--va-icon-game); --va-stage-color: #476690; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='e1'] { --va-stage-icon: var(--va-icon-clipboard); --va-stage-color: #3d72c1; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='e2'] { --va-stage-icon: var(--va-icon-target); --va-stage-color: #db5754; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='e3'] { --va-stage-icon: var(--va-icon-chart); --va-stage-color: #bb811a; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='exam'] { --va-stage-icon: var(--va-icon-exam); --va-stage-color: #3d72c1; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot[data-stage='result'] { --va-stage-icon: var(--va-icon-trophy); --va-stage-color: #d99115; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.done:not(.active) { background: #eff8e5; border-color: #8fbd78; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.active {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot[data-stage='lab'] { --va-stage-icon: var(--va-icon-flask); --va-stage-color: #8750cc; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot:is([data-stage='g1'], [data-stage='g2'], [data-stage='g3']) { --va-stage-icon: var(--va-icon-game); --va-stage-color: #476690; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot[data-stage='e1'] { --va-stage-icon: var(--va-icon-clipboard); --va-stage-color: #3d72c1; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot[data-stage='e2'] { --va-stage-icon: var(--va-icon-target); --va-stage-color: #db5754; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot[data-stage='e3'] { --va-stage-icon: var(--va-icon-chart); --va-stage-color: #bb811a; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot[data-stage='exam'] { --va-stage-icon: var(--va-icon-exam); --va-stage-color: #3d72c1; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot[data-stage='result'] { --va-stage-icon: var(--va-icon-trophy); --va-stage-color: #d99115; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot.done:not(.active) { background: #eff8e5; border-color: #8fbd78; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot.active {
   --va-stage-color: #fffbd7;
   color: #fff;
   border-color: #258a30;
@@ -189,10 +191,10 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   box-shadow: inset 0 2px 0 #c4ec7580, 0 3px 0 #187b28;
   text-shadow: 0 1px 1px #225c23;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.active small { color: #fff; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot.active small { color: #fff; }
 
 /* Reading surfaces. Original paragraphs, figures, tables and order remain untouched. */
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingPage {
   max-width: none;
   margin: 0 0 24px;
   border: 3px solid #e7cc89;
@@ -200,13 +202,13 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   background: var(--va-cream);
   box-shadow: inset 0 0 0 3px #fffef8, var(--va-panel-shadow);
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentHeader {
   padding: 32px 38px 24px;
   border: 0;
   border-bottom: 1px solid #e7e7d5;
   background: radial-gradient(ellipse at 100% 0, #e8f5dc 0, transparent 65%), linear-gradient(115deg, #fffef6, #f6fbf4);
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader .badge {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentHeader .badge {
   padding: 9px 15px;
   border: 1px solid #f4da8e;
   border-radius: 9px;
@@ -215,7 +217,7 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   font-size: 14px;
   line-height: 1.6;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader h1 {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentHeader h1 {
   margin: 17px 0 12px;
   color: var(--va-forest);
   font-size: clamp(27px, 3vw, 39px);
@@ -223,9 +225,9 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   line-height: 1.5;
   text-wrap: balance;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader p { max-width: 780px; margin-bottom: 0; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody { padding: 24px; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.readingSection, .contentBody > section:first-child, .va-card) {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentHeader p { max-width: 780px; margin-bottom: 0; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentBody { padding: 24px; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.readingSection, .contentBody > section:first-child, .va-card) {
   padding: clamp(20px, 3vw, 34px);
   margin: 0 0 20px;
   border: 1px solid var(--va-line);
@@ -234,13 +236,13 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   box-shadow: var(--va-card-shadow);
   scroll-margin-top: 150px;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage h2 {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingPage h2 {
   margin: 0 0 20px;
   color: var(--va-ink);
   font-size: clamp(22px, 2.15vw, 27px);
   line-height: 1.55;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody > section:first-child h2::before {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentBody > section:first-child h2::before {
   content: '';
   display: inline-block;
   width: 30px;
@@ -251,10 +253,10 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   mask: var(--va-icon-book) center / contain no-repeat;
   -webkit-mask: var(--va-icon-book) center / contain no-repeat;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage :is(p, li) { color: #304b50; line-height: 1.95; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingSection > p:last-child,
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody > section:first-child p:last-child { margin-bottom: 0; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingOutline {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingPage :is(p, li) { color: #304b50; line-height: 1.95; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingSection > p:last-child,
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentBody > section:first-child p:last-child { margin-bottom: 0; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingOutline {
   margin: 0 0 24px;
   padding: 24px 30px;
   border: 1px solid #cfdcba;
@@ -262,13 +264,13 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   border-radius: var(--va-radius);
   background: #f4f9eb;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingOutline a {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingOutline a {
   padding-block: 6px;
   color: #226444;
   text-decoration-color: #9eba8f;
   text-underline-offset: 4px;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .infoCard {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .infoCard {
   margin: 24px auto;
   padding: 16px;
   border: 1px solid #d9e2d6;
@@ -276,18 +278,18 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   background: #fafcf5;
   box-shadow: none;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .infoCard h3 { color: var(--va-forest); }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .lessonImage { display: block; width: 100%; height: auto; object-fit: contain; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.callout, .va-feedback) {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .infoCard h3 { color: var(--va-forest); }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .lessonImage { display: block; width: 100%; height: auto; object-fit: contain; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.callout, .va-feedback) {
   margin: 16px 0;
   padding: 16px 20px;
   border-left: 5px solid var(--va-gold);
   border-radius: 10px;
   background: #fff8df;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.callout.warn, .va-feedback--retry) { border-left-color: #d6976c; background: #fff2e9; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .va-feedback--success { border-left-color: #6bac4b; background: #eff9e8; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.readingWorked, .va-result) {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.callout.warn, .va-feedback--retry) { border-left-color: #d6976c; background: #fff2e9; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .va-feedback--success { border-left-color: #6bac4b; background: #eff9e8; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.readingWorked, .va-result) {
   padding: 28px;
   margin: 0 0 24px;
   border: 1px solid #cbdcb8;
@@ -295,15 +297,15 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   background: #f2f9eb;
   box-shadow: var(--va-card-shadow);
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingSources { padding: 24px 12px 0; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingComplete {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingSources { padding: 24px 12px 0; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingComplete {
   padding: 30px 24px;
   border: 1px solid #c3d9ac;
   border-top: 5px solid #81b94d;
   border-radius: var(--va-radius);
   background: linear-gradient(120deg, #f1f9e5, #f5fbef);
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.pixelBtn, .va-button) {
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.pixelBtn, .va-button) {
   min-height: 48px;
   padding: 13px 23px;
   border: 1px solid #218a31;
@@ -317,53 +319,53 @@ body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1) #app::before {
   white-space: normal;
   transition: transform 150ms ease, filter 150ms ease;
 }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .va-button--secondary { background: linear-gradient(#42afe0, #1783bb); border-color: #1a75a4; box-shadow: inset 0 2px 0 #a4e2f580, 0 4px 0 #195e85; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(button, a):focus-visible { outline: 3px solid #155e98; outline-offset: 4px; }
-:is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):active { transform: translateY(2px); }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .va-button--secondary { background: linear-gradient(#42afe0, #1783bb); border-color: #1a75a4; box-shadow: inset 0 2px 0 #a4e2f580, 0 4px 0 #195e85; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(button, a):focus-visible { outline: 3px solid #155e98; outline-offset: 4px; }
+:is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):active { transform: translateY(2px); }
 @media (hover: hover) and (pointer: fine) {
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):hover { filter: brightness(1.04); transform: translateY(-2px); }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):hover { filter: brightness(1.04); transform: translateY(-2px); }
 }
 @media (min-aspect-ratio: 1/1) and (min-width: 700px) {
-  :where(.scienceAdventure, body:has(.scienceAdventure, .readingMode #reading-G1U1L1S1)) { --va-scene: url('../lesson-selection/lesson-scene-wide-v1.webp'); }
+  :where(.scienceAdventure, body:has(.scienceAdventure, .shell > .stageHUD)) { --va-scene: url('../lesson-selection/lesson-scene-wide-v1.webp'); }
 }
 @media (max-width: 1050px) {
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDots { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot { min-height: 94px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDots { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot { min-height: 94px; }
 }
 @media (max-width: 600px) {
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) { padding: 10px 12px calc(110px + env(safe-area-inset-bottom)); }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHUD { margin-bottom: 22px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title) { min-height: 144px; margin-bottom: 14px; padding: 27px 48px 36px; font-size: 22px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title)::before { border-image-width: 24px 55px 51px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .hudTop > span { padding: 18px 17px 9px; font-size: 13px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .progress { margin: 0 17px; height: 12px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageHint { margin: 10px 17px 13px; font-size: 11px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDots { gap: 5px; margin: 0 10px 18px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot { min-height: 98px; padding: 9px 2px 7px; font-size: 11px; border-radius: 8px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot small { font-size: 9px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot::before,
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.done:not(.active)::before { width: 24px; height: 24px; margin-bottom: 5px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage { border-width: 2px; border-radius: 16px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader { padding: 24px 20px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentHeader .badge { padding: 7px 10px; font-size: 12px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .contentBody { padding: 12px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.readingSection, .contentBody > section:first-child, .readingWorked, .readingComplete, .readingOutline) { padding: 20px 16px; border-radius: 12px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage :is(p, li) { font-size: 16px; line-height: 1.95; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingPage h2 { font-size: 21px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingOutline ol { padding-left: 22px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .infoCard { padding: 9px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .callout { padding: 13px 14px; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .readingComplete .pixelBtn { width: 100%; padding: 13px 10px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) { padding: 10px 12px calc(110px + env(safe-area-inset-bottom)); }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageHUD { margin-bottom: 22px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.hudTop > b, .va-title) { min-height: 144px; margin-bottom: 14px; padding: 27px 48px 36px; font-size: 22px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.hudTop > b, .va-title)::before { border-image-width: 24px 55px 51px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .hudTop > span { padding: 18px 17px 9px; font-size: 13px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .progress { margin: 0 17px; height: 12px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageHint { margin: 10px 17px 13px; font-size: 11px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDots { gap: 5px; margin: 0 10px 18px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot { min-height: 98px; padding: 9px 2px 7px; font-size: 11px; border-radius: 8px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot small { font-size: 9px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot::before,
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot.done:not(.active)::before { width: 24px; height: 24px; margin-bottom: 5px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingPage { border-width: 2px; border-radius: 16px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentHeader { padding: 24px 20px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentHeader .badge { padding: 7px 10px; font-size: 12px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .contentBody { padding: 12px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.readingSection, .contentBody > section:first-child, .readingWorked, .readingComplete, .readingOutline) { padding: 20px 16px; border-radius: 12px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingPage :is(p, li) { font-size: 16px; line-height: 1.95; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingPage h2 { font-size: 21px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingOutline ol { padding-left: 22px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .infoCard { padding: 9px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .callout { padding: 13px 14px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .readingComplete .pixelBtn { width: 100%; padding: 13px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html:has(.readingMode #reading-G1U1L1S1) { scroll-behavior: auto; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) *,
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) *::before,
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):is(:hover, :active) { transform: none; }
+  html:has(.shell > .stageHUD) { scroll-behavior: auto; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) *,
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) *::before,
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.stageDot, .pixelBtn, .va-button):not(:disabled):is(:hover, :active) { transform: none; }
 }
 @media (forced-colors: active) {
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title) { color: CanvasText; background: Canvas; text-shadow: none; filter: none; border: 1px solid CanvasText; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) :is(.hudTop > b, .va-title)::before { display: none; }
-  :is(.scienceAdventure, .readingMode:where(:has(#reading-G1U1L1S1))) .stageDot.active { outline: 2px solid Highlight; outline-offset: -3px; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.hudTop > b, .va-title) { color: CanvasText; background: Canvas; text-shadow: none; filter: none; border: 1px solid CanvasText; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) :is(.hudTop > b, .va-title)::before { display: none; }
+  :is(.scienceAdventure, .shell:where(:has(> .stageHUD))) .stageDot.active { outline: 2px solid Highlight; outline-offset: -3px; }
 }

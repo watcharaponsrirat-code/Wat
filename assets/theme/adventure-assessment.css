@@ -1,0 +1,237 @@
+/* Shared challenge and achievement surfaces. Existing content and state classes
+ * remain the only source of questions, answers, progress and earned results.
+ */
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard),
+.shell:where(:has(> .stageHUD)) > .panel {
+  padding: 24px;
+  margin: 0 0 24px;
+  border: 3px solid #e7cc89;
+  border-radius: 22px;
+  background: var(--va-cream);
+  color: var(--va-ink);
+  box-shadow: inset 0 0 0 3px #fffef8, var(--va-panel-shadow);
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) > .gameTitle {
+  padding: 22px;
+  border: 1px solid var(--va-line);
+  border-radius: var(--va-radius);
+  background: radial-gradient(ellipse at 100% 0, #e8f5dc 0, transparent 65%), linear-gradient(115deg, #fffef6, #f6fbf4);
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .gameTitle h2 {
+  color: var(--va-forest);
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .gameTitle .num {
+  border: 1px solid #e2c26c;
+  border-radius: 9px;
+  color: #76501c;
+  background: #fff0b3;
+  box-shadow: inset 0 2px 0 #fff9dc, 0 3px 0 #c4a24f55;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) > :is(p, .onetNote) {
+  color: var(--va-muted);
+  font-size: 14px;
+  line-height: 1.85;
+  margin: 20px 4px;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) > [role=status] {
+  padding: 11px 16px;
+  border: 1px solid #d7e2c7;
+  border-radius: 10px;
+  background: #f2f8e9;
+  color: var(--va-forest);
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .question {
+  min-width: 0;
+  padding: 24px;
+  margin: 18px 0;
+  border: 1px solid var(--va-line);
+  border-radius: var(--va-radius);
+  background: #fff;
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) :is(.qTitle, .onetQuestion h3) {
+  color: var(--va-ink);
+  font-size: 18px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .qTag {
+  padding: 7px 11px;
+  border: 1px solid #ecd59a;
+  border-radius: 8px;
+  color: #76501c;
+  background: #fff2c5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .choice {
+  min-width: 0;
+  min-height: 52px;
+  padding: 14px 17px;
+  border: 1px solid #cfdbc9;
+  border-radius: 10px;
+  background: linear-gradient(#fff, #fdfef8);
+  color: var(--va-ink);
+  box-shadow: inset 0 2px 0 #fff, 0 3px 0 #c9d5bd;
+  font-size: 16px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .choice.sel {
+  border-color: #397e98;
+  background: #eff8fa;
+  color: #184b60;
+  box-shadow: inset 4px 0 0 #397e98, 0 3px 0 #b3ced4;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .choice.correct {
+  border-color: #648f48;
+  background: #eff8e8;
+  color: #285531;
+  box-shadow: inset 4px 0 0 #648f48, 0 3px 0 #bdcfa6;
+}
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .choice.wrong {
+  border-color: #bb7152;
+  background: #fff1e9;
+  color: #783e2a;
+  box-shadow: inset 4px 0 0 #bb7152, 0 3px 0 #dec0a9;
+}
+.shell:where(:has(> .stageHUD)) .question .qFeedback {
+  padding: 16px 19px;
+  margin-top: 16px;
+  border: 1px solid #cbdcb8;
+  border-left: 5px solid #79a856;
+  border-radius: 10px;
+  background: #f2f9eb;
+  color: #305335;
+  font-size: 15px;
+  line-height: 1.9;
+}
+.shell:where(:has(> .stageHUD)) .question:has(.choice.wrong) .qFeedback {
+  border-color: #e2c6ae;
+  border-left-color: #c48a5e;
+  background: #fff5e9;
+  color: #724a2e;
+}
+.shell:where(:has(> .stageHUD)) .question .qFeedback .pixelBtn { margin-top: 12px; }
+.shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .contentNav { gap: 12px; padding: 20px 2px 5px; border-color: #e1dfc9; }
+.shell:where(:has(> .stageHUD)) .examGuidance { color: var(--va-muted); }
+.shell:where(:has(> .stageHUD)) .examGuidance summary { color: #27613d; }
+.shell:where(:has(> .stageHUD)) .examNav { border-color: #dedfc8; }
+.shell:where(:has(> .stageHUD)) .examNav button {
+  min-height: 44px;
+  border: 1px solid #cdd9c0;
+  border-radius: 8px;
+  background: var(--va-paper);
+  color: var(--va-ink);
+  box-shadow: 0 3px 0 #cbd6bd;
+}
+.shell:where(:has(> .stageHUD)) .examNav button.answered { background: #edf6e2; border-color: #a0bc86; color: #326238; }
+.shell:where(:has(> .stageHUD)) .examNav button.current {
+  outline: 2px solid #327444;
+  outline-offset: 2px;
+  border-color: #21772a;
+  background: linear-gradient(#28822d, #21772a);
+  color: #fff;
+  box-shadow: inset 0 2px 0 #bcf47a40, 0 3px 0 #176c2a;
+}
+/* O-NET's existing horizontal scroll/zoom region and original image sizing stay intact. */
+.shell:where(:has(> .stageHUD)) .onetImageFrame { border: 1px solid #dcd5bb; border-radius: 10px; box-shadow: var(--va-card-shadow); }
+.shell:where(:has(> .stageHUD)) .onetChoiceNumber { border-radius: 7px; background: #fff0c3; color: #71511d; }
+.shell:where(:has(> .stageHUD)) :is(.onetSelected, .onetSource, .onetImageTools) { color: var(--va-muted); }
+.shell:where(:has(> .stageHUD)) .onetSource a { color: #266544; text-underline-offset: 3px; }
+
+/* Empty, failed, passed and reviewed result surfaces use real existing states. */
+.shell:where(:has(> .stageHUD)) > .panel > h1 { color: var(--va-forest); font-size: clamp(27px, 3vw, 39px); line-height: 1.5; }
+.shell:where(:has(> .stageHUD)) > .panel > p { color: #304b50; line-height: 1.9; }
+.shell:where(:has(> .stageHUD)) .resultHero {
+  position: relative;
+  padding: 28px;
+  border: 1px solid #d7ddc4;
+  border-radius: var(--va-radius);
+  background: linear-gradient(115deg, #fffdf3, #f2f8e7);
+  color: var(--va-ink);
+  box-shadow: var(--va-card-shadow);
+}
+.shell:where(:has(> .stageHUD)) .resultHero h1 { color: var(--va-forest); font-size: clamp(25px, 2.8vw, 34px); line-height: 1.6; }
+.shell:where(:has(> .stageHUD)) .resultHero p { color: #304b50; line-height: 1.9; }
+.shell:where(:has(> .stageHUD)) .scoreCircle {
+  background: conic-gradient(#3e8d38 var(--score), #e5ead6 0);
+  box-shadow: 0 4px 0 #afbf9555, 0 10px 22px #49663a14;
+}
+.shell:where(:has(> .stageHUD)) .scoreCircle::after { background: var(--va-paper); }
+.shell:where(:has(> .stageHUD)) .scoreCircle strong { color: var(--va-forest); }
+.shell:where(:has(> .stageHUD)) .resultHero.is-passed { border-color: #c7b367; box-shadow: inset 0 0 0 2px #fff8d7, var(--va-card-shadow); }
+.shell:where(:has(> .stageHUD)) .resultHero.is-passed::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 12px;
+  right: 12px;
+  background: #bc891a;
+  mask: var(--va-icon-trophy) center / contain no-repeat;
+  -webkit-mask: var(--va-icon-trophy) center / contain no-repeat;
+  pointer-events: none;
+}
+.shell:where(:has(> .stageHUD)) .mission-complete { font-family: inherit; font-size: clamp(19px, 2vw, 25px); font-weight: 800; color: #366a35; letter-spacing: .025em; }
+.shell:where(:has(> .stageHUD)) .perfectBadge { border: 1px solid #dbbe60; border-radius: 9px; color: #76501c; background: #fff0b3; box-shadow: 0 3px 0 #bea04833; }
+.shell:where(:has(> .stageHUD)) > .panel > .panel { border: 1px solid var(--va-line); border-radius: var(--va-radius); background: #fff; padding: 24px; }
+.shell:where(:has(> .stageHUD)) :is(.masteryList, .examReview) h2,
+.shell:where(:has(> .stageHUD)) > .panel > .panel > h2 { color: var(--va-ink); font-size: 24px; line-height: 1.6; }
+.shell:where(:has(> .stageHUD)) .masteryRow { border-color: #dbe3d0; background: #f7faf1; border-radius: 10px; color: var(--va-ink); }
+.shell:where(:has(> .stageHUD)) .masteryRow small { color: var(--va-muted); }
+.shell:where(:has(> .stageHUD)) .miniBar { background: #e7ebdc; border-radius: 5px; box-shadow: inset 0 1px 2px #47683520; }
+.shell:where(:has(> .stageHUD)) .miniBar > span { background: linear-gradient(#78be40, #389536); border-radius: 4px; }
+.shell:where(:has(> .stageHUD)) .examReview .callout { font-size: 16px; line-height: 1.95; }
+.shell:where(:has(> .stageHUD)) .examReview .pixelBtn { margin-top: 12px; }
+
+/* Use the same bevel and typography for native actions; retain semantic colors. */
+.shell:where(:has(> .stageHUD)):not(.readingMode) .pixelBtn { max-width: 100%; overflow-wrap: anywhere; }
+.shell:where(:has(> .stageHUD)):not(.readingMode) .pixelBtn.blue {
+  border-color: #1b6489;
+  background: linear-gradient(#24769c, #1b6489);
+  box-shadow: inset 0 2px 0 #a4e2f54d, 0 4px 0 #164b68, 0 7px 12px #234e6520;
+  text-shadow: 0 1px 1px #164b68;
+}
+.shell:where(:has(> .stageHUD)):not(.readingMode) .pixelBtn.yellow {
+  border-color: #d0ad51;
+  background: linear-gradient(#ffe7a0, #f0ca62);
+  color: #664710;
+  box-shadow: inset 0 2px 0 #fff7d3, 0 4px 0 #b09245;
+  text-shadow: none;
+}
+.shell:where(:has(> .stageHUD)):not(.readingMode) .pixelBtn.soft {
+  border-color: #ced9c2;
+  background: linear-gradient(#fff, #f4f8eb);
+  color: var(--va-forest);
+  box-shadow: inset 0 2px 0 #fff, 0 4px 0 #bdcbb0;
+  text-shadow: none;
+}
+.shell:where(:has(> .stageHUD)):not(.readingMode) .pixelBtn.purple { border-color: #614b8e; background: linear-gradient(#7258a5, #60498a); color: #fff; box-shadow: inset 0 2px 0 #d9c8ff55, 0 4px 0 #4b396f; }
+.shell:where(:has(> .stageHUD)):not(.readingMode) .pixelBtn.red { border-color: #963e2e; background: linear-gradient(#b24c37, #963e2e); color: #fff; box-shadow: inset 0 2px 0 #ffc9a655, 0 4px 0 #783526; }
+.shell:where(:has(> .stageHUD)):not(.readingMode) .pixelBtn:disabled { transform: none; }
+@media (hover: hover) and (pointer: fine) {
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .choice:not(:disabled):hover { border-color: #839e6b; }
+}
+@media (max-width: 600px) {
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard),
+  .shell:where(:has(> .stageHUD)) > .panel { padding: 12px; border-width: 2px; border-radius: 16px; }
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) > .gameTitle { padding: 18px 13px; gap: 10px; border-radius: 12px; }
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .gameTitle h2 { font-size: 21px; }
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .question { padding: 18px 14px; border-radius: 12px; }
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) :is(.qTitle, .onetQuestion h3) { font-size: 17px; }
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .choice { padding: 12px 14px; font-size: 16px; }
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .contentNav { gap: 10px; }
+  .shell:where(:has(> .stageHUD)) :is(.exerciseCard, .examCard) .contentNav .pixelBtn { min-width: 0; flex: 1 1 42%; padding: 12px 8px; font-size: 14px; }
+  .shell:where(:has(> .stageHUD)) .question .qFeedback { padding: 14px; font-size: 14px; }
+  .shell:where(:has(> .stageHUD)) :is(.resultHero, .shell > .panel > .panel) { padding: 20px 14px; border-radius: 12px; }
+  .shell:where(:has(> .stageHUD)) .masteryRow { grid-template-columns: minmax(0, 1fr) 55px 40px; gap: 7px; padding: 10px; font-size: 13px; }
+  .shell:where(:has(> .stageHUD)) .masteryRow small { font-size: 11px; }
+  .shell:where(:has(> .stageHUD)) .examReview .callout { padding: 14px; font-size: 15px; }
+}

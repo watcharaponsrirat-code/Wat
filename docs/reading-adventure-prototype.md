@@ -1,5 +1,7 @@
 # Premium Voxel Science Adventure — first reader prototype
 
+> Historical prototype report. The later global rollout and its current test commands are documented in [lesson-adventure-rollout.md](lesson-adventure-rollout.md). The one-lesson isolation assertions below describe the earlier release.
+
 14 October 2026. First-reader prototype; GitHub publication authorized after local review. No rollout to other activities.
 
 ## Scope and checkpoint
