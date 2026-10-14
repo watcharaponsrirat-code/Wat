@@ -33,6 +33,7 @@ jobs:
           node tests/final-exam-migration.mjs
           node tests/simulation-regression.mjs
           node tests/native-models-regression.mjs
+          node tests/plant-growth-regression.mjs
           node tests/readiness-regression.mjs
           node tests/formula-regression.mjs
       - name: Prepare static site
@@ -48,6 +49,8 @@ jobs:
           test -s _site/assets/theme/world-science.png
           test -s _site/assets/theme/world-space.png
           test -s _site/assets/simulations/scene3d.js
+          test -s _site/assets/simulations/plant-growth-model.js
+          test -s _site/assets/simulations/plant-growth-studio.js
           test -s _site/assets/simulations/models3d.js
           test -s _site/assets/simulations/models3d-kit.js
           test -s _site/assets/simulations/models3d-grade1.js

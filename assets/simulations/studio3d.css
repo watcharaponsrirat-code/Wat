@@ -49,3 +49,44 @@
 .simViewport canvas:focus-visible{outline:3px solid #66e5d3;outline-offset:-4px}
 @media(max-width:850px){.simViewport{height:380px}.simCameraTools{gap:5px}.simCameraTools button{font-size:12px;padding:7px 9px}}
 @media(max-width:380px){.simViewport{height:340px}.simCameraTools button{font-size:11px}}
+
+/* Only the bean-growth prototype uses the detailed botanical studio.
+ * Fixed readout bands reserve their own space outside the interactive canvas.
+ * All scientific strings/values come from the unchanged simulation builder. */
+.simPanel[data-simulation="G1U1L1"] .simViewport {
+  height:540px;
+  background:radial-gradient(ellipse at 50% 35%,#203c36 0,#102420 57%,#0b1718 100%);
+}
+.simPanel[data-simulation="G1U1L1"] .simViewport canvas {
+  position:absolute;top:42px;left:0;width:100%;height:calc(100% - 142px);
+}
+.plantReadouts {position:absolute;inset:0;pointer-events:none;color:#eef5e8;font-family:inherit;}
+.plantReadouts[hidden] {display:none;}
+.plantCondition {
+  position:absolute;top:8px;left:8px;right:8px;text-align:center;
+  color:#d0ded2;font-size:13px;line-height:26px;font-weight:600;letter-spacing:.01em;
+}
+.plantGroups {position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:12px;}
+.plantGroup {
+  flex:1 1 0;min-width:0;display:grid;justify-items:center;gap:1px;
+  padding:8px 5px 7px;border:1px solid #659d914f;border-top:3px solid #81c9bb;border-radius:10px;
+  background:linear-gradient(135deg,#243c36f5,#172b26f5);box-shadow:0 4px 16px #0002;
+}
+.plantGroup[data-group="experiment"] {border-top-color:#edc478;}
+.plantGroup strong {font-size:14px;line-height:1.55;color:#f7faed;font-weight:700;white-space:nowrap;}
+.plantGroup span {font-size:12px;line-height:1.55;color:#d3dfd0;white-space:nowrap;}
+.plantGroup b {font-size:16px;line-height:1.5;font-variant-numeric:tabular-nums;color:#c9eddd;}
+.plantGroup[data-group="experiment"] b {color:#ffe2a7;}
+.simPanel[data-simulation="G1U1L1"] .plantLeaders {
+  position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;
+  background:none;border:0;border-radius:0;
+}
+.plantLeaders path {fill:none;stroke:#81c9bb;stroke-width:1;stroke-opacity:.65;stroke-dasharray:3 4;}
+.plantLeaders path[data-group="experiment"] {stroke:#edc478;}
+@media(max-width:850px){.simPanel[data-simulation="G1U1L1"] .simViewport{height:500px}}
+@media(max-width:450px){
+  .simPanel[data-simulation="G1U1L1"] .simViewport{height:480px}
+  .plantGroups{left:7px;right:7px;bottom:10px;gap:7px}
+  .plantGroup strong{font-size:12px}.plantGroup span{font-size:12px}
+  .plantGroup b{font-size:15px}.plantCondition{font-size:12px}
+}
