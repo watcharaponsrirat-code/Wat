@@ -50,43 +50,182 @@
 @media(max-width:850px){.simViewport{height:380px}.simCameraTools{gap:5px}.simCameraTools button{font-size:12px;padding:7px 9px}}
 @media(max-width:380px){.simViewport{height:340px}.simCameraTools button{font-size:11px}}
 
-/* Only the bean-growth prototype uses the detailed botanical studio.
- * Fixed readout bands reserve their own space outside the interactive canvas.
- * All scientific strings/values come from the unchanged simulation builder. */
-.simPanel[data-simulation="G1U1L1"] .simViewport {
-  height:540px;
-  background:radial-gradient(ellipse at 50% 35%,#203c36 0,#102420 57%,#0b1718 100%);
+/* Bean laboratory visual reference. These rules deliberately stay local to
+ * G1U1L1; the shared simulation DOM, controls and scientific copy are unchanged.
+ * The 42px / 100px readout bands match the plant renderer's canvas sizing. */
+.shell .simPanel[data-simulation="G1U1L1"] {
+  background:#fffbef;border-color:#e5d39e;
+  box-shadow:inset 0 0 0 3px #fffef8,0 10px 32px #4859321a;
 }
-.simPanel[data-simulation="G1U1L1"] .simViewport canvas {
+.shell .simPanel[data-simulation="G1U1L1"] .simHeader {
+  padding:28px 30px 24px;
+  background:radial-gradient(ellipse at 90% 10%,#eaf3df,transparent 65%),linear-gradient(120deg,#fffef8,#fbfcf1);
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simHeader h1 {font-size:clamp(25px,2.6vw,35px);}
+.shell .simPanel[data-simulation="G1U1L1"] .simLayout {
+  grid-template-columns:minmax(0,1.78fr) minmax(280px,1fr);
+  padding:24px;gap:22px;align-items:start;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simStudio {
+  border:1px solid #d6c18c;border-radius:18px;background:#fffef9;
+  box-shadow:0 0 0 5px #fffef68c,0 8px 24px #65542012;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simStudioTop {
+  min-height:74px;padding:12px 18px;gap:11px;
+  color:#204f3b;background:linear-gradient(115deg,#fff,#fcfdf6);border-bottom-color:#e0dfcf;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simStudioTop strong {font-size:16px;line-height:1.6;}
+.shell .simPanel[data-simulation="G1U1L1"] .simLiveDot {
+  width:9px;height:9px;background:#2c8c34;box-shadow:0 0 0 6px #e8f2de;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simViewSwitch {padding:4px;border-radius:11px;}
+.shell .simPanel[data-simulation="G1U1L1"] .simViewSwitch button {min-width:48px;min-height:46px;font-size:14px;}
+.shell .simPanel[data-simulation="G1U1L1"] .simViewSwitch button[aria-pressed=true] {
+  background:linear-gradient(#328b2f,#176b27);box-shadow:inset 0 2px 0 #d0f4a260,0 1px 3px #24552a30;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simViewport {
+  height:580px;
+  background:radial-gradient(ellipse at 50% 30%,#203e55 0,#112b40 58%,#091c30 100%);
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simViewport canvas {
   position:absolute;top:42px;left:0;width:100%;height:calc(100% - 142px);
 }
-.plantReadouts {position:absolute;inset:0;pointer-events:none;color:#eef5e8;font-family:inherit;}
-.plantReadouts[hidden] {display:none;}
-.plantCondition {
+.shell .simPanel[data-simulation="G1U1L1"] .simCameraTools {
+  gap:7px;padding:14px 12px 9px;border-top:1px solid #d8c999;background:#fffef9;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simCameraTools button {
+  min-height:44px;min-width:44px;padding:8px 11px;border-color:#d4dcd0;
+  background:linear-gradient(#fff,#fcfdf8);color:#2f4f58;box-shadow:0 2px 0 #dfe4d7;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simCameraTools button[aria-pressed=true] {
+  border-color:#8fb772;background:#edf5e5;color:#255b2b;box-shadow:inset 0 0 0 1px #d1e2bd,0 2px 0 #c1d1ae;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simStudioHint {
+  margin:0 12px 13px;padding:11px 12px;border:1px solid #d4e8ec;border-radius:10px;
+  background:#edf7fa;color:#356076;font-size:12px;line-height:1.8;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControls {
+  padding:25px 22px 22px;border:1px solid #e4d5ac;border-top:4px solid #e7c576;
+  border-radius:18px;background:linear-gradient(145deg,#fff 65%,#fdfef8);
+  box-shadow:0 0 0 5px #fffef67a,0 8px 22px #6b5a2610;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControls h2 {
+  display:flex;align-items:center;gap:11px;margin:0 0 27px;color:#244a36;
+  font-size:clamp(20px,1.8vw,25px);line-height:1.5;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControls h2::before {
+  content:"";width:28px;height:28px;flex:none;background:#2c7634;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m9 2-.6 3-2.1 1.2-2.9-.8-2 3.4 2.3 2.1v2.4l-2.3 2.1 2 3.4 2.9-.8L8.4 19l.6 3h4l.6-3 2.1-1.2 2.9.8 2-3.4-2.3-2.1v-2.4l2.3-2.1-2-3.4-2.9.8L13.6 5 13 2z' fill='black'/%3E%3Ccircle cx='11' cy='12' r='3.4' fill='white'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControl {
+  padding-bottom:23px;margin-bottom:25px;border-bottom-color:#e6e8dc;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControl > span {
+  position:relative;align-items:center;min-height:43px;padding-left:42px;
+  color:#2c4651;font-size:14px;line-height:1.7;gap:8px;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControl > span::before {
+  content:"";position:absolute;left:0;top:5px;width:30px;height:30px;
+  background-color:#b88b24;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControl[for="sim-t"] > span::before {
+  background-color:#a85e46;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M7 2v6m10-6v6M3 11h18m-14 4h2m4 0h2m-8 3h2m4 0h2'/%3E%3C/svg%3E");
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControl output {
+  padding:6px 10px;border:1px solid #d6e2c8;border-radius:8px;background:#f1f7e9;
+  color:#295d39;font-size:15px;line-height:1.6;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControl input[type=range] {
+  height:44px;margin:10px 0 3px;accent-color:#2b7931;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simControl small {font-size:12px;line-height:1.8;color:#697469;}
+.shell .simPanel[data-simulation="G1U1L1"] .simActions {display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.shell .simPanel[data-simulation="G1U1L1"] .simActions .pixelBtn {
+  min-height:52px;padding:11px 8px;border-radius:10px;font-size:16px;line-height:1.6;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simActions [data-sim-play] {
+  border:1px solid #2a6934;background:linear-gradient(#3d8843,#216b30);color:#fff;
+  box-shadow:inset 0 2px 0 #d8efb344,0 3px 0 #1a5024,0 5px 12px #28582a20;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simActions [data-sim-reset] {
+  border:1px solid #a7c28d;background:linear-gradient(#fff,#f4f8eb);color:#275b35;
+  box-shadow:inset 0 1px 0 #fff,0 3px 0 #c6d4b5;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simFree {margin:17px 0 0;color:#68715f;font-size:12px;line-height:1.8;}
+.shell .simPanel[data-simulation="G1U1L1"] .simMetrics {grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+.shell .simPanel[data-simulation="G1U1L1"] .simMetrics > div {
+  padding:15px 18px;border:1px solid #dce2ce;border-top:3px solid #87ad6b;
+  background:linear-gradient(120deg,#fff,#f5f9ee);box-shadow:0 3px 10px #35502609;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simMetrics > div:last-child {border-top-color:#c9a761;}
+.shell .simPanel[data-simulation="G1U1L1"] .simMetrics strong {color:#255a38;}
+.shell .simPanel[data-simulation="G1U1L1"] .simObservation {background:#f3f8ec;border-color:#d9e4ca;border-left-color:#709e50;}
+.shell .simPanel[data-simulation="G1U1L1"] .simAssumption {
+  padding:20px 22px;background:#fffef8;border:1px solid #e1d7b8;border-top:3px solid #e7c576;
+  color:#5c6253;box-shadow:0 4px 14px #51482909;
+}
+.shell .simPanel[data-simulation="G1U1L1"] .simAssumption > b {color:#315c3b;font-size:16px;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantReadouts {position:absolute;inset:0;pointer-events:none;color:#eef5e8;font-family:inherit;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantReadouts[hidden] {display:none;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantCondition {
   position:absolute;top:8px;left:8px;right:8px;text-align:center;
-  color:#d0ded2;font-size:13px;line-height:26px;font-weight:600;letter-spacing:.01em;
+  color:#dce5e4;font-size:13px;line-height:26px;font-weight:600;letter-spacing:.01em;
 }
-.plantGroups {position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:12px;}
-.plantGroup {
+.shell .simPanel[data-simulation="G1U1L1"] .plantGroups {position:absolute;left:16px;right:16px;bottom:12px;display:flex;gap:16px;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantGroup {
   flex:1 1 0;min-width:0;display:grid;justify-items:center;gap:1px;
-  padding:8px 5px 7px;border:1px solid #659d914f;border-top:3px solid #81c9bb;border-radius:10px;
-  background:linear-gradient(135deg,#243c36f5,#172b26f5);box-shadow:0 4px 16px #0002;
+  padding:7px 5px 6px;border:1px solid #e4ddc8;border-top:3px solid #a4c28b;border-radius:10px;
+  background:linear-gradient(135deg,#fffefbf5,#f0f5e8f5);box-shadow:0 4px 16px #06132130;
 }
-.plantGroup[data-group="experiment"] {border-top-color:#edc478;}
-.plantGroup strong {font-size:14px;line-height:1.55;color:#f7faed;font-weight:700;white-space:nowrap;}
-.plantGroup span {font-size:12px;line-height:1.55;color:#d3dfd0;white-space:nowrap;}
-.plantGroup b {font-size:16px;line-height:1.5;font-variant-numeric:tabular-nums;color:#c9eddd;}
-.plantGroup[data-group="experiment"] b {color:#ffe2a7;}
-.simPanel[data-simulation="G1U1L1"] .plantLeaders {
+.shell .simPanel[data-simulation="G1U1L1"] .plantGroup[data-group="experiment"] {border-top-color:#e1bf77;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantGroup strong {font-size:14px;line-height:1.55;color:#274e39;font-weight:700;white-space:nowrap;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantGroup span {font-size:12px;line-height:1.55;color:#526553;white-space:nowrap;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantGroup b {font-size:16px;line-height:1.5;font-variant-numeric:tabular-nums;color:#245b36;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantGroup[data-group="experiment"] b {color:#80612b;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantLeaders {
   position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;
   background:none;border:0;border-radius:0;
 }
-.plantLeaders path {fill:none;stroke:#81c9bb;stroke-width:1;stroke-opacity:.65;stroke-dasharray:3 4;}
-.plantLeaders path[data-group="experiment"] {stroke:#edc478;}
-@media(max-width:850px){.simPanel[data-simulation="G1U1L1"] .simViewport{height:500px}}
+.shell .simPanel[data-simulation="G1U1L1"] .plantLeaders path {fill:none;stroke:#c4dbc2;stroke-width:1;stroke-opacity:.6;stroke-dasharray:3 4;}
+.shell .simPanel[data-simulation="G1U1L1"] .plantLeaders path[data-group="experiment"] {stroke:#edcf90;}
+@media (hover:hover) and (pointer:fine) {
+  .shell .simPanel[data-simulation="G1U1L1"] .simCameraTools button:not(:disabled):hover {background:#edf5e6;border-color:#9abb80;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simActions [data-sim-play]:hover {background:linear-gradient(#468f4b,#287238);}
+}
+@media(max-width:1100px){
+  .shell .simPanel[data-simulation="G1U1L1"] .simLayout {gap:16px;padding:18px;grid-template-columns:minmax(0,1.72fr) minmax(270px,1fr);}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControls {padding:22px 17px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simViewport {height:540px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControl > span {padding-left:36px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControl output {font-size:14px;}
+}
+@media(max-width:850px){
+  .shell .simPanel[data-simulation="G1U1L1"] .simHeader {padding:24px 20px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simLayout {grid-template-columns:1fr;padding:16px;gap:22px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simViewport {height:540px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControls {padding:24px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControl > span {padding-left:42px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControls h2 {margin-bottom:22px;}
+}
 @media(max-width:450px){
-  .simPanel[data-simulation="G1U1L1"] .simViewport{height:480px}
-  .plantGroups{left:7px;right:7px;bottom:10px;gap:7px}
-  .plantGroup strong{font-size:12px}.plantGroup span{font-size:12px}
-  .plantGroup b{font-size:15px}.plantCondition{font-size:12px}
+  .shell .simPanel[data-simulation="G1U1L1"] .simHeader {padding:21px 16px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simLayout {padding:11px;gap:19px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simViewport {height:470px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simStudioTop {padding:11px;gap:8px;min-height:68px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simStudioTop strong {font-size:13px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simViewSwitch button {min-width:44px;padding-inline:8px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simCameraTools {gap:6px;padding:12px 8px 8px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simCameraTools button {padding:8px 10px;font-size:12px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControls {padding:21px 16px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simControl {padding-bottom:20px;margin-bottom:20px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simMetrics {gap:8px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simMetrics > div {padding:12px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .simAssumption {padding:17px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .plantGroups {left:8px;right:8px;bottom:10px;gap:8px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .plantGroup strong {font-size:12px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .plantGroup span {font-size:12px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .plantGroup b {font-size:15px;}
+  .shell .simPanel[data-simulation="G1U1L1"] .plantCondition {font-size:12px;}
 }
