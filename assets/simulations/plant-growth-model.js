@@ -1,4 +1,6 @@
 import * as THREE from '../vendor/three/three.module.js';
+import {createBeanLeafMaster} from './plant-growth-botany.js';
+import {createLeafSurfaceMaps} from './plant-growth-leaf-surface.js';
 
 // Presentation only. The experiment's existing builder supplies both growth
 // values; this renderer never derives growth from light or elapsed time.
@@ -15,7 +17,7 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   // Deterministic procedural surface detail: no downloads, photographs, or
   // random experiment state. Both plants share exactly the same resources.
   function texture(kind) {
-    const size = kind === 'leaf' ? 512 : 256, canvas = document.createElement('canvas');
+    const size = 256, canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const context = canvas.getContext('2d');
     const pixels = context.createImageData(size, size);
@@ -23,15 +25,7 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
       const i = (y * size + x) * 4;
       const noise = fract(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453);
       let r, g, b;
-      if (kind === 'leaf') {
-        const u=x/(size-1),v=y/(size-1)*2-1;
-        // Broad pigment variation survives minification without the sparkling
-        // speckles produced by per-pixel albedo noise on small mobile leaves.
-        const pigment=7*Math.sin(u*6+v*1.8)+4*Math.sin(v*4-u*2);
-        const edge=Math.pow(Math.abs(v),3),rib=Math.exp(-v*v*1800)*15;
-        const shoulder=Math.sin(u*Math.PI)*7;
-        r=43+pigment+edge*21+rib;g=108+pigment+edge*20+rib+shoulder;b=19+pigment*.3+edge*4;
-      } else if (kind === 'pot') {
+      if (kind === 'pot') {
         const wheel = Math.sin(y * .47) * 1.2 + Math.sin(y * .13) * .7;
         const grain = (noise - .5) * 8 + 3*Math.sin(x*.037+y*.014);
         r = 176 + grain + wheel; g = 86 + grain * .7 + wheel; b = 48 + grain * .5 + wheel;
@@ -42,27 +36,6 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
       pixels.data[i] = r; pixels.data[i + 1] = g; pixels.data[i + 2] = b; pixels.data[i + 3] = 255;
     }
     context.putImageData(pixels, 0, 0);
-    if(kind==='leaf'){
-      context.lineCap='round';
-      // Continuous vascular lines follow the same UV coordinates as the curved
-      // blade. Subtle tertiary veins remain readable without noisy self-shadows.
-      for(let row=0;row<6;row++)for(const side of [-1,1]){
-        const origin=.08+row*.135;
-        context.beginPath();context.moveTo(origin*size,size/2);
-        context.bezierCurveTo((origin+.045)*size,(.5+side*.15)*size,(origin+.14)*size,(.5+side*.34)*size,(origin+.22)*size,(.5+side*.48)*size);
-        // A broad, subtle recess under the lighter vein reads after mobile
-        // minification; the lines remain filtered surface detail, not tubes.
-        context.strokeStyle='rgba(26,66,12,.25)';context.lineWidth=10;context.stroke();
-        context.strokeStyle='rgba(147,177,67,.62)';context.lineWidth=4.4;context.stroke();
-        for(let n=1;n<4;n++){
-          const q=n/4,u=origin+.205*q;
-          context.beginPath();context.moveTo(u*size,(.5+side*q*.47)*size);
-          context.quadraticCurveTo((u+.035)*size,(.5+side*(q*.47+.055))*size,(u+.08)*size,(.5+side*(q*.47+.1))*size);
-          context.strokeStyle='rgba(145,176,63,.4)';context.lineWidth=1.8;context.stroke();
-        }
-      }
-      context.beginPath();context.moveTo(0,size/2);context.lineTo(size,size/2);context.strokeStyle='rgba(176,195,78,.8)';context.lineWidth=5;context.stroke();
-    }
     const map = new THREE.CanvasTexture(canvas);
     map.colorSpace = THREE.SRGBColorSpace;
     map.wrapS = map.wrapT = THREE.RepeatWrapping;
@@ -72,10 +45,12 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   }
   function fract(value) { return value - Math.floor(value); }
 
-  const leafMap = texture('leaf'), potMap = texture('pot'), soilMap = texture('soil');
+  const {map:leafMap,normalMap,roughnessMap}=createLeafSurfaceMaps();
+  for(const map of [leafMap,normalMap,roughnessMap])textures.add(map);
+  const potMap = texture('pot'), soilMap = texture('soil');
   const leafMaterial = keepMaterial(new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, map: leafMap,
-    roughness: .34, metalness: 0, clearcoat: .3, clearcoatRoughness: .32,
+    color: 0xffffff, map: leafMap, normalMap, roughnessMap, normalScale:new THREE.Vector2(1,1),
+    roughness: 1, metalness: 0, clearcoat: .2, clearcoatRoughness: .36, ior:1.42, specularIntensity:.7,
     sheen:.16,sheenColor:0xa9c868,sheenRoughness:.65,
     vertexColors: true
   }));
@@ -89,81 +64,8 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   }));
   const grainMaterial = keepMaterial(new THREE.MeshStandardMaterial({color: 0xffffff, roughness: 1}));
 
-  function leafPoint(u, v, lift = 0) {
-    const arch = Math.sin(Math.PI * u);
-    // A narrow petiole attachment, full shoulders and an acuminate tip. The
-    // tiny nonzero endpoint width prevents degenerate tip normals.
-    const width = 1.1-1.03*u + 28 * Math.pow(Math.max(0, arch), .88) * (1.12 - .46 * u);
-    // Lamina between the vascular ribs rises gently. This relief changes real
-    // surface normals, so grazing light reveals the folds when the leaf turns.
-    const ribPhase=(u-.22*Math.pow(Math.abs(v),.85)-.08)*Math.PI/.135;
-    const quilting=1.25*Math.sin(ribPhase)**2*arch*Math.sin(Math.PI*Math.abs(v));
-    const margin=.65*Math.sin(u*7*Math.PI+v)*Math.pow(Math.abs(v),4)*arch;
-    return new THREE.Vector3(
-      68 * u,
-      12*arch-8*v*v*arch+2*Math.sin(u*Math.PI*2)*v+2*u-7*u*u+quilting+margin+lift,
-      width * v * (1+.075*v*Math.sin(u*Math.PI*2))
-    );
-  }
-  function leafGeometry(longitudinal, lateral) {
-    const positions = [], uvs = [], colors = [], indices = [];
-    const sheetVertices = (longitudinal + 1) * (lateral + 1);
-    // Two curved skins joined at their perimeter give a genuinely thin blade
-    // from every orbit angle, without a transparency or double-sided draw pass.
-    for (let skin = 0; skin < 2; skin++) for (let i = 0; i <= longitudinal; i++) {
-      const u = i / longitudinal;
-      for (let j = 0; j <= lateral; j++) {
-        const v = j / lateral * 2 - 1, p = leafPoint(u, v);
-        const thickness = .055 + .32 * Math.sin(Math.PI*u) * (1-v*v);
-        if (skin) p.y -= thickness;
-        positions.push(p.x, p.y, p.z); uvs.push(u, j / lateral);
-        const shade = (.96 + .04 * (1 - Math.abs(v))) * (skin ? .85 : 1);
-        colors.push(shade, shade, shade * (skin ? .85 : .97));
-        if (i < longitudinal && j < lateral) {
-          const a = skin * sheetVertices + i * (lateral + 1) + j, b = a + lateral + 1;
-          if (skin) indices.push(a, b, a + 1, a + 1, b, b + 1);
-          else indices.push(a, a + 1, b, a + 1, b + 1, b);
-        }
-      }
-    }
-    function edge(a, b) {
-      indices.push(a, b, a + sheetVertices, b, b + sheetVertices, a + sheetVertices);
-    }
-    for (let i = 0; i < longitudinal; i++) {
-      const a = i * (lateral + 1), b = a + lateral + 1;
-      edge(a, b); edge(b + lateral, a + lateral);
-    }
-    for (let j = 0; j < lateral; j++) {
-      edge(j + 1, j);
-      const a = longitudinal * (lateral + 1) + j; edge(a, a + 1);
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingSphere();
-    return keepGeometry(geometry);
-  }
-  function mergeTubes(paths, radius, sides) {
-    const positions = [], normals = [], indices = [];
-    for (const points of paths) {
-      const source = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), Math.ceil(points.length * 1.5), radius, sides, false);
-      const offset = positions.length / 3;
-      positions.push(...source.attributes.position.array); normals.push(...source.attributes.normal.array);
-      for (const index of source.index.array) indices.push(index + offset);
-      source.dispose();
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    geometry.setIndex(indices); geometry.computeBoundingSphere();
-    return keepGeometry(geometry);
-  }
-  // Only the substantial midrib needs geometry. Secondary veins use the
-  // mipmapped leaf texture: subpixel tubes shimmered at normal scene scale.
-  const central = Array.from({length: 13}, (_, i) => leafPoint(i / 12 * .97, 0, .24));
-  const leafGeometries = {high: leafGeometry(36, 14), low: leafGeometry(24, 10)};
-  const veins = mergeTubes([central], .34, 6);
+  const leafMaster=createBeanLeafMaster(keepGeometry);
+  const leafGeometries=leafMaster.leaves,veins=leafMaster.ribs;
   const petioleCurve=new THREE.CatmullRomCurve3([
     new THREE.Vector3(0,0,0),new THREE.Vector3(8,7,0),new THREE.Vector3(18,12.5,0),new THREE.Vector3(25,14,0)
   ]);
@@ -218,7 +120,7 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   const grainGeometry = keepGeometry(new THREE.DodecahedronGeometry(1, 0));
   const dummy = new THREE.Object3D(), temp = new THREE.Vector3();
   const foliageAngles = [2.87,-.22,3.48,-.52],foliageSizes = [1.01,1,.96,.92];
-  const foliageRoll=[.76,.88,.9,.72],foliageLift=[-.12,.08,.22,.38];
+  const foliageRoll=[.76,.88,.9,.72],foliageLift=[-.12,.08,.52,.62];
   const bladeWidth=[1.05,.94,1.04,.97],bladeCurve=[1,.86,1.13,.94];
 
   function mesh(geometry, material, name, owner) {
@@ -233,7 +135,7 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
     object.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     owner.add(object); return object;
   }
-  function makeStemGeometry(rings = 30, sides = 10) {
+  function makeStemGeometry(rings = 64, sides = 12) {
     const geometry = new THREE.BufferGeometry(), indices = [];
     const vertices=(rings+1)*(sides+1),colors=[];
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array((vertices+2)*3),3));
@@ -272,11 +174,12 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
     }
     grains.instanceMatrix.needsUpdate = true; grains.instanceColor.needsUpdate = true;
     grains.count = high() ? 96 : 32;
-    const stemGeometries = {high: makeStemGeometry(), low: makeStemGeometry(18, 7)};
+    const stemGeometries = {high: makeStemGeometry(), low: makeStemGeometry(32, 8)};
     const stem = mesh(stemGeometries[quality], stemMaterial, 'tapered-stem', plant);
     const stalks = instances(petiole, stemMaterial, 4, 'leaf-petioles', plant);
     const leaves = instances(leafGeometries[quality], leafMaterial, 4, 'curved-leaves', plant);
-    const primaryVeins = instances(veins, veinMaterial, 4, 'raised-leaf-veins', plant);
+    const primaryVeins = instances(veins[quality], veinMaterial, 4, 'raised-leaf-veins', plant);
+    leafMaster.individualize(leaves);leafMaster.individualize(primaryVeins);
     // Stable leaf-to-leaf pigment and three-axis blade proportions give each
     // blade its own silhouette. Both groups use identical botanical variation.
     for(let i=0;i<4;i++)leaves.setColorAt(i,new THREE.Color().setRGB([.94,1,.97,1][i],[.98,.96,1,.99][i],[.91,.98,.94,.9][i]));
@@ -384,6 +287,7 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
       for (const plant of plants) {
         plant.pot.geometry = potGeometries[quality]; plant.soil.geometry = soils[quality];
         plant.stem.geometry = plant.stemGeometries[quality]; plant.leaves.geometry = leafGeometries[quality];
+        plant.primaryVeins.geometry=veins[quality];
         plant.grains.count = high() ? 96 : 32;
         pose(plant);
       }
