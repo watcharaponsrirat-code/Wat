@@ -27,9 +27,10 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
         const u=x/(size-1),v=y/(size-1)*2-1;
         // Broad pigment variation survives minification without the sparkling
         // speckles produced by per-pixel albedo noise on small mobile leaves.
-        const pigment=6*Math.sin(u*7+v*1.8)+3*Math.sin(v*4-u*2);
-        const edge=Math.pow(Math.abs(v),3),rib=Math.exp(-v*v*1800)*12;
-        r=65+pigment+edge*16+rib;g=127+pigment+edge*14+rib;b=24+pigment*.3+edge*3;
+        const pigment=7*Math.sin(u*6+v*1.8)+4*Math.sin(v*4-u*2);
+        const edge=Math.pow(Math.abs(v),3),rib=Math.exp(-v*v*1800)*15;
+        const shoulder=Math.sin(u*Math.PI)*7;
+        r=43+pigment+edge*21+rib;g=108+pigment+edge*20+rib+shoulder;b=19+pigment*.3+edge*4;
       } else if (kind === 'pot') {
         const wheel = Math.sin(y * .47) * 1.2 + Math.sin(y * .13) * .7;
         const grain = (noise - .5) * 8 + 3*Math.sin(x*.037+y*.014);
@@ -45,19 +46,22 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
       context.lineCap='round';
       // Continuous vascular lines follow the same UV coordinates as the curved
       // blade. Subtle tertiary veins remain readable without noisy self-shadows.
-      for(let row=0;row<7;row++)for(const side of [-1,1]){
-        const origin=.1+row*.116;
+      for(let row=0;row<6;row++)for(const side of [-1,1]){
+        const origin=.08+row*.135;
         context.beginPath();context.moveTo(origin*size,size/2);
-        context.bezierCurveTo((origin+.04)*size,(.5+side*.16)*size,(origin+.12)*size,(.5+side*.34)*size,(origin+.18)*size,(.5+side*.48)*size);
-        context.strokeStyle='rgba(167,192,69,.62)';context.lineWidth=3;context.stroke();
+        context.bezierCurveTo((origin+.045)*size,(.5+side*.15)*size,(origin+.14)*size,(.5+side*.34)*size,(origin+.22)*size,(.5+side*.48)*size);
+        // A broad, subtle recess under the lighter vein reads after mobile
+        // minification; the lines remain filtered surface detail, not tubes.
+        context.strokeStyle='rgba(26,66,12,.25)';context.lineWidth=10;context.stroke();
+        context.strokeStyle='rgba(147,177,67,.62)';context.lineWidth=4.4;context.stroke();
         for(let n=1;n<4;n++){
-          const q=n/4,u=origin+.17*q;
+          const q=n/4,u=origin+.205*q;
           context.beginPath();context.moveTo(u*size,(.5+side*q*.47)*size);
           context.quadraticCurveTo((u+.035)*size,(.5+side*(q*.47+.055))*size,(u+.08)*size,(.5+side*(q*.47+.1))*size);
-          context.strokeStyle='rgba(149,178,58,.28)';context.lineWidth=1.15;context.stroke();
+          context.strokeStyle='rgba(145,176,63,.4)';context.lineWidth=1.8;context.stroke();
         }
       }
-      context.beginPath();context.moveTo(0,size/2);context.lineTo(size,size/2);context.strokeStyle='rgba(190,207,92,.66)';context.lineWidth=3.4;context.stroke();
+      context.beginPath();context.moveTo(0,size/2);context.lineTo(size,size/2);context.strokeStyle='rgba(176,195,78,.8)';context.lineWidth=5;context.stroke();
     }
     const map = new THREE.CanvasTexture(canvas);
     map.colorSpace = THREE.SRGBColorSpace;
@@ -71,11 +75,11 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   const leafMap = texture('leaf'), potMap = texture('pot'), soilMap = texture('soil');
   const leafMaterial = keepMaterial(new THREE.MeshPhysicalMaterial({
     color: 0xffffff, map: leafMap,
-    roughness: .36, metalness: 0, clearcoat: .26, clearcoatRoughness: .34,
-    sheen:.2,sheenColor:0xb4ce6b,sheenRoughness:.65,
+    roughness: .34, metalness: 0, clearcoat: .3, clearcoatRoughness: .32,
+    sheen:.16,sheenColor:0xa9c868,sheenRoughness:.65,
     vertexColors: true
   }));
-  const stemMaterial = keepMaterial(new THREE.MeshStandardMaterial({color: 0x9fba4e, roughness: .45}));
+  const stemMaterial = keepMaterial(new THREE.MeshStandardMaterial({color: 0x91ad40, roughness: .46, vertexColors:true}));
   const veinMaterial = keepMaterial(new THREE.MeshStandardMaterial({color: 0xb2c363, roughness: .65, envMapIntensity: .2}));
   const potMaterial = keepMaterial(new THREE.MeshStandardMaterial({
     color: 0xffffff, map: potMap, bumpMap: potMap, bumpScale: .07, roughness: .75
@@ -89,11 +93,16 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
     const arch = Math.sin(Math.PI * u);
     // A narrow petiole attachment, full shoulders and an acuminate tip. The
     // tiny nonzero endpoint width prevents degenerate tip normals.
-    const width = .48-.41*u + 23 * Math.pow(Math.max(0, arch), .88) * (1.04 - .24 * u);
+    const width = 1.1-1.03*u + 28 * Math.pow(Math.max(0, arch), .88) * (1.12 - .46 * u);
+    // Lamina between the vascular ribs rises gently. This relief changes real
+    // surface normals, so grazing light reveals the folds when the leaf turns.
+    const ribPhase=(u-.22*Math.pow(Math.abs(v),.85)-.08)*Math.PI/.135;
+    const quilting=1.25*Math.sin(ribPhase)**2*arch*Math.sin(Math.PI*Math.abs(v));
+    const margin=.65*Math.sin(u*7*Math.PI+v)*Math.pow(Math.abs(v),4)*arch;
     return new THREE.Vector3(
-      64 * u,
-      9*arch-5.2*v*v*arch+1.1*Math.sin(u*Math.PI*2)*v+2*u-4*u*u+lift,
-      width * v * (1+.035*v*Math.sin(u*Math.PI*2))
+      68 * u,
+      12*arch-8*v*v*arch+2*Math.sin(u*Math.PI*2)*v+2*u-7*u*u+quilting+margin+lift,
+      width * v * (1+.075*v*Math.sin(u*Math.PI*2))
     );
   }
   function leafGeometry(longitudinal, lateral) {
@@ -105,7 +114,7 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
       const u = i / longitudinal;
       for (let j = 0; j <= lateral; j++) {
         const v = j / lateral * 2 - 1, p = leafPoint(u, v);
-        const thickness = .045 + .27 * Math.sin(Math.PI*u) * (1-v*v);
+        const thickness = .055 + .32 * Math.sin(Math.PI*u) * (1-v*v);
         if (skin) p.y -= thickness;
         positions.push(p.x, p.y, p.z); uvs.push(u, j / lateral);
         const shade = (.96 + .04 * (1 - Math.abs(v))) * (skin ? .85 : 1);
@@ -152,12 +161,32 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   }
   // Only the substantial midrib needs geometry. Secondary veins use the
   // mipmapped leaf texture: subpixel tubes shimmered at normal scene scale.
-  const central = Array.from({length: 13}, (_, i) => leafPoint(i / 12 * .97, 0, .22));
-  const leafGeometries = {high: leafGeometry(28, 12), low: leafGeometry(18, 8)};
-  const veins = mergeTubes([central], .28, 6);
-  const petiole = keepGeometry(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0), new THREE.Vector3(9, 7, 0), new THREE.Vector3(22, 13, 0)
-  ]), 16, 1.55, 8, false));
+  const central = Array.from({length: 13}, (_, i) => leafPoint(i / 12 * .97, 0, .24));
+  const leafGeometries = {high: leafGeometry(36, 14), low: leafGeometry(24, 10)};
+  const veins = mergeTubes([central], .34, 6);
+  const petioleCurve=new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0,0,0),new THREE.Vector3(8,7,0),new THREE.Vector3(18,12.5,0),new THREE.Vector3(25,14,0)
+  ]);
+  const petiole=keepGeometry(new THREE.TubeGeometry(petioleCurve,16,1.8,8,false));
+  // Taper the stalk into the blade; the final few units tuck beneath its base
+  // instead of ending in an exposed constant-width tube opening.
+  const stalkPosition=petiole.attributes.position;
+  for(let ring=0;ring<=16;ring++){
+    const u=ring/16,center=petioleCurve.getPointAt(u),radiusScale=1-.76*u;
+    for(let side=0;side<=8;side++){
+      const index=ring*9+side;
+      stalkPosition.setXYZ(index,center.x+(stalkPosition.getX(index)-center.x)*radiusScale,
+        center.y+(stalkPosition.getY(index)-center.y)*radiusScale,
+        center.z+(stalkPosition.getZ(index)-center.z)*radiusScale);
+    }
+  }
+  petiole.computeVertexNormals();petiole.computeBoundingSphere();
+  const stalkColors=[];
+  for(let ring=0;ring<=16;ring++)for(let side=0;side<=8;side++){
+    const shade=.87+.13*Math.cos(side/8*Math.PI*2)**2;
+    stalkColors.push(shade,shade,.92*shade);
+  }
+  petiole.setAttribute('color',new THREE.Float32BufferAttribute(stalkColors,3));
   const profile = [[0, -130], [25.5, -130], [27.7, -129.7], [28.8, -128.3], [29.3, -124],
     [36.5, -88], [37.2, -83.2], [40.5, -83.2], [42.3, -82.1], [43, -80.5],
     [43.1, -74.2], [42.6, -72.1], [41.3, -71], [38.2, -70.8], [36.5, -71.5],
@@ -188,7 +217,9 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   const soils = {high: soilGeometry(64, 9), low: soilGeometry(32, 5)};
   const grainGeometry = keepGeometry(new THREE.DodecahedronGeometry(1, 0));
   const dummy = new THREE.Object3D(), temp = new THREE.Vector3();
-  const foliageAngles = [2.76, -.25, 3.6, -.64], foliageSizes = [1.05, .98, .9, .78];
+  const foliageAngles = [2.87,-.22,3.48,-.52],foliageSizes = [1.01,1,.96,.92];
+  const foliageRoll=[.76,.88,.9,.72],foliageLift=[-.12,.08,.22,.38];
+  const bladeWidth=[1.05,.94,1.04,.97],bladeCurve=[1,.86,1.13,.94];
 
   function mesh(geometry, material, name, owner) {
     const object = new THREE.Mesh(geometry, material);
@@ -204,16 +235,27 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
   }
   function makeStemGeometry(rings = 30, sides = 10) {
     const geometry = new THREE.BufferGeometry(), indices = [];
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array((rings + 1) * (sides + 1) * 3), 3));
+    const vertices=(rings+1)*(sides+1),colors=[];
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array((vertices+2)*3),3));
+    for(let i=0;i<=rings;i++)for(let j=0;j<=sides;j++){
+      const shade=.85+.11*Math.cos(j/sides*Math.PI*4)**2+.04*i/rings;
+      colors.push(shade,shade,.87*shade);
+    }
+    colors.push(.85,.85,.74,1,1,.87);
+    geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
     for (let i = 0; i < rings; i++) for (let j = 0; j < sides; j++) {
       const a = i * (sides + 1) + j, b = a + sides + 1;
       indices.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+    for(let j=0;j<sides;j++){
+      indices.push(vertices,j,j+1);
+      const top=rings*(sides+1)+j;indices.push(vertices+1,top+1,top);
     }
     geometry.setIndex(indices); geometry.userData = {rings, sides};
     return keepGeometry(geometry);
   }
   function stemAt(u, height, target = new THREE.Vector3()) {
-    return target.set(4 * Math.sin(Math.PI * u), -72 + height * u, -3 * Math.sin(Math.PI * 2 * u));
+    return target.set(5*Math.sin(Math.PI*u)+1.6*Math.sin(Math.PI*2*u), -72 + height * u, -3 * Math.sin(Math.PI * 2 * u));
   }
   function buildPlant(id, x) {
     const plant = new THREE.Group(); plant.name = id + '-detailed-plant'; plant.position.x = x; group.add(plant);
@@ -235,6 +277,10 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
     const stalks = instances(petiole, stemMaterial, 4, 'leaf-petioles', plant);
     const leaves = instances(leafGeometries[quality], leafMaterial, 4, 'curved-leaves', plant);
     const primaryVeins = instances(veins, veinMaterial, 4, 'raised-leaf-veins', plant);
+    // Stable leaf-to-leaf pigment and three-axis blade proportions give each
+    // blade its own silhouette. Both groups use identical botanical variation.
+    for(let i=0;i<4;i++)leaves.setColorAt(i,new THREE.Color().setRGB([.94,1,.97,1][i],[.98,.96,1,.99][i],[.91,.98,.94,.9][i]));
+    leaves.instanceColor.needsUpdate=true;
     // Thin botanical surfaces otherwise self-shadow into stippled artifacts at
     // mobile shadow resolutions. They still cast their silhouette onto the soil.
     leaves.receiveShadow=false;primaryVeins.receiveShadow=false;
@@ -256,7 +302,7 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
     const {rings, sides} = geometry.userData, attribute = geometry.attributes.position;
     for (let i = 0; i <= rings; i++) {
       const u = i / rings, center = stemAt(u, height);
-      tangent.set(4 * Math.PI * Math.cos(Math.PI * u), height, -6 * Math.PI * Math.cos(Math.PI * 2 * u)).normalize();
+      tangent.set(5*Math.PI*Math.cos(Math.PI*u)+3.2*Math.PI*Math.cos(Math.PI*2*u), height, -6 * Math.PI * Math.cos(Math.PI * 2 * u)).normalize();
       across.crossVectors(tangent, new THREE.Vector3(0, 0, 1)).normalize();
       forward.crossVectors(across, tangent).normalize();
       // Node collars are integrated into the stem surface, so each petiole has
@@ -267,13 +313,16 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
         const distance = (u - nodeU) * height / 2.8;
         collar += .75 * Math.exp(-distance * distance);
       }
-      const radius = 4.3 - 2.7 * u + collar;
+      const apex=THREE.MathUtils.smoothstep(u,.96,1);
+      const radius = (4.3 - 2.7 * u + collar)*(1-.88*apex);
       for (let j = 0; j <= sides; j++) {
         const angle = j / sides * Math.PI * 2;
         temp.copy(center).addScaledVector(across, Math.cos(angle) * radius).addScaledVector(forward, Math.sin(angle) * radius);
         attribute.setXYZ(i * (sides + 1) + j, temp.x, temp.y, temp.z);
       }
     }
+    const cap=(rings+1)*(sides+1);
+    attribute.setXYZ(cap,0,-72,0);attribute.setXYZ(cap+1,0,-72+height,0);
     attribute.needsUpdate = true; geometry.computeVertexNormals(); geometry.computeBoundingSphere();
     for (let i = 0; i < 4; i++) {
       // Retain four leaf nodes through the entire experiment; only their
@@ -283,7 +332,8 @@ export function createPlantGrowthModel(parent, {quality = 'high'} = {}) {
       dummy.rotation.set(0, angle, 0); dummy.scale.setScalar(1); dummy.updateMatrix();
       plant.stalks.setMatrixAt(i, dummy.matrix);
       dummy.position.add(new THREE.Vector3(22 * Math.cos(angle), 13, -22 * Math.sin(angle)));
-      dummy.rotation.x = .45 + i * .025; dummy.rotation.z = [.06,.13,.3,.48][i]; dummy.scale.setScalar(foliageSizes[i]); dummy.updateMatrix();
+      dummy.rotation.x=foliageRoll[i];dummy.rotation.z=foliageLift[i];
+      dummy.scale.set(foliageSizes[i],foliageSizes[i]*bladeCurve[i],foliageSizes[i]*bladeWidth[i]);dummy.updateMatrix();
       plant.leaves.setMatrixAt(i, dummy.matrix);
       plant.primaryVeins.setMatrixAt(i, dummy.matrix);
     }
