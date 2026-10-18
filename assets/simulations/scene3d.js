@@ -4,24 +4,25 @@ import {RoomEnvironment} from '../vendor/three/RoomEnvironment.js';
 import {ModelKit} from './models3d-kit.js';
 import {models3d} from './models3d.js';
 import {createPlantGrowthStudio} from './plant-growth-studio.js';
+import {createCellStudio} from './cell-studio.js';
 
 export function mountScene(host,spec,initialValues){
   const build=models3d[spec.id];if(!build)throw Error('Missing native model: '+spec.id);
-  const plantLesson=spec.id==='G1U1L1';
+  const plantLesson=spec.id==='G1U1L1',cellLesson=spec.id==='G1U3L1';
   const radius=({G1U1L1:230,G1U2L1:250,G1U2L2:315,G1U3L1:315,G1U4L1:250,G2U2L1:250,G2U2L2:250,G2U3L2:315,G2U3L5:300,G3U5L1:255,G3U6L2:275})[spec.id]||335;
   const panel=host.closest('.simPanel'),canvas=document.createElement('canvas');
   canvas.setAttribute('aria-label',spec.title+' — หมุนสำรวจสามมิติ');canvas.setAttribute('role','img');canvas.tabIndex=0;
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'default'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));renderer.setClearColor(0x0c263b,0);
-  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,cellLesson&&host.clientWidth<600?1.5:1.75));renderer.setClearColor(0x0c263b,0);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=cellLesson?.95:1.1;
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.append(canvas);
   const scene=new THREE.Scene(),group=new THREE.Group();scene.add(group);
   const pmrem=new THREE.PMREMGenerator(renderer),room=new RoomEnvironment(),environment=pmrem.fromScene(room,.04);
-  scene.environment=environment.texture;scene.environmentIntensity=.55;room.dispose();pmrem.dispose();
-  scene.add(new THREE.HemisphereLight(0xe7f5ff,0x6a7e8b,1.5));
-  const key=new THREE.DirectionalLight(0xfff4dd,3);key.position.set(-240,450,300);key.castShadow=true;
+  scene.environment=environment.texture;scene.environmentIntensity=cellLesson?.4:.55;room.dispose();pmrem.dispose();
+  scene.add(new THREE.HemisphereLight(0xe7f5ff,0x6a7e8b,cellLesson?1.1:1.5));
+  const key=new THREE.DirectionalLight(0xfff4dd,cellLesson?2:3);key.position.set(-240,450,300);key.castShadow=true;
   key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-420,right:420,top:420,bottom:-420,near:1,far:1400});key.shadow.bias=-.0003;key.shadow.normalBias=1;key.shadow.radius=3;scene.add(key);
-  const rim=new THREE.DirectionalLight(0x87cfff,2.3);rim.position.set(250,90,-300);scene.add(rim);
+  const rim=new THREE.DirectionalLight(0x87cfff,cellLesson?1.5:2.3);rim.position.set(250,90,-300);scene.add(rim);
   const platform=new THREE.Mesh(new THREE.CylinderGeometry(radius+5,radius+15,14,96),new THREE.MeshStandardMaterial({color:0x24475a,roughness:.65,metalness:.2}));platform.position.y=-172;platform.receiveShadow=true;scene.add(platform);
   const edge=new THREE.Mesh(new THREE.TorusGeometry(radius+2,1.6,8,96),new THREE.MeshBasicMaterial({color:0x51b8c1}));edge.rotation.x=Math.PI/2;edge.position.y=-163;scene.add(edge);
   const frontal=/^G2U3L[1-5]$/.test(spec.id)||['G1U3L1','G3U2L1'].includes(spec.id);
@@ -31,10 +32,11 @@ export function mountScene(host,spec,initialValues){
   const viewportSize=()=>plantStudio?.size()||{width:host.clientWidth,height:host.clientHeight};
   orbit.enablePan=false;orbit.enableDamping=true;orbit.dampingFactor=.12;orbit.rotateSpeed=.65;orbit.zoomSpeed=.8;
   orbit.minAzimuthAngle=-Infinity;orbit.maxAzimuthAngle=Infinity;orbit.minPolarAngle=.06;orbit.maxPolarAngle=Math.PI-.06;
-  orbit.enableRotate=!matchMedia('(pointer:coarse)').matches;orbit.enableZoom=orbit.enableRotate;orbit.autoRotateSpeed=.65;
-  orbit.target.set(0,plantLesson?-30:20,0);canvas.style.touchAction=orbit.enableRotate?'none':'pan-y';
+  orbit.enableRotate=cellLesson||!matchMedia('(pointer:coarse)').matches;orbit.enableZoom=orbit.enableRotate;orbit.autoRotateSpeed=.65;
+  orbit.target.set(0,plantLesson?-30:cellLesson?0:20,0);canvas.style.touchAction=orbit.enableRotate?'none':'pan-y';
   const reduced=matchMedia('(prefers-reduced-motion:reduce)');
   let disposed=false,mode='3d',frame=0,lastTime=0,zoomFactor=1,tween=null,updating=false,inView=true,revision=0;
+  let cellStudio=null;
   const fitDistance=(phi=plantLesson?1.34:1.12)=>{
     const {width,height}=viewportSize(),aspect=Math.max(.2,width/Math.max(1,height)),half=Math.atan(Math.tan(THREE.MathUtils.degToRad(20))*Math.min(1,aspect));
     if(plantStudio){
@@ -50,7 +52,9 @@ export function mountScene(host,spec,initialValues){
       }
       return distance;
     }
-    return radius/Math.sin(half);
+    // The cutaway occupies the canvas itself; the original lesson's much
+    // larger radius also reserved space for long floating text labels.
+    return (cellLesson?210:radius)/Math.sin(half);
   };
   const spherical=()=>new THREE.Spherical().setFromVector3(camera.position.clone().sub(orbit.target));
   function paint(){
@@ -59,7 +63,7 @@ export function mountScene(host,spec,initialValues){
     const width=host.clientWidth,height=host.clientHeight,placed=[],visible=[];
     camera.updateMatrixWorld();
     for(const item of kit.items.values())if(item.type==='label'){
-      if(plantStudio){item.mesh.visible=false;if(item.leader)item.leader.visible=false;continue}
+      if(plantStudio||cellStudio){item.mesh.visible=false;if(item.leader)item.leader.visible=false;continue}
       if(!item.mesh.visible){if(item.leader)item.leader.visible=false;continue}
       item.mesh.position.copy(item.anchor);
       const projected=item.anchor.clone().project(camera),aspect=item.mesh.userData.labelAspect;
@@ -91,8 +95,8 @@ export function mountScene(host,spec,initialValues){
     host.dataset.labelCount=String(placed.length);
     host.dataset.labelOverlap=String(placed.some((a,i)=>placed.slice(i+1).some(b=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y)));
     host.dataset.labelOverflow=String(placed.some(r=>r.x<0||r.y<0||r.x+r.w>width+1||r.y+r.h>height+1));
-    plantStudio?.paint(camera);renderer.render(scene,camera);
-    if(plantStudio){host.dataset.drawCalls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles)}
+    plantStudio?.paint(camera);cellStudio?.paint(camera);renderer.render(scene,camera);
+    if(plantStudio||cellStudio){host.dataset.drawCalls=String(renderer.info.render.calls);host.dataset.triangles=String(renderer.info.render.triangles)}
     const s=spherical();
     host.dataset.cameraDistance=String(s.radius);host.dataset.azimuth=String(s.theta);host.dataset.polar=String(s.phi);
   }
@@ -117,7 +121,7 @@ export function mountScene(host,spec,initialValues){
     if(instant||reduced.matches){camera.position.setFromSpherical(to).add(orbit.target);orbit.update();tween=null;paint()}
     else {tween={from:spherical(),to,start:performance.now()};host.dataset.animating='true'}schedule();
   }
-  function resetCamera(instant=false){zoomFactor=1;orbit.autoRotate=false;panel.querySelector('[data-sim-camera="auto"]')?.setAttribute('aria-pressed','false');moveTo(new THREE.Spherical(fitDistance(),frontal?1.5:plantLesson?1.34:1.12,frontal?.04:plantLesson?.12:.42),instant)}
+  function resetCamera(instant=false){zoomFactor=1;orbit.autoRotate=false;panel.querySelector('[data-sim-camera="auto"]')?.setAttribute('aria-pressed','false');cellStudio?.resetSelection();moveTo(new THREE.Spherical(fitDistance(),cellLesson?1.43:frontal?1.5:plantLesson?1.34:1.12,cellLesson?.13:frontal?.04:plantLesson?.12:.42),instant)}
   function resize(){
     if(disposed||!host.clientWidth||!host.clientHeight)return;
     plantStudio?.resize();const {width,height}=viewportSize();renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
@@ -125,8 +129,8 @@ export function mountScene(host,spec,initialValues){
     if(camera.position.length()){const s=spherical();s.radius=fit*zoomFactor;moveTo(s,true)}schedule();
   }
   function update(values){
-    if(disposed)return;kit.begin();build(kit,values);kit.end();plantStudio?.update();
-    host.dataset.revision=String(++revision);host.dataset.meshes=String((plantStudio?.meshCount||0)+[...kit.items.values()].filter(i=>i.mesh.visible&&i.type!=='label').length);
+    if(disposed)return;kit.begin();build(kit,values);kit.end();plantStudio?.update();cellStudio?.update(values);
+    host.dataset.revision=String(++revision);host.dataset.meshes=String((plantStudio?.meshCount||0)+(cellStudio?.meshCount||0)+[...kit.items.values()].filter(i=>i.mesh.visible&&i.type!=='label').length);
     host.dataset.model=spec.id;host.dataset.renderer='native';host.dataset.modelState=JSON.stringify(kit.values);schedule();
     host.dataset.animating='true';
   }
@@ -134,7 +138,7 @@ export function mountScene(host,spec,initialValues){
   const visibilityObserver=new IntersectionObserver(([entry])=>{inView=entry.isIntersecting;if(inView){lastTime=0;schedule()}else{cancelAnimationFrame(frame);frame=0}},{rootMargin:'100px'});visibilityObserver.observe(host);
   function action(event){
     const button=event.currentTarget;
-    if(button.dataset.simView){mode=button.dataset.simView;panel.dataset.simView=mode;host.hidden=mode!=='3d';panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView===mode)));cancelAnimationFrame(frame);frame=0;lastTime=0;if(mode==='3d'){inView=true;resize();schedule()}return}
+    if(button.dataset.simView){mode=button.dataset.simView;panel.dataset.simView=mode;host.hidden=mode!=='3d';cellStudio?.setMode(mode);panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView===mode)));cancelAnimationFrame(frame);frame=0;lastTime=0;if(mode==='3d'){inView=true;resize();schedule()}return}
     const command=button.dataset.simCamera,s=tween?tween.to.clone():spherical();
     if(command==='reset'){resetCamera();return}
     if(command==='left'||command==='right'){s.theta+=(command==='left'?-1:1)*Math.PI/12;moveTo(s)}
@@ -142,7 +146,7 @@ export function mountScene(host,spec,initialValues){
     if(command==='front')moveTo(new THREE.Spherical(fitDistance(Math.PI/2)*zoomFactor,Math.PI/2,0));
     if(command==='top')moveTo(new THREE.Spherical(fitDistance(.06)*zoomFactor,.06,0));
     if(command==='auto'){tween=null;orbit.autoRotate=!orbit.autoRotate;button.setAttribute('aria-pressed',String(orbit.autoRotate));schedule()}
-    if(command==='labels'){kit.setLabels(!kit.labels);button.setAttribute('aria-pressed',String(kit.labels));schedule()}
+    if(command==='labels'){kit.setLabels(!kit.labels);cellStudio?.setLabels(kit.labels);button.setAttribute('aria-pressed',String(kit.labels));schedule()}
     if(command==='drag'){orbit.enableRotate=!orbit.enableRotate;orbit.enableZoom=orbit.enableRotate;canvas.style.touchAction=orbit.enableRotate?'none':'pan-y';button.setAttribute('aria-pressed',String(orbit.enableRotate))}
   }
   const buttons=panel.querySelectorAll('[data-sim-camera],[data-sim-view]');buttons.forEach(button=>button.addEventListener('click',action));
@@ -154,14 +158,14 @@ export function mountScene(host,spec,initialValues){
   function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0}else{lastTime=0;schedule()}}document.addEventListener('visibilitychange',visibility);
   function keydown(event){const commands={ArrowLeft:'left',ArrowRight:'right','+':'in','=':'in','-':'out',Home:'reset'};if(commands[event.key]){event.preventDefault();panel.querySelector('[data-sim-camera="'+commands[event.key]+'"]').click()}}
   canvas.addEventListener('keydown',keydown);
-  function lost(event){event.preventDefault();mode='2d';panel.dataset.simView='2d';host.hidden=true;cancelAnimationFrame(frame);frame=0;panel.querySelector('[data-sim-view="3d"]').disabled=true;panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView==='2d')));panel.querySelector('[data-sim-status]').textContent='แสดงแผนภาพ 2D — เปิดบทเรียนใหม่เพื่อกลับมุมมอง 3D'}
+  function lost(event){event.preventDefault();mode='2d';panel.dataset.simView='2d';host.hidden=true;cellStudio?.setMode(mode);cancelAnimationFrame(frame);frame=0;panel.querySelector('[data-sim-view="3d"]').disabled=true;panel.querySelectorAll('[data-sim-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.simView==='2d')));panel.querySelector('[data-sim-status]').textContent='แสดงแผนภาพ 2D — เปิดบทเรียนใหม่เพื่อกลับมุมมอง 3D'}
   canvas.addEventListener('webglcontextlost',lost);
-  try{panel.dataset.simView='3d';update(initialValues);resize();resetCamera(true);paint()}catch(error){dispose();throw error}
+  try{if(cellLesson)cellStudio=createCellStudio({host,scene,kit,renderer,canvas,camera,requestRender:schedule});panel.dataset.simView='3d';update(initialValues);resize();resetCamera(true);paint()}catch(error){dispose();throw error}
   panel.querySelector('[data-sim-status]').textContent='หมุนได้รอบ 360° · ลากเพื่อสำรวจ · ซูมด้วยสองนิ้วหรือปุ่ม';
   function dispose(){
     disposed=true;cancelAnimationFrame(frame);frame=0;resizeObserver.disconnect();visibilityObserver.disconnect();orbit.dispose();
     buttons.forEach(button=>button.removeEventListener('click',action));canvas.removeEventListener('keydown',keydown);canvas.removeEventListener('webglcontextlost',lost);document.removeEventListener('visibilitychange',visibility);
-    plantStudio?.dispose();kit.dispose();platform.geometry.dispose();platform.material.dispose();edge.geometry.dispose();edge.material.dispose();key.shadow.map?.dispose();environment.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
+    cellStudio?.dispose();plantStudio?.dispose();kit.dispose();platform.geometry.dispose();platform.material.dispose();edge.geometry.dispose();edge.material.dispose();key.shadow.map?.dispose();environment.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
   }
   return{update,dispose};
 }

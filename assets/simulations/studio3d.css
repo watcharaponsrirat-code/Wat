@@ -1,3 +1,4 @@
+@import url('./cell-studio.css');
 .simPanel .simHeader{position:relative;padding:28px;background:linear-gradient(115deg,#e4f8f7,#f3fbff 60%,#e6f1ff);border-top:5px solid #269eae}
 .simPanel .simHeader h1{max-width:850px;color:#163f52;font-size:clamp(22px,2.5vw,32px);letter-spacing:-.4px}
 .simPanel .simEyebrow{display:inline-block;color:#187984;font-size:11px;letter-spacing:1.7px}
