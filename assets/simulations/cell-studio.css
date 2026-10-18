@@ -18,6 +18,7 @@
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellTypeSwitch button[aria-pressed=true]{color:#234a3d;background:#e0edcc;box-shadow:0 2px 5px #0002}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellTypeSwitch button:focus-visible{outline:3px solid #f2d88c;outline-offset:2px}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellCanvasHint{position:absolute;z-index:3;bottom:12px;left:12px;right:12px;text-align:center;pointer-events:none;color:#b1cbd4;font-size:12px;line-height:1.6}
+.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellTargetName{position:absolute;z-index:4;bottom:38px;left:54px;right:54px;width:max-content;max-width:calc(100% - 108px);margin:auto;padding:7px 12px;border:1px solid #a5c5cb70;border-radius:8px;background:#102d41ed;color:#f5faf6;text-align:center;font-size:12px;font-weight:700;line-height:1.5;pointer-events:none}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspots,.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellLeaders{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;background:none;border:0;border-radius:0;overflow:hidden}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellLeaders{z-index:2}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellLeaders path{stroke:#d7e8e8;stroke-width:1.1;stroke-opacity:.74;fill:none}
@@ -29,9 +30,11 @@
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspotName{display:none;min-width:0;font-size:12px;font-weight:700;line-height:1.55;text-align:left;overflow-wrap:anywhere}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot:not(.is-selected){background:transparent;border-color:transparent;box-shadow:none}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspotNumber{background:#0e2c3def;box-shadow:0 2px 7px #03121f55}
-.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot.is-selected{border-color:#ecdba6;border-radius:12px;padding:8px 10px;background:#fcf8e9;color:#233f48;box-shadow:0 4px 18px #04121f45}
-.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot.is-selected .cellHotspotName{display:block}
+.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot.is-selected{border-color:#ecdba6;border-radius:50%;padding:5px;background:#fcf8e9;color:#233f48;box-shadow:0 4px 18px #04121f45}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot.is-selected .cellHotspotNumber{background:#fff;color:#244553}
+.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot.is-previewed .cellHotspotNumber{outline:2px solid #fff1bd;outline-offset:2px}
+.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot[data-cell-visibility="occluded"] .cellHotspotNumber,.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellHotspot[data-cell-visibility="offscreen"] .cellHotspotNumber{border-style:dashed;color:#b4c8d3}
+.simPanel[data-simulation="G1U3L1"][data-cell-studio] .cellSelectionVisibility{margin:8px 0 0;color:#765518;font-size:12px;line-height:1.6}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .simCameraTools{padding:14px 18px 6px;background:#102a3d;border-top-color:#345163;gap:7px}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .simCameraTools button,.simPanel[data-simulation="G1U3L1"][data-cell-studio] .simViewSwitch button{min-width:44px;min-height:44px;font-size:13px}
 .simPanel[data-simulation="G1U3L1"][data-cell-studio] .simStudioHint{background:#102a3d;font-size:12px;color:#b7cdd5;padding:8px 18px 17px}

@@ -3,7 +3,8 @@ import {createCellModelKit,cellTransform} from './cell-model-kit.js';
 
 export function createAnimalCellModel({quality='high'}={}){
   const k=createCellModelKit({quality,name:'animal-cell'});
-  k.part('membrane',[144,40,31]);k.part('cytoplasm',[-88,66,-9]);
+  // Use the exposed cytoplasm beside the nucleus, away from mitochondria.
+  k.part('membrane',[144,40,31]);k.part('cytoplasm',[-82,17,-9]);
   k.bowl('membrane',152,146,-56,88,-.17);
   k.band('membrane',152,146,.94,26,32,.07);
   k.rim('membrane',152,146,32,2.5,.24);

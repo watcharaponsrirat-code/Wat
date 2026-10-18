@@ -54,7 +54,9 @@ export function mountScene(host,spec,initialValues){
     }
     // The cutaway occupies the canvas itself; the original lesson's much
     // larger radius also reserved space for long floating text labels.
-    return (cellLesson?210:radius)/Math.sin(half);
+    // On narrow screens reserve room for the fixed 44px label rails so that
+    // their buttons do not cover the membrane or cell wall in the initial view.
+    return (cellLesson?(width<600?245:210):radius)/Math.sin(half);
   };
   const spherical=()=>new THREE.Spherical().setFromVector3(camera.position.clone().sub(orbit.target));
   function paint(){

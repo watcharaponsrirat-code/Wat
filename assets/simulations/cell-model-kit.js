@@ -158,7 +158,9 @@ export function createCellModelKit({quality='high',name='cell'}={}){
     part('ribosomes',dots[Math.floor(dots.length-(high?27:18)/2)].slice(0,3));
   }
   function smoothER(position,scale=1,angle=0){
-    const matrix=cellTransform(position,[0,0,angle],[scale,scale,scale]);part('smooth-er',[position[0]+8*scale,position[1],position[2]+5]);
+    const matrix=cellTransform(position,[0,0,angle],[scale,scale,scale]);
+    // This junction lies on the actual tube, including its rotation/scale.
+    part('smooth-er',new THREE.Vector3(12,2,3).applyMatrix4(matrix).toArray());
     const paths=[
       [[-27,-11,0],[-17,-6,4],[-8,9,3],[2,15,0],[14,10,2],[25,19,4]],
       [[-22,21,1],[-15,12,3],[-8,9,3],[0,-4,0],[10,-13,3],[25,-10,2]],
@@ -192,7 +194,20 @@ export function createCellModelKit({quality='high',name='cell'}={}){
     const g=keep(new THREE.BufferGeometry());g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));g.setIndex(indices);g.computeBoundingBox();g.computeBoundingSphere();return g;
   }
   function finish(){
-    if(!finished){for(const {id,material:mat,items} of queued.values())decorate(new THREE.Mesh(merge(items),mat),id);queued.clear();finished=true;group.updateMatrixWorld(true)}
+    if(!finished){
+      for(const {id,material:mat,items} of queued.values())decorate(new THREE.Mesh(merge(items),mat),id);
+      queued.clear();group.updateMatrixWorld(true);
+      // Pin every marker to its real triangulated surface, once at creation.
+      // A guessed Z above a narrow tube can point at empty space on rotation.
+      const ray=new THREE.Raycaster(),down=new THREE.Vector3(0,0,-1);
+      for(const entry of parts.values()){
+        ray.set(new THREE.Vector3(entry.anchor.x,entry.anchor.y,500),down);
+        const surface=ray.intersectObjects(entry.objects,true)[0];
+        if(!surface)throw Error(`Missing cell label surface: ${name}/${entry.id}`);
+        entry.anchor.copy(surface.point);
+      }
+      finished=true;
+    }
     return {group,organelles:[...parts.values()],dispose(){if(disposed)return;disposed=true;group.removeFromParent();instances.forEach(mesh=>mesh.dispose());geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose())}};
   }
   return {high,group,part,color,tint,material,add,keep,sphere,bead,ellipsoid,beads,tube,sac,bowl,rim,band,shell,nucleus,mitochondrion,golgi,roughER,smoothER,chloroplast,finish};

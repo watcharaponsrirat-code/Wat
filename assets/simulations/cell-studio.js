@@ -16,6 +16,7 @@ export function createCellStudio({host,scene,kit,renderer,canvas,camera,requestR
   panel.dataset.cellStudio='true';host.dataset.cellStudio='true';host.dataset.cellSelected='';
 
   const element=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text)node.textContent=text;return node};
+  const setText=(node,value)=>{if(node.textContent!==value)node.textContent=value};
   const cssColor=value=>typeof value==='number'?`#${value.toString(16).padStart(6,'0')}`:value||'#b7d8d4';
   const on=(target,event,callback,options)=>{target.addEventListener(event,callback,options);listeners.push(()=>target.removeEventListener(event,callback,options))};
   const header=element('div','cellModelHeader');
@@ -30,8 +31,9 @@ export function createCellStudio({host,scene,kit,renderer,canvas,camera,requestR
   const overlay=element('div','cellHotspots');
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.classList.add('cellLeaders');svg.setAttribute('aria-hidden','true');
-  const hint=element('span','cellCanvasHint','หมุนดูรอบด้าน · แตะส่วนประกอบเพื่อสำรวจ');
-  host.append(header,svg,overlay,hint);
+  const hint=element('span','cellCanvasHint','เลือกหมายเลขเพื่อดูเส้นชี้ · ลากเพื่อหมุน');
+  const targetName=element('div','cellTargetName');targetName.hidden=true;targetName.setAttribute('aria-hidden','true');
+  host.append(header,svg,overlay,hint,targetName);
 
   const inspector=element('section','cellInspector');inspector.setAttribute('aria-label','สำรวจส่วนประกอบของเซลล์');
   const info=element('div','cellSelectionInfo');info.setAttribute('aria-live','polite');info.setAttribute('aria-atomic','true');
@@ -40,7 +42,8 @@ export function createCellStudio({host,scene,kit,renderer,canvas,camera,requestR
   const infoEyebrow=element('span','cellSelectionEyebrow','เริ่มสำรวจ');
   const infoTitle=element('h3','cellSelectionTitle','เลือกส่วนประกอบของเซลล์');
   const infoText=element('p','cellSelectionText','แตะหมายเลขบนแบบจำลอง หรือเลือกชื่อด้านล่าง เพื่อดูตำแหน่งและหน้าที่');
-  infoBody.append(infoEyebrow,infoTitle,infoText);info.append(infoCode,infoBody);
+  const visibilityHint=element('p','cellSelectionVisibility');visibilityHint.hidden=true;
+  infoBody.append(infoEyebrow,infoTitle,infoText,visibilityHint);info.append(infoCode,infoBody);
   const clear=element('button','cellClear','ล้างการเลือก');clear.type='button';clear.dataset.cellClear='';clear.hidden=true;
   const infoRow=element('div','cellSelectionRow');infoRow.append(info,clear);
   const listHead=element('div','cellListHead');
@@ -111,12 +114,13 @@ export function createCellStudio({host,scene,kit,renderer,canvas,camera,requestR
       const code=String(index+1).padStart(2,'0');
       const button=element('button','cellHotspot');button.type='button';button.dataset.cellHotspot=entry.id;
       button.setAttribute('aria-label',`${code} ${definition.name}`);button.setAttribute('aria-pressed','false');button.style.setProperty('--cell-color',cssColor(definition.color));
+      button.title=`${code} ${definition.name}`;
       const number=element('span','cellHotspotNumber',code),name=element('span','cellHotspotName',definition.name);number.setAttribute('aria-hidden','true');button.append(number,name);
       // Delegation avoids retaining detached button listeners on model switches.
       overlay.append(button);
       const line=document.createElementNS('http://www.w3.org/2000/svg','path');line.dataset.cellLeader=entry.id;svg.append(line);
       const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','3');dot.dataset.cellAnchor=entry.id;svg.append(dot);
-      hotspots.set(entry.id,{button,line,dot,entry});
+      hotspots.set(entry.id,{button,line,dot,entry,index});
       const item=element('button','cellOrganelleButton');item.type='button';item.dataset.cellOrganelle=entry.id;item.setAttribute('aria-pressed','false');item.style.setProperty('--cell-color',cssColor(definition.color));
       const itemCode=element('span','cellOrganelleCode',code);itemCode.setAttribute('aria-hidden','true');item.append(itemCode,element('span','cellOrganelleName',definition.name));
       list.append(item);listButtons.set(entry.id,item);
@@ -128,6 +132,9 @@ export function createCellStudio({host,scene,kit,renderer,canvas,camera,requestR
   }
   on(overlay,'click',event=>{const button=event.target.closest('[data-cell-hotspot]');if(button)select(button.dataset.cellHotspot)});
   on(list,'click',event=>{const button=event.target.closest('[data-cell-organelle]');if(button)select(button.dataset.cellOrganelle)});
+  // Preview a rail target without changing the selected organelle or its slot.
+  on(overlay,'pointerover',event=>{const button=event.target.closest('[data-cell-hotspot]');if(button&&event.pointerType==='mouse'){hovered=button.dataset.cellHotspot;applyHighlight();requestRender?.()}});
+  on(overlay,'pointerleave',()=>{if(hovered){clearHover();applyHighlight();requestRender?.()}});
 
   function update(values=kit.values){
     if(disposed)return;hideOriginal();
@@ -178,47 +185,55 @@ export function createCellStudio({host,scene,kit,renderer,canvas,camera,requestR
   on(canvas,'pointercancel',cancelPointer,true);on(canvas,'lostpointercapture',cancelPointer,true);
   on(canvas,'pointerleave',()=>{if(!gesture&&hovered){clearHover();applyHighlight();requestRender?.()}});
 
-  function occluded(entry,anchor){
-    cameraWorld.setFromMatrixPosition(camera.matrixWorld);direction.subVectors(anchor,cameraWorld);const distance=direction.length();
-    raycaster.set(cameraWorld,direction.normalize());raycaster.far=Math.max(0,distance-4*active.group.scale.x);
-    const blocked=raycaster.intersectObject(active.group,true).some(hit=>visible(hit.object)&&idOf(hit.object)!==entry.id&&opaque(hit.object));
-    raycaster.far=Infinity;return blocked;
+  function surfaceVisible(entry,anchor,viewCamera){
+    cameraWorld.setFromMatrixPosition(viewCamera.matrixWorld);direction.subVectors(anchor,cameraWorld);
+    raycaster.set(cameraWorld,direction.normalize());raycaster.far=Infinity;
+    const first=raycaster.intersectObject(active.group,true).find(hit=>visible(hit.object)&&opaque(hit.object));
+    // Both identity AND distance must match: a nearer copy of the same
+    // organelle, or the reverse of its shell, must not validate a hidden tip.
+    return first&&idOf(first.object)===entry.id&&first.point.distanceTo(anchor)<.08*active.group.scale.x;
   }
   function paint(viewCamera=camera){
     if(disposed)return;hideOriginal();
     if(!active||mode!=='3d')return;
     active.group.updateMatrixWorld(true);viewCamera.updateMatrixWorld();
     const width=host.clientWidth,height=host.clientHeight;
-    const signature=[...viewCamera.matrixWorld.elements,...viewCamera.projectionMatrix.elements,width,height,active.group.scale.x,labels,selected].join(',');
+    const signature=[...viewCamera.matrixWorld.elements,...viewCamera.projectionMatrix.elements,width,height,active.group.scale.x,labels,selected,hovered].join(',');
     if(!layoutDirty&&signature===lastCamera)return;lastCamera=signature;layoutDirty=false;
     overlay.hidden=!labels;svg.style.display=labels?'':'none';
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
-    const placed=[],shown=[];
-    const entries=[...active.organelles].sort((a,b)=>Number(b.id===selected)-Number(a.id===selected));
-    for(const entry of entries){
+    const shown=[],focus=selected||hovered;
+    // Persistent numbered rails. Camera motion changes only the target point,
+    // never the button's side, row, size or order (including during selection).
+    const margin=width<600?4:20,top=96,bottom=height-80,rows=Math.ceil(active.organelles.length/2);
+    const slots=active.organelles.map((entry,index)=>({x:index<rows?margin:width-margin-44,y:top+(index%rows)*Math.max(44,(bottom-top)/(rows-1))}));
+    for(const entry of active.organelles){
       const hotspot=hotspots.get(entry.id);if(!hotspot)continue;
-      const {button,line,dot}=hotspot;button.hidden=true;line.style.display='none';dot.style.display='none';
+      const {button,line,dot,index}=hotspot;button.hidden=!labels;line.style.display='none';dot.style.display='none';
       if(!labels||width<1||height<1)continue;
+      const left=index<rows,w=44,h=44,{x,y}=slots[index];
+      button.style.width='44px';button.style.height='44px';button.style.transform=`translate(${x}px,${y}px)`;
       world.copy(entry.anchor);active.group.localToWorld(world);projected.copy(world).project(viewCamera);
       const anchorX=(projected.x+1)*width/2,anchorY=(1-projected.y)*height/2;
-      if(projected.z< -1||projected.z>1||anchorX<8||anchorX>width-8||anchorY<84||anchorY>height-36||occluded(entry,world))continue;
-      const isSelected=entry.id===selected,w=isSelected?Math.min(220,width-32):44;
-      button.style.width=`${w}px`;button.style.visibility='hidden';button.hidden=false;
-      const h=Math.max(44,button.offsetHeight);let best=null;
-      const offsets=isSelected?[[w/2+22,0],[-w/2-22,0],[0,-h/2-28],[0,h/2+28]]:[[28,-28],[-28,-28],[28,28],[-28,28],[0,-52],[52,0],[-52,0],[0,52],[74,-42],[-74,-42]];
-      for(const [dx,dy] of offsets){
-        const x=THREE.MathUtils.clamp(anchorX+dx-w/2,8,Math.max(8,width-w-8)),y=THREE.MathUtils.clamp(anchorY+dy-h/2,84,Math.max(84,height-h-36));
-        const rect={x,y,w,h};
-        if(placed.some(other=>x<other.x+other.w+5&&x+w+5>other.x&&y<other.y+other.h+5&&y+h+5>other.y))continue;
-        const score=(x+w/2-anchorX)**2+(y+h/2-anchorY)**2;if(!best||score<best.score)best={...rect,score};
+      const onscreen=projected.z>=-1&&projected.z<=1&&anchorX>=3&&anchorX<=width-3&&anchorY>=84&&anchorY<=height-30;
+      const coveredByLabel=slots.some(slot=>anchorX>slot.x-3&&anchorX<slot.x+47&&anchorY>slot.y-3&&anchorY<slot.y+47);
+      const state=!onscreen?'offscreen':!coveredByLabel&&surfaceVisible(entry,world,viewCamera)?'visible':'occluded';
+      if(button.dataset.cellVisibility!==state)button.dataset.cellVisibility=state;
+      button.classList.toggle('is-previewed',entry.id===focus);
+      if(state==='visible'&&entry.id===focus){
+        const endX=left?x+w-7:x+7,endY=y+h/2;
+        line.setAttribute('d',`M ${anchorX} ${anchorY} L ${endX} ${endY}`);line.style.display='';line.classList.add('is-selected');
+        dot.setAttribute('cx',String(anchorX));dot.setAttribute('cy',String(anchorY));dot.style.display='';
       }
-      if(!best){button.hidden=true;continue}
-      button.style.transform=`translate(${best.x.toFixed(1)}px,${best.y.toFixed(1)}px)`;button.style.visibility='';
-      const endX=THREE.MathUtils.clamp(anchorX,best.x+6,best.x+w-6),endY=THREE.MathUtils.clamp(anchorY,best.y+6,best.y+h-6);
-      line.setAttribute('d',`M ${anchorX.toFixed(1)} ${anchorY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`);line.style.display='';line.classList.toggle('is-selected',isSelected);
-      dot.setAttribute('cx',anchorX.toFixed(1));dot.setAttribute('cy',anchorY.toFixed(1));dot.style.display='';
-      placed.push(best);shown.push({id:entry.id,x:best.x,y:best.y,w,h,anchorX,anchorY});
+      shown.push({id:entry.id,x,y,w,h,anchorX,anchorY,state});
     }
+    const selection=shown.find(entry=>entry.id===selected);
+    const focused=shown.find(entry=>entry.id===focus);
+    targetName.hidden=!focused;
+    setText(targetName,focused?`${String(hotspots.get(focus).index+1).padStart(2,'0')} · ${CELL_ORGANELLES[focus].name}`:'');
+    setText(hint,focused?.state==='occluded'?'จุดชี้ถูกบัง · หมุนกลับด้านตัดเปิด':focused?.state==='offscreen'?'จุดชี้อยู่นอกกรอบ · ซูมออกเพื่อดูตำแหน่ง':'เลือกหมายเลขเพื่อดูเส้นชี้ · ลากเพื่อหมุน');
+    visibilityHint.hidden=!selection||selection.state==='visible';
+    setText(visibilityHint,!selection||selection.state==='visible'?'':selection.state==='offscreen'?'ส่วนที่เลือกอยู่นอกกรอบ ลองซูมออกหรือกลับมุมมองด้านหน้า':'จุดชี้ของส่วนนี้ถูกบังจากมุมปัจจุบัน ลองหมุนกลับด้านตัดเปิด');
     host.dataset.cellHotspotIds=JSON.stringify(shown.map(entry=>entry.id));host.dataset.cellProjectedHotspots=JSON.stringify(shown);
     host.dataset.cellHotspotCount=String(shown.length);host.dataset.labelCount=String(shown.length);host.dataset.labelOverlap='false';host.dataset.labelOverflow='false';
   }
@@ -232,7 +247,7 @@ export function createCellStudio({host,scene,kit,renderer,canvas,camera,requestR
   function dispose(){
     if(disposed)return;disposed=true;restoreHighlight();listeners.forEach(remove=>remove());pointers.clear();gesture=null;
     for(const model of cache.values()){scene.remove(model.group);model.dispose()}cache.clear();
-    header.remove();svg.remove();overlay.remove();hint.remove();inspector.remove();canvas.classList.remove('cellCanSelect');
+    header.remove();svg.remove();overlay.remove();hint.remove();targetName.remove();inspector.remove();canvas.classList.remove('cellCanSelect');
     delete panel.dataset.cellStudio;
     for(const key of ['cellStudio','cellType','cellSelected','cellOrganelleCount','cellQuality','cellHotspotIds','cellProjectedHotspots','cellHotspotCount'])delete host.dataset[key];
   }
