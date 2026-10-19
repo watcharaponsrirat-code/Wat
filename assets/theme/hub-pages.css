@@ -1,0 +1,146 @@
+/* Shared adventure presentation for results, missions and About only. */
+body:has(.hubScreen){overflow:hidden;background:#7ccfee}
+.hubScreen,.hubAboutDialog{--hub-ink:#173a53;--hub-muted:#526b7c;--hub-green:#24553a;color:var(--hub-ink);font-family:system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;line-height:1.6}
+.hubScreen{height:100svh;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(#bfefff15,#23604e26),url('../lesson-selection/lesson-scene-v1.webp') center/cover no-repeat}
+.hubScreen *,.hubAboutDialog *{box-sizing:border-box}
+.hubScreen button,.hubAboutDialog button{font:inherit;touch-action:manipulation}
+.hubScreen .topbar{position:relative;flex:none;width:min(1160px,calc(100% - 32px));margin:16px auto 0;border:2px solid #fff;border-radius:20px;background:#fffdf2f5;box-shadow:0 5px 0 #3059632b,0 10px 24px #163f5229;backdrop-filter:blur(8px)}
+.hubScreen .topinner{padding:10px 15px;color:var(--hub-ink)}
+.hubScreen .brandTitle{color:var(--hub-green);font-family:inherit}
+.hubScreen .brandLogo{border-radius:11px;border-color:#e1e8db}
+.hubScreen .topBtn,.hubScreen .profilePill{border-radius:12px;border-color:#d4e2dc;color:var(--hub-ink);box-shadow:0 3px 0 #b9cbbd66}
+.hubScreen .topBtn:hover{background:#ebf5ed}
+.hubScreen .hubContent{flex:1;min-height:0;width:100%;max-width:none;margin:0;padding:20px 24px 28px;overflow:auto;overscroll-behavior-y:contain;scrollbar-color:#ffffffb0 transparent;scrollbar-width:thin}
+.hubContainer{width:min(100%,1060px);margin:0 auto}
+.hubHeading{text-align:center;margin:0 0 23px}
+.hubSign{display:grid;place-items:center;min-height:124px;width:min(100%,440px);padding:24px 40px 30px;margin:auto;background:url('../dashboard/wood-sign-v1.webp') center/100% 100% no-repeat;filter:drop-shadow(0 5px 3px #284c4e44)}
+.hubSign h1{margin:0;font-size:clamp(25px,3vw,34px);font-weight:850;line-height:1.5;color:#fffbed;text-shadow:0 2px 2px #653b16}
+.hubHeading>p{display:table;margin:9px auto 0;padding:5px 17px;border:1px solid #ffffffb0;border-radius:30px;background:#fffdf2f0;color:#35516a;font-size:13px;font-weight:600;box-shadow:0 3px 8px #144b4e14}
+.hubPanel{border:3px solid #fffdf3;border-radius:26px;background:linear-gradient(145deg,#fffef8,#f8fbf1);box-shadow:0 6px 0 #365c5038,0 15px 35px #123b4229;padding:25px;min-width:0}
+.hubEyebrow{display:block;font-size:12px;line-height:1.7;font-weight:700;color:#567a68}
+.hubPanel h2,.hubAboutDialog h2{margin:4px 0 0;font-size:25px;line-height:1.5;font-weight:850}
+.hubButton{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:10px 22px;border:1px solid #13843c;border-radius:13px;background:linear-gradient(#43cd58,#10a546);color:#fff;font-size:14px;font-weight:750!important;box-shadow:inset 0 2px 0 #ffffff66,0 4px 0 #157d37;cursor:pointer;transition:transform .15s,filter .15s;text-decoration:none}
+.hubButton:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.hubButton:active{transform:translateY(2px)}
+.hubButtonBlue{background:linear-gradient(#3cb5f1,#1685cf);border-color:#1673b0;box-shadow:inset 0 2px 0 #ffffff66,0 4px 0 #116ba5}
+.hubScreen button:focus-visible,.hubAboutDialog button:focus-visible{outline:3px solid #075ca6;outline-offset:4px}
+.hubEmpty{max-width:720px;margin:0 auto;text-align:center;padding:28px 24px 32px}
+.hubEmptyArt{width:175px;height:155px;margin:0 auto 8px;background:radial-gradient(ellipse,#cceacc80,transparent 70%)}
+.hubEmptyArt img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 7px #28594522)}
+.hubEmpty h2{font-size:clamp(23px,3vw,30px);margin:6px 0 9px}
+.hubEmpty p{font-size:15px;color:var(--hub-muted);margin:0 0 22px;line-height:1.8}
+.hubEmpty .hubButton{min-width:210px}
+.hubEmptyNote{display:block;color:#63796c;font-size:12px;margin:20px 0 0}
+.hubStats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 22px}
+.hubStat{border:2px solid #fff;border-radius:19px;background:linear-gradient(130deg,#fafdff,#e4f3ff);padding:16px 22px;box-shadow:0 4px 0 #315a6933,0 8px 20px #294c4b1a}
+.hubStatGreen{background:linear-gradient(130deg,#fcfff5,#e7f3d7)}
+.hubStatGold{background:linear-gradient(130deg,#fffdf4,#fff0bf)}
+.hubStat>span{font-size:12px;font-weight:650;color:#466276}
+.hubStat strong{display:block;font-size:29px;line-height:1.4;font-variant-numeric:tabular-nums}
+.hubStat small{font-size:12px;font-weight:600;color:#587064}
+.hubPanelHeading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
+.hubCount{font-size:12px;font-weight:700;color:#426651;background:#eaf2df;border:1px solid #d5e3c9;padding:5px 12px;border-radius:30px;white-space:nowrap}
+.hubResultList{display:grid;gap:12px}
+.hubResults .hubResultCard{display:grid;grid-template-columns:85px minmax(0,1fr) 90px 94px;align-items:center;gap:17px;margin:0;padding:13px;background:#fff;border:1px solid #dce7df;border-radius:17px;box-shadow:0 3px 0 #d5e2db66;transform:none}
+.hubResults .lessonThumb{grid-row:auto;height:76px;min-height:0;border:0;border-radius:12px;box-shadow:none;background:#f0f5ec}
+.hubResults .lessonThumb img{width:100%;height:100%;object-fit:cover}
+.hubGrade{font-size:11px;color:#607789;font-weight:600}
+.hubResults .hubResultCopy h3{font-size:16px;line-height:1.6;margin:3px 0 6px}
+.hubResults .lessonStatus{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:#647581}
+.hubStatus{border-radius:30px;padding:2px 9px;background:#fff3d9;color:#8b5b17;font-weight:700}
+.hubStatus.isPassed{background:#e7f5e8;color:#24713d}
+.hubBest{text-align:center;font-variant-numeric:tabular-nums}
+.hubBest strong{display:block;color:#1e6b4c;font-size:27px;line-height:1.3}
+.hubBest strong small{font-size:15px}
+.hubBest>span{font-size:10px;color:#647581}
+.hubResultCard .hubButton{font-size:12px;gap:7px;padding:8px 13px;min-height:44px}
+.hubMissionGrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+.hubHeadingArt{flex:none;width:78px;height:73px;margin:-7px 0}
+.hubHeadingArt img{width:100%;height:100%;object-fit:contain}
+.hubGoalList{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.hubGoal{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid #dce5d5;border-radius:16px;background:#fff}
+.hubGoal.isDone{border-color:#c8dfc2;background:#f2fae9}
+.hubGoalNumber{flex:none;display:grid;place-items:center;width:41px;height:44px;border:1px solid #e1d5b9;border-radius:12px;background:linear-gradient(#fff9e9,#f6e8c3);color:#927135;box-shadow:0 3px 0 #dfcfaa66;font-size:18px;font-weight:800}
+.hubGoal.isDone .hubGoalNumber{border-color:#58b86c;background:linear-gradient(#67d674,#22ab50);color:white;box-shadow:0 3px 0 #248b3c55}
+.hubGoalCopy{flex:1;min-width:0}
+.hubGoalCopy h3{font-size:15px;margin:0 0 2px;line-height:1.5}
+.hubGoalCopy p{margin:0 0 10px;font-size:11px;color:var(--hub-muted)}
+.hubTrack{height:10px;overflow:hidden;border:1px solid #d3dfcc;border-radius:30px;background:#e8efdf;box-shadow:inset 0 2px 3px #647c5d15}
+.hubTrack>span{display:block;height:100%;border-radius:30px;background:linear-gradient(#83e84d,#27b93d);box-shadow:inset 0 2px 0 #d4ffae77}
+.hubGoalStatus{flex:none;min-width:49px;text-align:right;font-variant-numeric:tabular-nums}
+.hubGoalStatus strong{display:block;font-size:20px;color:#345c42;line-height:1.4}
+.hubGoalStatus strong small{font-size:12px;color:#70816c}
+.hubGoalStatus>span{font-size:10px;color:#65775c}
+.hubPanelNote{text-align:center;font-size:11px;color:#687d70;margin:17px 0 0}
+.hubExperience{text-align:center;padding:26px 24px 30px;background:linear-gradient(#fffef7,#fff9e5)}
+.hubExperienceArt{width:140px;height:133px;margin:0 auto 6px}
+.hubExperienceArt img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 6px #247e7b26)}
+.hubExperience h2{font-size:20px;margin-top:4px}
+.hubXpTotal{color:#24553a;font-size:48px;font-weight:850;line-height:1.4;font-variant-numeric:tabular-nums}
+.hubXpTotal>span{font-size:16px;margin-left:8px;color:#769068}
+.hubLevel{display:inline-block;font-size:12px;font-weight:750;color:#815920;background:#faedc2;border:1px solid #e4d29b;border-radius:30px;padding:4px 17px}
+.hubLevelProgress{margin:24px 0}
+.hubLevelProgress>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:11px;margin:0 0 9px;color:#61735e}
+.hubLevelProgress b{font-size:11px;color:#365d42;white-space:nowrap}
+.hubLevelProgress p{font-size:11px;color:#687c62;margin:10px 0 0}
+.hubExperience .hubButton{width:100%}
+#app .hubScreen .bottomNav{position:relative;left:auto;right:auto;bottom:auto;transform:none;flex:none;margin:6px auto max(12px,env(safe-area-inset-bottom,0px));background:#fffef8f5;border-color:#fffef8}
+
+/* Native dialog provides modal focus handling and Escape without page-wide listeners. */
+.hubAboutDialog{width:min(740px,calc(100% - 28px));max-width:none;max-height:calc(100svh - 36px);margin:auto;padding:0;border:3px solid #fffdf1;border-radius:25px;background:#fffdf5;box-shadow:0 8px 0 #284c4938,0 26px 85px #0b293c55;overflow:auto;overscroll-behavior:contain}
+.hubAboutDialog::backdrop{background:#123e4a80;backdrop-filter:blur(5px)}
+.hubAboutHeader{display:flex;align-items:center;gap:17px;padding:26px 65px 25px 28px;position:relative;background:linear-gradient(100deg,#f9f9dfeb,#eff7daed),url('../lesson-selection/lesson-scene-wide-v1.webp') center 40%/cover;border-bottom:1px solid #dce6cb}
+.hubAboutLogo{width:52px;height:76px;flex:none;object-fit:contain;background:#ffffffb0;border:1px solid #fff;border-radius:13px;padding:5px}
+.hubAboutHeader h2{font-size:17px;margin:3px 0 0;color:#24553a}
+.hubAboutHeader h2>span{font-size:26px;letter-spacing:-.5px}
+.hubClose{position:absolute;right:15px;top:15px;display:grid;place-items:center;width:42px;min-height:42px;border:1px solid #d8e2cf;border-radius:12px;background:#fffdf5;color:#426751;font-size:26px!important;line-height:1;cursor:pointer}
+.hubClose:hover{background:#eaf4e2}
+.hubAboutBody{padding:24px 28px 20px}
+.hubDemoNotice{display:flex;gap:12px;padding:15px 17px;background:#eef6fc;border:1px solid #d1e5f2;border-radius:15px}
+.hubNoticeIcon{display:grid;place-items:center;flex:none;width:23px;height:23px;border:1.5px solid #5685a4;border-radius:50%;font-size:14px;font-weight:800;color:#467696;margin-top:3px}
+.hubDemoNotice p{margin:0;font-size:13px;line-height:1.85;color:#47647c}
+.hubDemoNotice b{display:block;margin:0 0 2px;color:#25597e}
+.hubAboutIntro{display:flex;align-items:center;gap:20px;padding:22px 0}
+.hubAboutIntro>div{flex:1;min-width:0}
+.hubAboutIntro>img{width:97px;height:110px;flex:none;object-fit:contain}
+.hubAboutDialog h3{font-size:17px;color:#29543d;margin:0 0 7px;line-height:1.5}
+.hubAboutIntro p{font-size:13px;line-height:1.9;margin:0;color:var(--hub-muted)}
+.hubPrinciples{padding:18px 20px;border:1px solid #e3e7d0;border-radius:16px;background:#f5f8e9}
+.hubPrinciples ul{display:grid;gap:8px;margin:11px 0 0;padding-left:20px;font-size:13px;line-height:1.8;color:#4c634c}
+.hubPrinciples li::marker{color:#73a741}
+.hubAboutSources{margin:19px 0 0;font-size:12px;line-height:1.85;color:#607383}
+.hubAboutFooter{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:16px 28px 20px;border-top:1px solid #e4e8d9;background:#fafbf0}
+.hubAboutFooter>span{font-size:11px;color:#71816b}
+.hubAboutFooter .hubButton{min-width:92px}
+@media(min-width:1000px){.hubScreen{background-image:linear-gradient(#bfefff10,#23604e26),url('../lesson-selection/lesson-scene-wide-v1.webp')}}
+@media(max-width:700px){
+ .hubScreen .topbar{width:calc(100% - 20px);margin-top:10px;border-radius:17px}
+ .hubScreen .topinner{padding:7px 10px;gap:6px}
+ .hubScreen .hubContent{padding:14px 12px 24px}
+ .hubSign{width:min(100%,370px);min-height:105px;padding:20px 27px 25px}
+ .hubHeading{margin-bottom:19px}.hubHeading>p{font-size:11px;padding:5px 12px}
+ .hubPanel{padding:20px;border-radius:22px}.hubPanel h2{font-size:22px}
+ .hubMissionGrid{grid-template-columns:minmax(0,1fr);gap:18px}
+ .hubExperienceArt{width:112px;height:106px}.hubExperience{padding:22px}.hubLevelProgress{max-width:420px;margin:20px auto}.hubExperience .hubButton{max-width:420px}
+ .hubGoal{gap:11px;padding:13px}.hubGoalCopy h3{font-size:14px}.hubGoalCopy p{font-size:10px}
+ .hubGoalNumber{width:35px;height:39px;font-size:16px}.hubGoalStatus{min-width:42px}
+ .hubStats{gap:8px;margin-bottom:17px}.hubStat{padding:12px 10px;border-radius:15px}.hubStat>span{font-size:10px}.hubStat strong{font-size:25px}.hubStat small{display:block;font-size:10px}
+ .hubResults .hubResultCard{grid-template-columns:64px minmax(0,1fr) 66px;gap:10px;padding:12px}
+ .hubResults .lessonThumb{height:65px;grid-row:1}.hubResults .hubResultCopy h3{font-size:14px}.hubBest strong{font-size:23px}.hubBest>span{font-size:9px}
+ .hubResultCard .hubButton{grid-column:2 / 4;justify-self:stretch}.hubResults .lessonStatus{gap:5px;font-size:10px}.hubGrade{font-size:10px}
+ .hubResults{padding:16px}.hubPanelHeading{gap:10px}.hubCount{padding:4px 9px;font-size:10px}
+ .hubAboutHeader{padding:22px 56px 20px 20px;gap:12px}.hubAboutLogo{width:42px;height:65px}.hubAboutHeader h2>span{font-size:21px}.hubAboutHeader .hubEyebrow{font-size:10px}
+ .hubAboutBody{padding:18px}.hubAboutIntro{gap:10px}.hubAboutIntro>img{width:64px;height:90px}.hubAboutFooter{padding:15px 18px 18px}.hubAboutFooter>span{max-width:165px}
+}
+@media(max-width:380px){
+ .hubScreen .topinner{padding:6px 7px;gap:6px 4px}.hubScreen .topBtn{padding:6px;font-size:11px}.hubScreen .brandTitle{font-size:10px}.hubScreen .brandLogo{width:28px;height:39px}.hubScreen .brand{gap:4px}
+ .hubSign{min-height:95px}.hubSign h1{font-size:25px}.hubPanel{padding:16px}.hubEmpty{padding:22px 15px}.hubEmptyArt{width:140px;height:126px}.hubEmpty p{font-size:13px}.hubEmptyNote{font-size:10px}
+ .hubGoal{gap:8px;padding:11px}.hubGoalCopy h3{font-size:13px}.hubGoalNumber{width:29px;height:35px;font-size:14px}.hubGoalStatus strong{font-size:18px}.hubGoalCopy p{font-size:9px}.hubHeadingArt{width:57px;height:63px}.hubPanel h2{font-size:20px}
+ .hubResults .hubResultCard{grid-template-columns:52px minmax(0,1fr) 55px;gap:8px}.hubResults .lessonThumb{height:57px}.hubBest strong{font-size:21px}.hubBest>span{font-size:8px}
+ .hubAboutLogo{display:none}.hubAboutIntro>img{display:none}.hubAboutHeader h2>span{font-size:20px}.hubAboutFooter>span{font-size:10px}
+}
+@media(max-width:700px) and (max-height:700px){
+ .hubSign{min-height:78px;padding:14px 25px 19px}.hubSign h1{font-size:24px}.hubHeading{margin-bottom:12px}.hubHeading>p{margin-top:4px;font-size:10px}
+ .hubEmpty{padding:15px}.hubEmptyArt{width:95px;height:78px;margin-bottom:4px}.hubEmpty .hubEyebrow,.hubEmptyNote{display:none}.hubEmpty h2{font-size:21px;margin:4px 0}.hubEmpty p{font-size:12px;line-height:1.7;margin-bottom:14px}
+}
+@media(prefers-reduced-motion:reduce){.hubScreen *,.hubAboutDialog *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
