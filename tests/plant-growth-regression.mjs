@@ -9,6 +9,9 @@ import {models3d} from '../assets/simulations/models3d.js';
 // renderer and require neither Git history nor browser/GPU access at runtime.
 // Only checkout line endings are normalized; science text and code are exact.
 // A future intentional curriculum/model change must review these fixtures.
+// 2026-10-23: engine-only baseline refreshed for authorized Sheets result hooks
+// and pagehide/debounced persistence. Curriculum, render markup and models are
+// unchanged; the independent output fixtures below still pin the old science.
 const BASELINE={
   commit:'672397e',
   sources:{
@@ -16,7 +19,7 @@ const BASELINE={
     'grade1':'3df39846bd4b0832408dc717623f16537217b4f11756c53e72cd12e2880b76e8',
     'grade2':'469b1d39a4c451cd2e002a0f4be0dd10ba9bb30e7245399b15db1781d8ec8eda',
     'grade3':'071bfbbe9194f0f394429932d050cd548e705d219fd27db3cda602e8b1acae93',
-    'engine':'96bb933c7d82ba9f6862e61b0c4dfed9ac604e06bba4231cdf2cba10a2a7be9e',
+    'engine':'efba9937f2bd78f0181c62f74ba9a4d7c66fea35537feece7abff98b00933fab',
     'models3d':'512bc3a16ffc558b9b7a375bf2318c12a21f287d7c2b10230dba840cbf1791bf',
     'models3d-kit':'9b729d5955ba6dcbd74c42866fe111a20e22311f063f3a9f08e25d5b0c38ea9b',
     'models3d-grade1':'649db1791b4400797ccc47395a4db41d8f2517a7bfa13f6eb95043bb63ccaf51',

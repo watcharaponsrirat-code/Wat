@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {useOfflineSheets} from './offline-sheets-fixture.mjs';
 import {createRequire} from 'node:module';
 import {createServer} from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
@@ -25,6 +26,7 @@ try{
   browser=await playwright.chromium.launch({channel:'chrome',headless:true});
   console.log('Deployment browser launched');
   const page=await browser.newPage({viewport:{width:390,height:844}});
+  await useOfflineSheets(page);
   page.setDefaultTimeout(20000);
   page.on('pageerror',e=>errors.push(e.message));
   page.on('requestfailed',r=>errors.push(r.url()));

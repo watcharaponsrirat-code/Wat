@@ -95,7 +95,7 @@
     const game=gameFor(api.lessonId,api.stage);
     function change(fn,focus){
       const p=api.getProgress(),s=ensure(game,p,api.stage);
-      fn(p,s);api.saveProgress(p);api.render();
+      const before=p.games[api.stage].attempts;fn(p,s);if(p.games[api.stage].attempts>before){const trace=p.trace[p.trace.length-1];api.submit?.({attempt:p.games[api.stage].attempts,passed:!!s.complete,done:!!p.games[api.stage].done,correct:!!trace?.ok,question:trace?.question,selected:trace?.selected,answer:trace?.correct,gameType:game.type,version:s.version});}api.saveProgress(p);api.render();
       if(focus)document.querySelector(focus)?.focus({preventScroll:true});
     }
     const listen=(selector,event,fn)=>root.querySelectorAll(selector).forEach(el=>el.addEventListener(event,()=>fn(el)));

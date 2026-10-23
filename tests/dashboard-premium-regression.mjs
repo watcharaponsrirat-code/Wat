@@ -2,18 +2,20 @@ import assert from 'node:assert/strict';
 import {readFile,readdir,stat} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 import vm from 'node:vm';
-const baseline='089b6f5';
+// Pin the completed presentation before the authorized Google Sheets adapter.
+// Authentication and activity handlers now have dedicated integration tests.
+const baseline='186dfb1';
 const before=execFileSync('git',['show',`${baseline}:index.html`],{encoding:'utf8',maxBuffer:4*1024*1024});
 const after=await readFile('index.html','utf8');
-const strip=source=>{
- const start=source.indexOf('function renderDashboard(){'),end=source.indexOf('function unitImage(',start);
- assert(start>0&&end>start);
- return (source.slice(0,start)+'DASHBOARD_RENDERER\n'+source.slice(end)).replace("else if(SESSION.screen==='grades')renderGrades();",'').replace('class="shell unitSelectionPage"','class="shell"').replace('class="woodSign unitTitleSign"','class="woodSign"').replace('class="shell lessonSelectionPage"','class="shell"').replace('class="woodSign lessonTitleSign"','class="woodSign"').split('\n').filter(line=>!line.includes('assets/dashboard/dashboard.')&&!line.includes('assets/grades/grades.css')&&!line.includes('assets/unit-selection/unit-selection.css')&&!line.includes('assets/lesson-selection/lesson-selection.css')).map(line=>line.replace(/\r$/,'')).join('\n');
-};
-assert.equal(strip(after),strip(before),'All index code outside dashboard, its grade-selection route and imports must be identical');
+const section=(source,start,end)=>source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start))).replace(/\r\n/g,'\n');
+assert.equal(section(after,'function renderDashboard(){','function unitImage(').replace(' window.SLH_TEACHER.mount(app,context);\n',''),section(before,'function renderDashboard(){','function unitImage('),'Original dashboard and grade selection presentation remain unchanged');
+assert.deepEqual([...after.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m=>m[1].replace(/\r\n/g,'\n')),[...before.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m=>m[1].replace(/\r\n/g,'\n')),'Existing inline theme remains unchanged');
+const data=source=>[...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('window.SLH_DATA='))?.[1].replace(/\r\n/g,'\n');
+assert.equal(data(after),data(before),'Curriculum data and IDs remain unchanged');
 const protectedFiles=execFileSync('git',['ls-tree','-r','--name-only',baseline,'assets/login','assets/content','assets/exams','assets/exercises','assets/games','assets/labs','assets/lessons','assets/simulations','assets/theme','assets/units','tests'],{encoding:'utf8'}).trim().split('\n');
 const changed=execFileSync('git',['diff','--name-only',baseline],{encoding:'utf8'}).trim().split('\n');
-assert.deepEqual(changed.filter(path=>protectedFiles.includes(path)&&path!=='tests/readiness-regression.mjs'),[],'No existing protected files modified outside dashboard QA assertions');
+const authorized=new Set(['assets/games/engine.js','assets/exercises/onet-practice.js','assets/simulations/engine.js','tests/plant-growth-regression.mjs','tests/dashboard-premium-regression.mjs','tests/login-redesign-regression.mjs','tests/exercise-regression.mjs','tests/game-regression.mjs','tests/deployment-browser.mjs']);
+assert.deepEqual(changed.filter(path=>protectedFiles.includes(path)&&!authorized.has(path)),[],'Only reviewed integration hooks and their preservation assertions may change');
 const js=await readFile('assets/dashboard/dashboard.js','utf8');new vm.Script(js);
 assert(!/localStorage|sessionStorage|saveP\(/.test(js),'Dashboard must not write storage');
 const writes=[];const context={window:{}};vm.runInNewContext(js,context);

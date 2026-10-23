@@ -27,7 +27,7 @@
         }).join('')}</div><p><button class="pixelBtn yellow small" data-onet-check="${q.id}" ${saved.answer ? '' : 'disabled'}>ตรวจคำตอบข้อ ${q.number}</button></p>${saved.checked ? `<div class="qFeedback" role="status">${saved.answer === q.key ? '✅ ถูกต้อง' : '❌ คำตอบที่ถูก: ตัวเลือก '+q.key}<br>${esc(q.note)}</div>` : ''}<p class="onetSource"><a href="${esc(q.source.pdf)}#page=${q.page}" target="_blank" rel="noopener noreferrer">ต้นฉบับ สทศ. • หน้า PDF ${q.page}</a> · <a href="${esc(q.source.landing)}" target="_blank" rel="noopener noreferrer">แหล่งข้อสอบและเฉลย</a></p></div>`;
       }).join('') : '<p>บทนี้ยังไม่มีข้อสอบจริงที่จับคู่หัวข้อไว้ สามารถฝึกชุด Challenge ด้านล่างได้</p>'}</section>`;
     },
-    bind({id,getProgress,saveProgress,render}) {
+    bind({id,getProgress,saveProgress,render,submit}) {
       const allowed = new Map(questions.filter(q => q.lesson === id).map(q => [q.id,q]));
       document.querySelectorAll('[data-onet-zoom]').forEach(button => button.onclick = () => {
         const key = button.dataset.onetZoom;
@@ -53,7 +53,10 @@
       document.querySelectorAll('[data-onet-check]').forEach(button => button.onclick = () => {
         const key = button.dataset.onetCheck, p = getProgress();
         if (!allowed.has(key) || !p.onetOriginals?.[key]?.answer) return;
-        p.onetOriginals[key].checked = true;
+        const saved = p.onetOriginals[key], q = allowed.get(key);
+        if (!saved.checked) saved.scoreEvent = submit?.({questionId:key,answer:saved.answer,correct:q.key,score:saved.answer===q.key?1:0,total:1,pct:saved.answer===q.key?100:0,passed:saved.answer===q.key});
+        else if(saved.scoreEvent) submit?.(saved.scoreEvent.result,saved.scoreEvent);
+        saved.checked = true;
         saveProgress(p); render();
       });
     }

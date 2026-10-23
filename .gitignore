@@ -1,2 +1,12 @@
 /tmp/
 /_site/
+
+# Private school account imports and score exports must never enter Pages or Git.
+/private-data/
+*.xlsx
+*.xls
+*.csv
+*.tsv
+.env
+.env.*
+!.env.example

@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {offlineSheetsSource} from './offline-sheets-fixture.mjs';
 
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const scripts=[];
 for(const block of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){
   const src=block[1].match(/src="([^"]+)"/);
-  scripts.push(src?await readFile(new URL('../'+src[1],import.meta.url),'utf8'):block[2]);
+  // These learning regressions intentionally exercise the local demo accounts.
+  // Never inherit the deployed backend URL or send test activity to real Sheets.
+  scripts.push(src?.[1]==='assets/integrations/sheets-config.js'
+    ? offlineSheetsSource
+    : src?await readFile(new URL('../'+src[1],import.meta.url),'utf8'):block[2]);
 }
 const decode=s=>s.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 function harness(storage=new Map()){

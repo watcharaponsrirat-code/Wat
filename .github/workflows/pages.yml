@@ -36,6 +36,7 @@ jobs:
           node tests/plant-growth-regression.mjs
           node tests/readiness-regression.mjs
           node tests/formula-regression.mjs
+          node --test tests/google-sheets-server.test.mjs tests/google-sheets-client.test.mjs tests/google-sheets-privacy.test.mjs
       - name: Prepare static site
         run: |
           node scripts/build-site.mjs
