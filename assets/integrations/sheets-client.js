@@ -129,8 +129,18 @@
     return data;
   }
   window.SLH_SHEETS = {enabled,login,logout,event,queue,flush,mountStatus,status,
+    teacherOptions: payload => teacherRequest('teacherOptions', payload),
+    teacherRoster: payload => teacherRequest('teacherRoster', payload),
+    studentResults: payload => teacherRequest('studentResults', payload),
     teacherSummary: payload => teacherRequest('teacherSummary', payload),
-    examHistory: payload => teacherRequest('examHistory', payload)};
+    examHistory: payload => teacherRequest('examHistory', payload),
+    adminTeachers: payload => adminRequest('adminTeachers', payload),
+    adminCreateTeacher: payload => adminRequest('adminCreateTeacher', payload),
+    adminUpdateTeacher: payload => adminRequest('adminUpdateTeacher', payload)};
+  async function adminRequest(action, payload) {
+    if (!session || !session.user.roles.includes('Admin')) throw Error('ต้องเข้าสู่ระบบด้วยบัญชีแอดมิน');
+    return teacherRequest(action, payload);
+  }
   window.addEventListener?.('online', () => { failures = 0; clearTimeout(timer); timer = null; schedule(0); });
   window.addEventListener?.('storage', e => { if (session && e.key?.startsWith(key(session.user.id) + '/')) { refreshStatus(); schedule(); } });
   window.addEventListener?.('beforeunload', e => { if (session && !durable && read(session.user.id).length) { e.preventDefault(); e.returnValue = ''; } });

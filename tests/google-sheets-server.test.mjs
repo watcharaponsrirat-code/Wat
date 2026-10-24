@@ -1,76 +1,7 @@
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {createHash, randomUUID} from 'node:crypto';
-import vm from 'node:vm';
+import {randomUUID} from 'node:crypto';
 import test from 'node:test';
-
-const source = readFileSync(new URL('../integrations/google-sheets/Code.gs', import.meta.url), 'utf8');
-function harness({count = 907, setup = true} = {}) {
-  class Sheet {
-    constructor(name, rows = []) { this.name = name; this.rows = rows.map(row => [...row]); this.writes = 0; }
-    getLastRow() { return this.rows.length; }
-    getLastColumn() { return Math.max(0, ...this.rows.map(row => row.length)); }
-    getDataRange() { return this.getRange(1, 1, this.rows.length || 1, this.getLastColumn() || 1); }
-    setFrozenRows() {}
-    getRange(row, column, height, width) {
-      const sheet = this;
-      return {
-        getValues() { return Array.from({length: height}, (_, y) => Array.from({length: width}, (_, x) => sheet.rows[row + y - 1]?.[column + x - 1] ?? '')); },
-        getDisplayValues() { return this.getValues().map(r => r.map(String)); },
-        setValues(rows) {
-          assert.equal(rows.length, height);
-          rows.forEach((values, y) => {
-            assert.equal(values.length, width);
-            sheet.rows[row + y - 1] ||= [];
-            values.forEach((value, x) => {
-              // Model Sheets' leading apostrophe text escape and reject active formulas.
-              assert(!(typeof value === 'string' && /^[=+\-@\t\r\n]/.test(value)), 'write must not become a formula');
-              sheet.rows[row + y - 1][column + x - 1] = typeof value === 'string' && value.startsWith("'") ? value.slice(1) : value;
-            });
-          });
-          sheet.writes++;
-          return this;
-        }
-      };
-    }
-  }
-  const propertyValues = {SLH_SPREADSHEET_ID: 'synthetic-spreadsheet-identity-only'};
-  const properties = {
-    getProperty(key) { return propertyValues[key] ?? null; },
-    setProperty(key, value) { propertyValues[key] = String(value); },
-    getProperties() { return {...propertyValues}; },
-    setProperties(values) { Object.assign(propertyValues, values); },
-    deleteProperty(key) { delete propertyValues[key]; }
-  };
-  const sheets = new Map();
-  const database = {getSheetByName(name) { return sheets.get(name) || null; }, insertSheet(name) { const sheet = new Sheet(name); sheets.set(name, sheet); return sheet; }};
-  let clock = Date.now(), lockAllowed = true, lockHeld = false, flushes = 0;
-  const logs = [];
-  class Clock extends Date { static now() { return clock; } }
-  const context = vm.createContext({
-    Date: Clock,
-    PropertiesService: {getScriptProperties() { return properties; }},
-    SpreadsheetApp: {openById(id) { assert.equal(id, propertyValues.SLH_SPREADSHEET_ID); return database; }, flush() { assert(lockHeld, 'writes must flush while lock is held'); flushes++; }},
-    console: {log(text) { logs.push(String(text)); }},
-    LockService: {getScriptLock() { return {tryLock() { if (!lockAllowed || lockHeld) return false; lockHeld = true; return true; }, releaseLock() { assert(lockHeld); lockHeld = false; }}; }},
-    Utilities: {DigestAlgorithm: {SHA_256: 'sha256'}, Charset: {UTF_8: 'utf8'}, getUuid: randomUUID, computeDigest(algorithm, value, encoding) { return [...createHash(algorithm).update(value, encoding).digest()]; }},
-    ContentService: {MimeType: {JSON: 'application/json'}, createTextOutput(text) { return {text, setMimeType() { return this; }}; }}
-  });
-  vm.runInContext(source, context);
-  const password = randomUUID(), staffPassword = randomUUID();
-  const studentRows = Array.from({length: count}, (_, i) => [String(i + 1).padStart(5, '0'), 'Fixture ', 'Student', String(i + 1), String(i % 3 + 1), String(i % 5 + 1).padStart(2, '0'), String(i + 1), 'fixture' + String(i + 1).padStart(4, '0'), password, 'student', '2569']);
-  const students = new Sheet('Students', [[...context.SLH.studentHeaders], ...studentRows]);
-  const staff = new Sheet('Staff', [[...context.SLH.staffHeaders], ['watcharapon', staffPassword, 'teacher', 'admin', 'เตรียมข้อมูล', 'synthetic fixture, not real account data']]);
-  sheets.set('Students', students); sheets.set('Staff', staff);
-  function call(action, payload = {}, token) { return JSON.parse(context.doPost({postData: {contents: JSON.stringify({action, payload, token})}}).text); }
-  function login(username = 'fixture0001') { const result = call('login', {username, password: username === 'watcharapon' ? staffPassword : password}); assert.equal(result.ok, true, JSON.stringify(result)); return result.data; }
-  if (setup) context.setup();
-  return {context, sheets, students, staff, properties, propertyValues, password, staffPassword, call, login, logs, getFlushes() { return flushes; }, setClock(value) { clock = value; }, now() { return clock; }, setLock(value) { lockAllowed = value; }};
-}
-function responses(count, score) { return Array.from({length: count}, (_, i) => ({selected: i < score ? 'a' : 'b', correct: 'a', ok: i < score})); }
-function exam(id, occurredAt, score = 16, lessonId = 'G1U1L1') {
-  return {id, lessonId, kind: 'exam', stage: 'exam', occurredAt, result: {pct: score * 5, score, total: 20, passed: score >= 12, started: occurredAt - 60000, responses: responses(20, score), version: 3}};
-}
+import {harness, responses, exam} from './helpers/google-sheets-harness.mjs';
 
 test('setup is additive, idempotent, validates 907, and never modifies the source account tabs', () => {
   const h = harness({setup: false});
@@ -86,7 +17,7 @@ test('setup is additive, idempotent, validates 907, and never modifies the sourc
   assert.equal(h.getFlushes(), 2);
   assert.equal(JSON.stringify([h.students.rows, h.staff.rows]), original);
   assert.equal(h.students.writes + h.staff.writes, 0);
-  assert.deepEqual([...h.sheets.keys()], ['Students', 'Staff', 'SLH_Events', 'SLH_Sessions']);
+  assert.deepEqual([...h.sheets.keys()], ['Students', 'Staff', 'SLH_Events', 'SLH_Sessions', 'SLH_Teachers']);
   const bad = harness({count: 906, setup: false});
   assert.throws(() => bad.context.setup(), /907/);
   assert.equal(bad.sheets.size, 2, 'validation precedes app tab creation');
@@ -198,6 +129,176 @@ test('login throttle and lock fail closed without authenticating or writing scor
   h.propertyValues['SLH_RATE_corrupt'] = '{';
   assert.equal(h.call('login', {username: 'fixture0001', password: h.password}).error.code, 'UNAVAILABLE');
   assert.equal(h.call('teacherSummary', {}, 'x'.repeat(64)).error.code, 'UNAUTHENTICATED');
+});
+
+function createTeacher(h, admin, id, rooms = []) {
+  const password = randomUUID();
+  const created = h.call('adminCreateTeacher', {username: id, name: 'Fixture teacher ' + id, password}, admin.token);
+  assert.equal(created.ok, true, JSON.stringify(created));
+  assert.equal(h.call('adminUpdateTeacher', {teacherId: id, term: '2', rooms}, admin.token).ok, true);
+  const login = h.call('login', {username: id, password});
+  assert.equal(login.ok, true, JSON.stringify(login));
+  return {...login.data, password};
+}
+
+test('room-scoped APIs deny every outside-room path and do not leak filters or scan scores for rosters', () => {
+  const h = harness(), admin = h.login('watcharapon'), studentA = h.login(), studentB = h.login('fixture0002');
+  const teacher = createTeacher(h, admin, 'fixture_teacher_a', [{grade: 1, room: '01'}]);
+  h.call('sync', {events: [exam('a-high', h.now() - 1000, 20), exam('a-low', h.now(), 4)]}, studentA.token);
+  h.call('sync', {events: [exam('b-private', h.now(), 17, 'G2U3L9')]}, studentB.token);
+  const options = h.call('teacherOptions', {}, teacher.token);
+  assert.deepEqual(options.data, {academicYear: '2569', term: '2', rooms: [{grade: 1, room: '01'}], isAdmin: false});
+  const ledger = h.sheets.get('SLH_Events'), initialReads = ledger.reads;
+  const firstPage = h.call('teacherRoster', {grade: 1, room: '01', limit: 2}, teacher.token).data;
+  assert.equal(firstPage.rows.length, 2); assert(firstPage.total > 2);
+  assert.deepEqual(firstPage.rows.map(row => row.id), ['fixture0001', 'fixture0016']);
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01', offset: 2, limit: 2}, teacher.token).data.rows[0].id, 'fixture0031');
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01', student: 'TURE0001'}, teacher.token).data.total, 1);
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01', student: 'student 16'}, teacher.token).data.rows[0].id, 'fixture0016');
+  assert.equal(ledger.reads, initialReads, 'roster and options must not read score ledger');
+  const summary = h.call('teacherSummary', {}, teacher.token).data;
+  assert(summary.rows.every(row => row.grade === 1 && row.room === '01'));
+  assert.deepEqual(summary.filters, {grades: [1], rooms: ['01'], lessons: ['G1U1L1']});
+  assert.deepEqual(h.call('studentResults', {studentId: studentA.user.id, lessonId: 'G1U1L1'}, teacher.token).data.result.exam, {last: 20, best: 100, attempts: 2, lastAt: h.now()});
+  assert.equal(h.call('examHistory', {studentId: studentA.user.id, lessonId: 'G1U1L1'}, teacher.token).data.total, 2);
+  for (const [action, payload] of [
+    ['teacherRoster', {grade: 2, room: '02', student: 'no-such-student'}],
+    ['teacherSummary', {grade: 2, room: '02'}], ['teacherSummary', {room: '02'}],
+    ['teacherSummary', {student: studentB.user.id}],
+    ['studentResults', {studentId: studentB.user.id, lessonId: 'G2U3L9'}],
+    ['examHistory', {studentId: studentB.user.id}]
+  ]) assert.equal(h.call(action, payload, teacher.token).error.code, 'FORBIDDEN', action);
+  assert.equal(h.call('teacherRoster', {room: '01'}, teacher.token).error.code, 'INVALID_REQUEST');
+  assert.equal(h.call('studentResults', {studentId: studentA.user.id}, teacher.token).error.code, 'INVALID_REQUEST');
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01', limit: 201}, teacher.token).error.code, 'INVALID_REQUEST');
+  assert.equal(h.call('teacherRoster', {grade: 2, room: '02'}, admin.token).ok, true);
+  assert.equal(h.call('studentResults', {studentId: studentB.user.id, lessonId: 'G2U3L9'}, admin.token).data.result.exam.best, 85);
+  assert.equal(h.call('teacherSummary', {}, admin.token).data.total, 907);
+  assert.equal(h.call('teacherOptions', {}, admin.token).data.rooms.length, 15);
+  for (const action of ['teacherOptions', 'teacherRoster', 'studentResults', 'teacherSummary', 'examHistory', 'adminTeachers', 'adminCreateTeacher', 'adminUpdateTeacher']) {
+    assert.equal(h.call(action, {}, studentA.token).error.code, 'FORBIDDEN', action);
+  }
+  for (const action of ['adminTeachers', 'adminCreateTeacher', 'adminUpdateTeacher']) assert.equal(h.call(action, {}, teacher.token).error.code, 'FORBIDDEN', action);
+});
+
+test('same-token revocation, disabled accounts and current-term changes apply immediately without deleting source or scores', () => {
+  const h = harness(), admin = h.login('watcharapon'), student = h.login();
+  h.call('sync', {events: [exam('retained-before-management', h.now(), 20)]}, student.token);
+  const originals = JSON.stringify([h.students.rows, h.staff.rows, h.sheets.get('SLH_Events').rows]);
+  const rooms = [{grade: 1, room: '01'}, {grade: 2, room: '02'}];
+  const teacherA = createTeacher(h, admin, 'fixture_multi_a', rooms), teacherB = createTeacher(h, admin, 'fixture_multi_b', rooms);
+  assert.equal(h.call('teacherOptions', {}, teacherA.token).data.rooms.length, 2);
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01'}, teacherB.token).ok, true, 'many teachers can share a room');
+  h.call('adminUpdateTeacher', {teacherId: teacherA.user.id, term: '2', rooms: [{grade: 2, room: '02'}]}, admin.token);
+  for (const [action, payload] of [
+    ['teacherRoster', {grade: 1, room: '01'}], ['teacherSummary', {grade: 1, room: '01'}],
+    ['studentResults', {studentId: student.user.id, lessonId: 'G1U1L1'}], ['examHistory', {studentId: student.user.id}]
+  ]) assert.equal(h.call(action, payload, teacherA.token).error.code, 'FORBIDDEN', 'same session after revoke: ' + action);
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01'}, teacherB.token).ok, true);
+  h.call('adminUpdateTeacher', {teacherId: teacherA.user.id, term: '2', enabled: false}, admin.token);
+  assert.equal(h.call('teacherOptions', {}, teacherA.token).error.code, 'UNAUTHENTICATED');
+  assert.equal(h.call('sync', {events: [exam('disabled-write', h.now())]}, teacherA.token).error.code, 'UNAUTHENTICATED');
+  assert.equal(h.call('login', {username: teacherA.user.id, password: teacherA.password}).error.code, 'INVALID_CREDENTIALS');
+  assert.equal(h.call('adminTeachers', {}, admin.token).data.rows.find(row => row.id === teacherA.user.id).enabled, false);
+  h.call('adminUpdateTeacher', {teacherId: teacherA.user.id, term: '2', enabled: true}, admin.token);
+  assert.equal(h.call('login', {username: teacherA.user.id, password: teacherA.password}).ok, true);
+  h.properties.setProperty('SLH_CURRENT_TERM', '1');
+  assert.deepEqual(h.call('teacherOptions', {}, teacherB.token).data.rooms, [], 'assignments are not inherited across terms');
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01'}, teacherB.token).error.code, 'FORBIDDEN');
+  assert.equal(h.call('adminUpdateTeacher', {teacherId: teacherB.user.id, term: '2', rooms: []}, admin.token).error.code, 'STALE_TERM');
+  assert.equal(h.call('studentResults', {studentId: student.user.id, lessonId: 'G1U1L1'}, admin.token).data.result.exam.best, 100, 'year 2569 scores remain visible in the selected term');
+  h.properties.setProperty('SLH_CURRENT_TERM', '2');
+  assert.equal(h.call('teacherOptions', {}, teacherB.token).data.rooms.length, 2);
+  assert.equal(h.call('examHistory', {studentId: student.user.id}, teacherB.token).data.total, 1);
+  assert.equal(JSON.stringify([h.students.rows, h.staff.rows, h.sheets.get('SLH_Events').rows]), originals);
+  assert.equal(h.students.writes + h.staff.writes, 0);
+});
+
+test('admin changes are append-only and atomic on malformed requests, protect owner and never return credentials', () => {
+  const h = harness(), admin = h.login('watcharapon');
+  const teacher = createTeacher(h, admin, 'fixture_account_a', [{grade: 1, room: '01'}]);
+  const before = JSON.stringify(h.sheets.get('SLH_Teachers').rows);
+  for (const payload of [
+    {teacherId: teacher.user.id, term: '2', enabled: false, rooms: [{grade: 1, room: 'missing'}]},
+    {teacherId: teacher.user.id, term: '2', enabled: 'false'},
+    {teacherId: teacher.user.id, term: '2', rooms: [{grade: 1, room: '01'}, {grade: 1, room: '01'}]},
+    {teacherId: teacher.user.id, term: '2', roles: ['Admin']},
+    {teacherId: 'fixture0001', term: '2', enabled: false}
+  ]) assert.equal(h.call('adminUpdateTeacher', payload, admin.token).error.code, 'INVALID_REQUEST');
+  assert.equal(h.call('adminUpdateTeacher', {teacherId: 'watcharapon', term: '2', enabled: false}, admin.token).error.code, 'PROTECTED_ACCOUNT');
+  assert.equal(h.call('adminCreateTeacher', {username: 'fixture0001', name: 'Duplicate', password: randomUUID()}, admin.token).error.code, 'ACCOUNT_EXISTS');
+  assert.equal(h.call('adminCreateTeacher', {username: 'FIXTURE_ACCOUNT_A', name: 'Duplicate', password: randomUUID()}, admin.token).error.code, 'ACCOUNT_EXISTS');
+  for (const payload of [
+    {username: 'fixture_new', name: 'Name', password: 'short'},
+    {username: 'fixture_new', name: 'Name', password: randomUUID(), roles: ['Admin']},
+    {username: '=FORMULA()', name: 'Name', password: randomUUID()}
+  ]) assert.equal(h.call('adminCreateTeacher', payload, admin.token).error.code, 'INVALID_REQUEST');
+  assert.equal(JSON.stringify(h.sheets.get('SLH_Teachers').rows), before, 'all malformed writes rejected before append');
+  const row = h.sheets.get('SLH_Teachers').rows.find(row => row[0] === teacher.user.id);
+  assert.match(row[2], /^[a-f0-9]{64}$/); assert.match(row[3], /^[a-f0-9]{64}$/);
+  assert(!JSON.stringify(h.sheets.get('SLH_Teachers').rows).includes(teacher.password), 'new teacher plaintext password not stored');
+  const created = h.call('adminCreateTeacher', {username: 'fixture_account_b', name: '=Text name', password: teacher.password}, admin.token);
+  assert.equal(created.ok, true); assert.deepEqual(created.data.teacher.roles, ['Teacher']);
+  const second = h.sheets.get('SLH_Teachers').rows.at(-1);
+  assert.notEqual(second[2], row[2]); assert.notEqual(second[3], row[3], 'same password uses a distinct salted hash');
+  const list = h.call('adminTeachers', {limit: 2}, admin.token);
+  assert.equal(list.data.total, 3); assert.equal(list.data.rows.length, 2);
+  const remaining = h.call('adminTeachers', {offset: 2, limit: 2}, admin.token).data.rows[0];
+  assert.equal(remaining.id, 'watcharapon'); assert.equal(remaining.protected, true); assert.deepEqual(remaining.roles, ['Teacher', 'Admin']);
+  for (const response of [list, created, h.call('teacherOptions', {}, teacher.token)]) {
+    const serialized = JSON.stringify(response);
+    for (const secret of [teacher.password, row[2], row[3], h.password, h.staffPassword]) assert(!serialized.includes(secret));
+    assert(!/password|token|salt|hash/i.test(serialized));
+  }
+  const teacherRows = h.sheets.get('SLH_Teachers').rows.length;
+  h.setLock(false);
+  assert.equal(h.call('adminUpdateTeacher', {teacherId: teacher.user.id, term: '2', rooms: []}, admin.token).error.code, 'BUSY');
+  assert.equal(h.sheets.get('SLH_Teachers').rows.length, teacherRows);
+});
+
+test('existing Staff can be disabled through central overlay, and missing term fails closed for staff operations only', () => {
+  const h = harness(), admin = h.login('watcharapon'), staffPassword = randomUUID();
+  h.staff.rows.push(['fixture_source_teacher', staffPassword, 'teacher', '', 'active', 'synthetic']);
+  const source = JSON.stringify(h.staff.rows), sourceTeacher = h.call('login', {username: 'fixture_source_teacher', password: staffPassword}).data;
+  assert.equal(h.call('adminUpdateTeacher', {teacherId: 'fixture_source_teacher', term: '2', rooms: [{grade: 1, room: '01'}]}, admin.token).ok, true);
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01'}, sourceTeacher.token).ok, true);
+  h.call('adminUpdateTeacher', {teacherId: 'fixture_source_teacher', term: '2', enabled: false}, admin.token);
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01'}, sourceTeacher.token).error.code, 'UNAUTHENTICATED');
+  assert.equal(JSON.stringify(h.staff.rows), source); assert.equal(h.staff.writes, 0);
+  h.properties.deleteProperty('SLH_CURRENT_TERM');
+  for (const action of ['teacherOptions', 'teacherSummary', 'teacherRoster', 'studentResults', 'examHistory', 'adminTeachers', 'adminCreateTeacher', 'adminUpdateTeacher']) assert.equal(h.call(action, {}, admin.token).error.code, 'NOT_CONFIGURED');
+  const student = h.login();
+  assert.equal(h.call('sync', {events: [exam('student-continues', h.now())]}, student.token).ok, true);
+  assert.throws(() => h.context.inspectSetup(), /SLH_CURRENT_TERM/);
+});
+
+test('missing results stay absent, genuine zero stays zero, and Simulation metric pairs are preserved without score conversion', () => {
+  const h = harness(), admin = h.login('watcharapon'), student = h.login();
+  let result = h.call('studentResults', {studentId: student.user.id, lessonId: 'G1U1L1'}, admin.token).data.result;
+  assert.deepEqual(result.games, {}); assert.deepEqual(result.exercises, {}); assert.equal(result.onet, null); assert.equal(result.simulation, null);
+  assert.deepEqual(result.exam, {last: null, best: null, attempts: 0, lastAt: null});
+  const simulation = {values: {temperature: 0, absent: null}, metrics: [['ค่าจริง', 0], ['พร้อมหน่วย', '0.0 m'], ['ไม่บันทึก', null]], summary: 'Fixture simulation', explored: true};
+  const events = [
+    {id: 'exercise-zero', kind: 'exercise', stage: 'e1', lessonId: 'G1U1L1', occurredAt: h.now(), result: {score: 0, total: 6, pct: 0, passed: false, responses: responses(6, 0)}},
+    {id: 'simulation-metrics', kind: 'simulation', stage: 'simulation', lessonId: 'G1U1L1', occurredAt: h.now(), result: simulation},
+    exam('exam-real-zero', h.now() - 1000, 0), exam('legacy-exam-missing', h.now(), 10)
+  ];
+  assert.equal(h.call('sync', {events}, student.token).ok, true);
+  const legacy = h.sheets.get('SLH_Events').rows.find(row => row[1] === 'legacy-exam-missing');
+  legacy[9] = JSON.stringify({score: null, total: 20, pct: null, passed: false});
+  result = h.call('studentResults', {studentId: student.user.id, lessonId: 'G1U1L1'}, admin.token).data.result;
+  assert.equal(result.exercises.e1.score, 0); assert.equal(result.exercises.e2, undefined);
+  assert.deepEqual(result.simulation, {...simulation, clientReported: true}); assert.equal(result.simulation.score, undefined); assert.equal(result.simulation.pct, undefined);
+  assert.deepEqual(result.exam, {last: null, best: 0, attempts: 2, lastAt: h.now()});
+  assert.equal(h.call('examHistory', {studentId: student.user.id}, admin.token).data.rows[0].result.score, null);
+  legacy[9] = JSON.stringify({total: 20});
+  result = h.call('studentResults', {studentId: student.user.id, lessonId: 'G1U1L1'}, admin.token).data.result;
+  assert.equal(result.exam.last, null); assert.equal(result.exam.best, 0);
+  legacy[7] = ''; legacy[8] = '';
+  const history = h.call('examHistory', {studentId: student.user.id}, admin.token).data.rows;
+  assert.equal(history.find(row => row.id === 'legacy-exam-missing').occurredAt, null);
+  assert.equal(history.find(row => row.id === 'legacy-exam-missing').receivedAt, null);
+  assert.equal(history[0].id, 'exam-real-zero', 'a missing timestamp does not become a new timestamp or 1970');
 });
 
 test('real website game 1–3, exercise 1–3, simulation, O-NET and exam hooks satisfy the Apps Script contract', async () => {
