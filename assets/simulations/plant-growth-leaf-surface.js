@@ -3,8 +3,11 @@ import * as THREE from '../vendor/three/three.module.js';
 // One shared, deterministic botanical surface for both experimental groups.
 // Geometry supplies the large folds; these filtered maps resolve the vascular
 // relief without separate, subpixel tubes or changes to experiment state.
-export function createLeafSurfaceMaps() {
-  const size = 512, count = size * size;
+const size = 512;
+let cachedPixels;
+
+function createLeafSurfacePixels() {
+  const count = size * size;
   const albedo = new Uint8Array(count * 4), normals = new Uint8Array(count * 4);
   const roughness = new Uint8Array(count * 4), relief = new Float32Array(count);
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
@@ -80,8 +83,18 @@ export function createLeafSurfaceMaps() {
     normals[channel + 3] = 255;
   }
 
+  return { albedo, normals, roughness };
+}
+
+export function createLeafSurfaceMaps() {
+  // Keep only the three deterministic RGBA maps (3 MiB) for this module's
+  // lifetime. Each scene owns another 3 MiB of pixels and its GPU textures;
+  // copying here lets callers mutate or dispose maps without damaging the
+  // cached source or another scene. The temporary relief map is not retained.
+  const { albedo, normals, roughness } = cachedPixels ??= createLeafSurfacePixels();
+
   function make(data, name, colorSpace) {
-    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.UnsignedByteType);
+    const texture = new THREE.DataTexture(data.slice(), size, size, THREE.RGBAFormat, THREE.UnsignedByteType);
     texture.name = name;
     texture.colorSpace = colorSpace;
     texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;

@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 
 const source = readFileSync(new URL('../../integrations/google-sheets/Code.gs', import.meta.url), 'utf8');
-export function harness({count = 907, setup = true} = {}) {
+export function harness({count = 907, setup = true, appScriptSource = source} = {}) {
   class Sheet {
     constructor(name, rows = []) { this.name = name; this.rows = rows.map(row => [...row]); this.writes = 0; this.reads = 0; }
     getLastRow() { return this.rows.length; }
@@ -56,7 +56,7 @@ export function harness({count = 907, setup = true} = {}) {
     Utilities: {DigestAlgorithm: {SHA_256: 'sha256'}, Charset: {UTF_8: 'utf8'}, getUuid: randomUUID, computeDigest(algorithm, value, encoding) { return [...createHash(algorithm).update(value, encoding).digest()]; }},
     ContentService: {MimeType: {JSON: 'application/json'}, createTextOutput(text) { return {text, setMimeType() { return this; }}; }}
   });
-  vm.runInContext(source, context);
+  vm.runInContext(appScriptSource, context);
   const password = randomUUID(), staffPassword = randomUUID();
   const studentRows = Array.from({length: count}, (_, i) => [String(i + 1).padStart(5, '0'), 'Fixture ', 'Student', String(i + 1), String(i % 3 + 1), String(i % 5 + 1).padStart(2, '0'), String(i + 1), 'fixture' + String(i + 1).padStart(4, '0'), password, 'student', '2569']);
   const students = new Sheet('Students', [[...context.SLH.studentHeaders], ...studentRows]);

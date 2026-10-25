@@ -40,6 +40,84 @@ test('login keeps original IDs and display zeroes, grants roles server-side and 
   assert.deepEqual(Object.keys(JSON.parse(h.context.doGet().text).data).sort(), ['protocol', 'service']);
 });
 
+test('staff login bootstraps only its first authorized roster without rereading accounts or scanning scores', () => {
+  const h = harness();
+  const before = new Map([...h.sheets].map(([name, sheet]) => [name, sheet.reads]));
+  const admin = h.login('watcharapon');
+  assert.deepEqual(Object.keys(admin.staff).sort(), ['academicYear', 'isAdmin', 'rooms', 'roster', 'term']);
+  assert.equal(admin.staff.term, '2'); assert.equal(admin.staff.isAdmin, true);
+  assert.equal(admin.staff.rooms.length, 15);
+  assert.equal(admin.staff.roster.rows.length, 25); assert.equal(admin.staff.roster.total, 61);
+  assert.equal(admin.staff.roster.grade, 1); assert.equal(admin.staff.roster.room, '01');
+  assert.deepEqual(admin.staff.roster.rows.map(row => row.number), Array.from({length: 25}, (_, i) => String(1 + 15 * i)));
+  for (const name of ['Students', 'Staff', 'SLH_Teachers', 'SLH_Sessions']) assert.equal(h.sheets.get(name).reads - before.get(name), 1, name + ' read once during login');
+  assert.equal(h.sheets.get('SLH_Events').reads, before.get('SLH_Events'), 'bootstrap does not scan scores');
+  const student = h.login();
+  assert.equal(Object.hasOwn(student, 'staff'), false);
+  assert(!JSON.stringify(student).includes('fixture0002'), 'student login receives no other student information');
+  const teacher = createTeacher(h, admin, 'fixture_bootstrap', [{grade: 2, room: '02'}]);
+  assert.deepEqual(teacher.staff.rooms, [{grade: 2, room: '02'}]);
+  assert.equal(teacher.staff.roster.rows.length, 25);
+  assert(teacher.staff.roster.rows.every(row => row.grade === 2 && row.room === '02'));
+  const record = h.sheets.get('SLH_Teachers').rows.find(row => row[0] === teacher.user.id);
+  for (const secret of [teacher.password, h.password, h.staffPassword, record[2], record[3]]) assert(!JSON.stringify(teacher.staff).includes(secret));
+  assert(!/password|token|salt|hash/i.test(JSON.stringify(teacher.staff)));
+  const unassigned = createTeacher(h, admin, 'fixture_bootstrap_empty');
+  assert.deepEqual(unassigned.staff.rooms, []); assert.equal(unassigned.staff.roster, null);
+});
+
+test('optional roster bootstrap preserves old options shape and uses fresh permissions on every call', () => {
+  const h = harness(), admin = h.login('watcharapon');
+  const teacher = createTeacher(h, admin, 'fixture_bootstrap_scope', [{grade: 1, room: '01'}, {grade: 2, room: '02'}]);
+  assert.deepEqual(Object.keys(h.call('teacherOptions', {}, teacher.token).data).sort(), ['academicYear', 'isAdmin', 'rooms', 'term']);
+  const preferred = {includeRoster: true, grade: 2, room: '02', student: 'fixture0002'};
+  const first = h.call('teacherOptions', preferred, teacher.token).data;
+  assert.equal(first.roster.grade, 2); assert.equal(first.roster.room, '02');
+  assert.deepEqual(first.roster.rows.map(row => row.id), ['fixture0002']);
+  assert.equal(first.roster.offset, 0); assert.equal(first.roster.limit, 25);
+  h.call('adminUpdateTeacher', {teacherId: teacher.user.id, term: '2', rooms: [{grade: 1, room: '01'}]}, admin.token);
+  const revoked = h.call('teacherOptions', {...preferred, student: ''}, teacher.token).data;
+  assert.deepEqual(revoked.rooms, [{grade: 1, room: '01'}]);
+  assert.equal(revoked.roster.grade, 1); assert.equal(revoked.roster.room, '01');
+  assert(revoked.roster.rows.every(row => row.grade === 1 && row.room === '01'));
+  assert.equal(h.call('teacherRoster', {grade: 2, room: '02'}, teacher.token).error.code, 'FORBIDDEN');
+  h.call('adminUpdateTeacher', {teacherId: teacher.user.id, term: '2', rooms: []}, admin.token);
+  assert.equal(h.call('teacherOptions', preferred, teacher.token).data.roster, null);
+  h.call('adminUpdateTeacher', {teacherId: teacher.user.id, term: '2', enabled: false}, admin.token);
+  assert.equal(h.call('teacherOptions', preferred, teacher.token).error.code, 'UNAUTHENTICATED');
+  assert.equal(h.call('login', {username: teacher.user.id, password: teacher.password}).error.code, 'INVALID_CREDENTIALS');
+  assert.equal(h.call('teacherOptions', preferred, h.login().token).error.code, 'FORBIDDEN');
+  assert.equal(h.call('teacherOptions', {includeRoster: true, student: 'x'.repeat(121)}, admin.token).error.code, 'INVALID_REQUEST');
+  assert.equal(h.call('teacherSummary', {limit: 200}, admin.token).data.total, 907);
+});
+
+test('typed app tables are read once per request, and malformed or missing tables fail closed', () => {
+  const h = harness(), admin = h.login('watcharapon'), student = h.login();
+  createTeacher(h, admin, 'fixture_read_count', [{grade: 1, room: '01'}]);
+  h.call('sync', {events: [exam('read-count-high', h.now() - 1000, 20), exam('read-count-low', h.now(), 4)]}, student.token);
+  const sourceAndScores = JSON.stringify([h.students.rows, h.staff.rows, h.sheets.get('SLH_Events').rows]);
+  for (const [action, payload, withEvents] of [
+    ['teacherOptions', {includeRoster: true}, false], ['teacherRoster', {grade: 1, room: '01'}, false], ['adminTeachers', {}, false],
+    ['studentResults', {studentId: student.user.id, lessonId: 'G1U1L1'}, true], ['examHistory', {studentId: student.user.id}, true]
+  ]) {
+    const before = new Map([...h.sheets].map(([name, sheet]) => [name, sheet.reads]));
+    assert.equal(h.call(action, payload, admin.token).ok, true, action);
+    for (const name of ['Students', 'Staff', 'SLH_Teachers', 'SLH_Sessions']) assert.equal(h.sheets.get(name).reads - before.get(name), 1, action + ' reads ' + name + ' once');
+    assert.equal(h.sheets.get('SLH_Events').reads - before.get('SLH_Events'), withEvents ? 1 : 0, action + ' event reads');
+  }
+  assert.deepEqual(h.call('studentResults', {studentId: student.user.id, lessonId: 'G1U1L1'}, admin.token).data.result.exam, {last: 20, best: 100, attempts: 2, lastAt: h.now()});
+  assert.equal(JSON.stringify([h.students.rows, h.staff.rows, h.sheets.get('SLH_Events').rows]), sourceAndScores);
+  const teachers = h.sheets.get('SLH_Teachers');
+  teachers.rows[0][0] = 'invalid';
+  assert.equal(h.call('teacherOptions', {includeRoster: true}, admin.token).error.code, 'SETUP_INVALID');
+  teachers.rows[0][0] = 'UserId'; teachers.rows[0].push('extra');
+  assert.equal(h.call('teacherRoster', {grade: 1, room: '01'}, admin.token).error.code, 'SETUP_INVALID');
+  teachers.rows[0].pop(); h.sheets.delete('SLH_Teachers');
+  assert.equal(h.call('teacherOptions', {includeRoster: true}, admin.token).error.code, 'NOT_CONFIGURED');
+  assert.equal(h.call('login', {username: 'watcharapon', password: h.staffPassword}).error.code, 'NOT_CONFIGURED');
+  assert.equal(h.call('login', {username: 'fixture0001', password: h.password}).ok, true, 'student login remains available during additive teacher setup');
+});
+
 test('expired/revoked/disabled account sessions fail, and logout is idempotent', () => {
   const h = harness(), first = h.login(), other = h.login('fixture0002');
   assert.equal(h.call('logout', {}, first.token).ok, true);

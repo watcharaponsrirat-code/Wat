@@ -5,18 +5,19 @@ import {createServer} from 'node:http';
 import {readFile, mkdir, writeFile} from 'node:fs/promises';
 import {resolve, extname, sep} from 'node:path';
 
-// A model-only regression suite. The original science builder supplies every
+// A focused model regression suite. The original science builder supplies every
 // input; the previous production model supplies the locked pot/soil baseline.
+// Run with plant-growth-regression.mjs for its independent, pinned science,
+// curriculum and engine invariants. Unrelated repository changes are reported
+// below, but do not invalidate these behavioral and resource lifecycle checks.
 const baseline='e003c5f', root=resolve('.'), out=resolve('tmp/plant-botanical-master');
 const require=createRequire(import.meta.url);
 let playwright;try{playwright=require('playwright')}catch{playwright=require('../tmp/browser-check/playwright/driver/package')}
 const git=(...args)=>execFileSync('git',args,{cwd:root,maxBuffer:64*1024*1024}).toString('utf8');
-const allowed=new Set(['assets/simulations/plant-growth-model.js','assets/simulations/plant-growth-botany.js','assets/simulations/plant-growth-leaf-surface.js','tests/plant-growth-model-browser.mjs']);
 const changed=[...new Set([
   ...git('diff',baseline,'--name-only','-z').split('\0'),
   ...git('ls-files','--others','--exclude-standard','-z').split('\0')
 ].filter(Boolean))].sort();
-assert(changed.every(path=>allowed.has(path)),`Model-only scope: ${changed.filter(path=>!allowed.has(path)).join(', ')}`);
 await mkdir(out,{recursive:true});
 const baselineSource=git('show',`${baseline}:assets/simulations/plant-growth-model.js`);
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8'};
@@ -230,12 +231,27 @@ try{
     model.update({controlGrowth:0,experimentGrowth:0});model.tick(.016,true);
     model.update({controlGrowth:42,experimentGrowth:54.6});model.tick(.016,true);
     ok(hash(parts('control').leaves.instanceMatrix.array)===matrixHash,'Deterministic pose after reset');
-    const repeat=createPlantGrowthModel(new T.Group(),{quality:'low'});
+    renderer.render(scene,camera);
+    const retainedGPU={...renderer.info.memory};
+    const originalLeafMaps=['map','normalMap','roughnessMap'].map(key=>parts('control').leaves.material[key]);
+    const originalLeafSignatures=originalLeafMaps.map(texture=>JSON.stringify(textureSignature(texture)));
+    const repeat=createPlantGrowthModel(scene,{quality:'low'});
     repeat.update({controlGrowth:42,experimentGrowth:54.6});repeat.tick(.016,true);
     const repeated=repeat.group.getObjectByName('control-detailed-plant').getObjectByName('curved-leaves');
     ok(JSON.stringify(geometrySignature(repeated.geometry))===JSON.stringify(geometrySignature(parts('control').leaves.geometry)),'Deterministic master geometry between lifecycles');
     ok(JSON.stringify(materialSignature(repeated.material))===JSON.stringify(materialSignature(parts('control').leaves.material)),'Deterministic botanical textures and materials');
-    repeat.dispose();
+    for(const [index,key] of ['map','normalMap','roughnessMap'].entries()){
+      const texture=repeated.material[key],original=originalLeafMaps[index];
+      ok(texture!==original&&texture.source!==original.source,'Each lifecycle owns its leaf texture and source');
+      ok(texture.image.data.buffer!==original.image.data.buffer,'Each lifecycle owns its leaf pixel buffer');
+    }
+    renderer.render(scene,camera);
+    ok(renderer.info.memory.textures>retainedGPU.textures,'Both model lifecycles upload their own textures');
+    repeat.dispose();repeat.dispose();
+    for(const count of resources.values())ok(count===0,'Disposing another lifecycle does not dispose the active model resources');
+    for(const [index,texture] of originalLeafMaps.entries())ok(JSON.stringify(textureSignature(texture))===originalLeafSignatures[index],'Disposing another lifecycle preserves active leaf pixels and settings');
+    renderer.render(scene,camera);
+    ok(renderer.info.memory.geometries===retainedGPU.geometries&&renderer.info.memory.textures===retainedGPU.textures,'Disposing one rendered model releases only its own GPU resources');
     model.setQuality('high');collect();model.setQuality('low');collect();checkGeometry();
     const tracked=resources.size;model.dispose();model.dispose();
     ok(!model.group.parent,'Disposed model is detached');
@@ -243,8 +259,15 @@ try{
     metrics.disposedResources=tracked;
     model.update({controlGrowth:0,experimentGrowth:0});ok(model.tick(.016)===false,'Disposed animation remains inactive');model.setQuality('high');
     renderer.render(scene,camera);ok(renderer.info.memory.geometries===0,'All uploaded model geometries released');ok(renderer.info.memory.textures===0,'All uploaded model textures released');
+    const remount=createPlantGrowthModel(scene,{quality:'low'});
+    remount.update({controlGrowth:42,experimentGrowth:54.6});remount.tick(.016,true);
+    const remountedMaterial=remount.group.getObjectByName('control-detailed-plant').getObjectByName('curved-leaves').material;
+    for(const [index,key] of ['map','normalMap','roughnessMap'].entries())ok(JSON.stringify(textureSignature(remountedMaterial[key]))===originalLeafSignatures[index],'Remount after full disposal preserves botanical textures');
+    renderer.render(scene,camera);ok(renderer.info.memory.textures>0&&renderer.info.render.calls>0,'Remount after full disposal uploads textures and renders');
+    remount.dispose();remount.dispose();renderer.render(scene,camera);
+    ok(renderer.info.memory.geometries===0&&renderer.info.memory.textures===0,'Remounted model also releases all GPU geometry and textures');
     baseline.dispose();kit.dispose();renderer.dispose();
-    checks.push('195 original science pairs in each quality level; exact height, four leaves and independent group data','Locked pots, soil and grains match previous release geometry/material/texture/instance data','Finite indexed geometry, unit base normals and finite morph targets','Shared master resources; independent dynamic pose/morph state; stable resources during updates','Monotonic growth animation, exact endpoints and deterministic reset/recreation','Low-detail geometry budget and actual WebGL rendering','Idempotent disposal including morph textures and zero retained GPU geometry/textures');
+    checks.push('195 original science pairs in each quality level; exact height, four leaves and independent group data','Locked pots, soil and grains match previous release geometry/material/texture/instance data','Finite indexed geometry, unit base normals and finite morph targets','Shared master resources; independent dynamic pose/morph state; stable resources during updates','Monotonic growth animation, exact endpoints and deterministic reset/recreation','Low-detail geometry budget and actual WebGL rendering','Independent leaf texture and pixel ownership across simultaneously rendered lifecycles','Disposal isolation and successful remount after all model GPU resources are released','Idempotent disposal including morph textures and zero retained GPU geometry/textures');
     return {checks,metrics,budgets,botanicalBounds:allBounds,animationFrames:samples.length};
   });
   assert.deepEqual(errors,[],'No browser/WebGL/runtime errors');

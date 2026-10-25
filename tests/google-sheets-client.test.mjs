@@ -73,4 +73,34 @@ const deniedLogin=harness();deniedLogin.setSend(()=>denied('INVALID_CREDENTIALS'
 const student=harness();await student.api.login('studentA','fake-test-password');await assert.rejects(()=>student.api.teacherSummary({}));assert.equal(student.calls.length,1);
 const disabled=harness();disabled.context.window.SLH_SHEETS_CONFIG.endpoint='';assert.equal(disabled.api.enabled(),false);assert.equal(disabled.api.queue(make(disabled.api)),false);
 
-console.log('Google Sheets client: immutable retry, reload, acknowledgment, account isolation, concurrent tabs, expiry, timeout, storage failure and roles passed');
+// A staff first page belongs only to the login that returned it. It is consumed
+// once, stays out of durable storage, and never follows a change of account.
+const staffPage={academicYear:'2569',term:'2',rooms:[{grade:1,room:'01'}],roster:{grade:1,room:'01',offset:0,limit:25,total:1,rows:[{id:'synthetic-pupil',name:'Synthetic pupil'}]}};
+const staffLogin=(id='teacher',roles=['Teacher'])=>({token:'token-'+id,user:{id,roles},staff:plain(staffPage)});
+const bootstrap=harness();let loginReply=staffLogin();bootstrap.setSend(call=>response(call.action==='login'?loginReply:{}));
+await bootstrap.api.login('teacher','fake-test-password');
+loginReply.staff.roster.rows[0].name='Changed after delivery';
+assert.deepEqual(plain(bootstrap.api.takeTeacherBootstrap()),staffPage,'bootstrap must copy the response');
+assert.equal(bootstrap.api.takeTeacherBootstrap(),null,'a later mount must reread authorized data');
+assert.equal(bootstrap.storage.size,0,'rosters and tokens are never persisted');
+loginReply=staffLogin();await bootstrap.api.login('teacher','fake-test-password');bootstrap.api.logout();
+assert.equal(bootstrap.api.takeTeacherBootstrap(),null,'logout discards an unused first page');
+await bootstrap.api.login('teacher','fake-test-password');
+loginReply=staffLogin('studentA',['Student']);await bootstrap.api.login('studentA','fake-test-password');
+assert.equal(bootstrap.api.takeTeacherBootstrap(),null,'students cannot inherit or consume staff data');
+loginReply=staffLogin();await bootstrap.api.login('teacher','fake-test-password');
+bootstrap.setSend(()=>denied('INVALID_CREDENTIALS'));await assert.rejects(()=>bootstrap.api.login('teacher','wrong-password'));
+assert.equal(bootstrap.api.takeTeacherBootstrap(),null,'failed login clears the previous account first page');
+assert.equal(student.api.takeTeacherBootstrap(),null,'legacy responses without a first page remain supported');
+
+// A delayed earlier login cannot overwrite the new identity or its roster.
+const switched=harness();let resolveLogin;
+switched.setSend(call=>call.payload.username==='teacherA'?new Promise(resolve=>{resolveLogin=resolve;}):response(staffLogin('teacherB')));
+const previousLogin=switched.api.login('teacherA','fake-test-password');
+const cancelled=assert.rejects(previousLogin,/ยกเลิก/);
+await switched.api.login('teacherB','fake-test-password');
+const oldReply=staffLogin('teacherA');oldReply.staff.roster.rows[0].id='previous-account-pupil';resolveLogin(response(oldReply));await cancelled;
+assert.deepEqual(plain(switched.api.takeTeacherBootstrap()),staffPage);
+assert.equal(switched.api.takeTeacherBootstrap(),null);
+
+console.log('Google Sheets client: immutable retry, reload, acknowledgment, account isolation, concurrent tabs, expiry, timeout, storage failure, roles and one-use staff bootstrap passed');

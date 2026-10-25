@@ -15,15 +15,23 @@ h.students.rows[1][2]='<img src=x onerror="window.__unsafe=true">';
 const originalSources=JSON.stringify([h.students.rows,h.staff.rows]),originalEvents=JSON.stringify(h.sheets.get('SLH_Events').rows);
 const server=createServer(async(req,res)=>{try{const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);if(path!=='/'&&!path.startsWith('/assets/'))throw Error();const file=resolve(root,'.'+(path==='/'?'/index.html':path));if(path!=='/'&&!file.startsWith(root+sep+'assets'+sep))throw Error();res.setHeader('Content-Type',mime[extname(file)]||'application/octet-stream');res.end(await readFile(file));}catch{res.writeHead(404);res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
-const calls=[],errors=[],report={mode:'local website + real Code.gs with synthetic Sheets',checks:[]};let browser,failedAction='';
+const calls=[],errors=[],report={mode:'local website + real Code.gs with synthetic Sheets',checks:[]};let browser,failedAction='',legacyLogin=false,legacyOptions=false,delayedOptions=null;
 try{
  browser=await pw.chromium.launch({channel:'chrome',headless:true});
  const context=await browser.newContext({viewport:{width:1366,height:900},reducedMotion:'reduce'});
  await context.route('**/assets/integrations/sheets-config.js*',r=>r.fulfill({contentType:'text/javascript',body:`window.SLH_SHEETS_CONFIG={endpoint:${JSON.stringify(endpoint)}};`}));
  await context.route('https://script.googleusercontent.com/**',r=>r.abort());
- await context.route('https://script.google.com/**',async r=>{assert.equal(r.request().url(),endpoint);const b=r.request().postDataJSON();calls.push({action:b.action,payload:['login','adminCreateTeacher'].includes(b.action)?{}:b.payload});let result;if(failedAction===b.action){failedAction='';result={ok:false,error:{code:'UNAVAILABLE',message:'ทดสอบการเชื่อมต่อขัดข้อง'}};}else result=h.call(b.action,b.payload,b.token);await r.fulfill({contentType:'application/json',body:JSON.stringify(result)});});
+ await context.route('https://script.google.com/**',async r=>{
+  assert.equal(r.request().url(),endpoint);const b=r.request().postDataJSON();calls.push({action:b.action,payload:['login','adminCreateTeacher'].includes(b.action)?{}:b.payload});
+  let result;if(failedAction===b.action){failedAction='';result={ok:false,error:{code:'UNAVAILABLE',message:'ทดสอบการเชื่อมต่อขัดข้อง'}};}else result=h.call(b.action,b.payload,b.token);
+  if(result.ok&&legacyLogin&&b.action==='login')delete result.data.staff;
+  if(result.ok&&legacyOptions&&b.action==='teacherOptions')delete result.data.roster;
+  if(b.action==='teacherOptions'&&delayedOptions){const gate=delayedOptions;delayedOptions=null;gate.started();await gate.wait;}
+  await r.fulfill({contentType:'application/json',body:JSON.stringify(result)});
+ });
  const page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:'+server.address().port+'/');
+ await page.evaluate(()=>{const mount=window.SLH_TEACHER.mount;window.SLH_TEACHER.mount=(app,context)=>{window.__remountTeacher=()=>{app.querySelector('[data-teacher-panel]')?.remove();mount(app,context);};return mount(app,context);};});
  async function login(id,pw){await page.locator('#loginUser').fill(id);await page.locator('#loginPass').fill(pw);await page.locator('[data-action="login"]').click();await page.locator('.dashboardPage').waitFor();}
  async function logout(){await page.locator('[data-action="logout"]').click();await page.locator('#loginUser').waitFor();}
  const filter=()=>page.locator('[data-teacher-filters]');
@@ -33,11 +41,23 @@ try{
  for(const [field,expected]of[['grade',['1']],['room',['01']]])assert.deepEqual(await filter().locator('[name="'+field+'"] option').evaluateAll(els=>els.map(e=>e.value).filter(Boolean)),expected);
  assert.equal(await page.locator('[data-teacher-rows] img').count(),0);assert.equal(await page.evaluate(()=>window.__unsafe),undefined);
  assert.equal(calls.filter(c=>c.action==='studentResults').length,0,'No scores loaded before student selection');
- assert.equal(calls.filter(c=>c.action==='teacherRoster').at(-1).payload.limit,25);
- await page.locator('[data-teacher-next]').click();await page.waitForFunction(()=>!document.querySelector('[data-teacher-prev]').disabled);assert.equal(calls.filter(c=>c.action==='teacherRoster').at(-1).payload.offset,25);
+ assert.deepEqual(calls.map(c=>c.action),['login'],'Authorized first roster is rendered directly from login');assert.equal(await page.locator('[data-student-open]').count(),25);
+ await page.locator('[data-teacher-next]').click();await page.waitForFunction(()=>!document.querySelector('[data-teacher-prev]').disabled);assert.equal(calls.filter(c=>c.action==='teacherRoster').at(-1).payload.offset,25);assert.equal(calls.filter(c=>c.action==='teacherRoster').at(-1).payload.limit,25);
  await filter().locator('[name="student"]').fill(pupil.user.id.slice(0,-1));await filter().locator('button[type="submit"]').click();await page.locator('[data-student-open="'+pupil.user.id+'"]').waitFor();
  assert.equal(calls.filter(c=>c.action==='teacherRoster').at(-1).payload.offset,0);
- report.checks.push('assigned room options; roster pagination/search; no eager score requests; escaped student name');
+ let start=calls.length;await page.locator('[data-teacher-refresh]').click();await page.locator('[data-student-open="'+pupil.user.id+'"]').waitFor();
+ assert.deepEqual(calls.slice(start),[{action:'teacherOptions',payload:{includeRoster:true,grade:'1',room:'01',student:pupil.user.id.slice(0,-1)}}],'Refresh bundles the requested first page and preserves filters');
+ // Hold the response after the server has selected rows, then edit the still-enabled search field.
+ await filter().locator('[name="student"]').fill(pupil.user.id);
+ let releaseOptions,optionsStarted;const optionsRequested=new Promise(r=>{optionsStarted=r;});delayedOptions={started:optionsStarted,wait:new Promise(r=>{releaseOptions=r;})};
+ start=calls.length;await page.locator('[data-teacher-refresh]').click();await optionsRequested;await filter().locator('[name="student"]').fill('unmatched-student');releaseOptions();
+ await page.waitForFunction(()=>!document.querySelector('[data-roster-search]').disabled&&document.querySelector('[data-teacher-message]').innerText.includes('ไม่พบนักเรียน'));
+ assert.deepEqual(calls.slice(start).map(c=>c.action),['teacherOptions','teacherRoster']);assert.equal(calls.at(-1).payload.student,'unmatched-student');assert.equal(await page.locator('[data-student-open]').count(),0,'An outdated bundled search must never be displayed under the edited query');
+ await filter().locator('[name="student"]').fill(pupil.user.id);await filter().locator('button[type="submit"]').click();await page.locator('[data-student-open="'+pupil.user.id+'"]').waitFor();assert.equal(await page.locator('[data-student-open]').count(),1);
+ failedAction='teacherRoster';await filter().locator('[name="student"]').fill(pupil.user.id.slice(0,-1));await filter().locator('button[type="submit"]').click();await page.locator('[data-roster-retry]').waitFor();
+ start=calls.length;await page.locator('[data-roster-retry]').click();await page.locator('[data-student-open="'+pupil.user.id+'"]').waitFor();assert.deepEqual(calls.slice(start).map(c=>c.action),['teacherRoster'],'Clicking retry performs a roster request instead of using the MouseEvent as row data');
+ assert.equal(calls.filter(c=>c.action==='studentResults').length,0,'Refresh, search and retries do not load student scores');
+ report.checks.push('login-only first roster; assigned room options; pagination/search; bundled refresh; changed search during pending refresh; clicked roster retry; no eager scores; escaped student name');
  await page.locator('[data-student-open="'+pupil.user.id+'"]').click();await page.locator('[data-exam-history-open]').waitFor();
  let text=await page.locator('[data-result-body]').innerText();for(const expected of ['ทำแล้วแต่ยังไม่ผ่าน','ผ่านแล้ว','ยังไม่ทำ','ไม่มีข้อมูล','20%','100%'])assert(text.includes(expected),expected);
  assert(/0\s*\/\s*6/.test(text),'Real zero score');assert(/2\s*\/\s*ไม่มีข้อมูล/.test(text),'Missing denominator');
@@ -52,8 +72,14 @@ try{
  const otherLesson=await page.locator('[data-student-results] select[name="lessonId"]').evaluate((el,id)=>[...el.options].find(o=>o.value!==id).value,lessonId);
  failedAction='studentResults';await page.locator('[data-student-results] select[name="lessonId"]').selectOption(otherLesson);await page.getByText('ทดสอบการเชื่อมต่อขัดข้อง',{exact:false}).waitFor();await page.locator('[data-result-retry]').click();await page.waitForFunction(()=>document.querySelector('[data-result-body]')?.innerText.includes('ยังไม่ทำ'));assert(await page.evaluate(k=>!!localStorage.getItem(k),sentinel));
  assert.equal(h.call('adminUpdateTeacher',{teacherId,term:'2',rooms:[]},owner.token).ok,true);await page.locator('[data-student-results] select[name="lessonId"]').selectOption(lessonId);await page.locator('[data-result-retry]').waitFor();assert(!(await page.locator('[data-result-body]').innerText()).includes('100%'));
- report.checks.push('read retry; pending learner queue preserved; same-session revocation denies next read and clears stale result');
- await logout();await login('watcharapon',h.staffPassword);await page.locator('[data-student-open]').first().waitFor();
+ start=calls.length;await page.evaluate(()=>window.__remountTeacher());await page.waitForFunction(()=>document.querySelector('[data-teacher-message]')?.innerText.includes('ยังไม่มีห้องที่ได้รับมอบหมาย'));
+ assert.deepEqual(calls.slice(start).map(c=>c.action),['teacherOptions'],'A new mount rechecks authorization instead of reusing login data');assert.equal(await page.locator('[data-student-open]').count(),0);assert.equal(await filter().locator('[name="room"] option').count(),0);
+ report.checks.push('read retry; pending learner queue preserved; same-session revocation denies next read; bootstrap never reused across mounts');
+ await logout();legacyLogin=true;start=calls.length;await login('watcharapon',h.staffPassword);await page.locator('[data-student-open]').first().waitFor();
+ assert.deepEqual(calls.slice(start).map(c=>c.action),['login','teacherOptions'],'Legacy login falls back to bundled options');
+ await logout();legacyOptions=true;start=calls.length;await login('watcharapon',h.staffPassword);await page.locator('[data-student-open]').first().waitFor();
+ assert.deepEqual(calls.slice(start).map(c=>c.action),['login','teacherOptions','teacherRoster'],'Legacy options fall back to the separate roster API');legacyLogin=legacyOptions=false;
+ report.checks.push('legacy login without staff; legacy options without roster; no cross-login reuse');
  await filter().locator('[name="grade"]').selectOption('2');await filter().locator('[name="room"]').selectOption('02');await filter().locator('button[type="submit"]').click();await page.locator('[data-student-open="fixture0002"]').waitFor();
  await page.locator('[data-staff-tab="admin"]').click();await page.locator('[data-teacher-edit="'+teacherId+'"]').click();let editor=page.locator('[data-admin-editor]');
  await editor.locator('[name="room"][value="1:01"]').check();await editor.locator('[name="room"][value="2:02"]').check();await page.locator('[data-admin-save]').click();await page.waitForFunction(()=>!document.querySelector('[data-admin-save]')?.disabled);

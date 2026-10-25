@@ -35,36 +35,42 @@
     (root.querySelector('.dashShell') || root).appendChild(panel);
     const $ = selector => panel.querySelector(selector), form = $('[data-teacher-filters]'), pending = new Map();
     let options = null, rosterOffset = 0, rosterRows = [], rosterKey = '', selected = null, adminOffset = 0, adminRows = [], adminLoaded = false;
+    let bootstrap = api.takeTeacherBootstrap?.() || null;
     let optionId = 0, rosterId = 0, resultId = 0, historyId = 0, adminId = 0, editorId = 0, creating = false;
     const alive = () => panel.isConnected;
     // Deduplicate only in-flight requests; a later read always rechecks permissions at the server.
     function call(action, payload = {}) { const key = action + JSON.stringify(payload); if (pending.has(key)) return pending.get(key); const task = Promise.resolve().then(() => api[action](payload)); pending.set(key,task); task.then(() => pending.delete(key), () => pending.delete(key)); return task; }
-    function errorAt(target, error, retry, attr) { target.textContent = error?.message || 'อ่านข้อมูลไม่สำเร็จ'; const b = document.createElement('button'); b.type = 'button'; b.className = 'pixelBtn soft'; b.setAttribute(attr,''); b.textContent = 'ลองใหม่'; b.onclick = retry; target.appendChild(document.createTextNode(' ')); target.appendChild(b); }
+    function errorAt(target, error, retry, attr) { target.textContent = error?.message || 'อ่านข้อมูลไม่สำเร็จ'; const b = document.createElement('button'); b.type = 'button'; b.className = 'pixelBtn soft'; b.setAttribute(attr,''); b.textContent = 'ลองใหม่'; b.onclick = () => retry(); target.appendChild(document.createTextNode(' ')); target.appendChild(b); }
     function clearStudent() { ++resultId; ++historyId; selected = null; $('[data-student-results]').hidden = true; $('[data-student-results]').textContent = ''; }
     function clearRoster() { ++rosterId; rosterRows = []; rosterKey = ''; $('[data-teacher-rows]').textContent = ''; $('[data-roster-pager]').hidden = true; clearStudent(); }
     function updateRooms(preferred) { const rooms = (options?.rooms || []).filter(r => Number(r.grade) === Number(form.elements.grade.value)); form.elements.room.innerHTML = rooms.map(r => `<option value="${esc(r.room)}">ห้อง ${esc(r.room)}</option>`).join(''); if (rooms.some(r => String(r.room) === String(preferred))) form.elements.room.value = preferred; form.elements.room.disabled = !rooms.length; $('[data-roster-search]').disabled = !rooms.length; }
     async function loadOptions() {
-      const ticket = ++optionId, oldGrade = form.elements.grade.value, oldRoom = form.elements.room.value;
+      const ticket = ++optionId, oldGrade = form.elements.grade.value, oldRoom = form.elements.room.value, student = form.elements.student.value.trim();
       clearRoster(); form.elements.grade.disabled = form.elements.room.disabled = $('[data-roster-search]').disabled = true;
       $('[data-teacher-message]').textContent = 'กำลังอ่านห้องที่ได้รับมอบหมาย…';
       try {
-        const data = await call('teacherOptions'); if (ticket !== optionId || !alive()) return; options = data;
+        const firstPage = bootstrap; bootstrap = null;
+        const data = firstPage || await call('teacherOptions',{includeRoster:true,grade:oldGrade || undefined,room:oldRoom || undefined,student}); if (ticket !== optionId || !alive()) return; options = data;
         $('[data-staff-term]').textContent = 'ปีการศึกษา ' + text(data.academicYear) + ' • มอบหมายห้องสำหรับเทอม ' + text(data.term) + (isAdmin ? ' • แอดมินดูผลได้ทุกห้อง' : ' • เฉพาะห้องที่ได้รับมอบหมาย') + ' • แสดงผลที่บันทึกในปีการศึกษา ' + text(data.academicYear);
         const grades = [...new Set((data.rooms || []).map(r => Number(r.grade)))].sort((a,b) => a-b);
         form.elements.grade.innerHTML = grades.map(g => `<option value="${g}">ม.${g}</option>`).join('');
-        if (grades.includes(Number(oldGrade))) form.elements.grade.value = oldGrade;
-        form.elements.grade.disabled = !grades.length; updateRooms(oldRoom); rosterOffset = 0;
+        const preferredGrade = data.roster?.grade ?? oldGrade, preferredRoom = data.roster?.room ?? oldRoom;
+        if (grades.includes(Number(preferredGrade))) form.elements.grade.value = String(preferredGrade);
+        form.elements.grade.disabled = !grades.length; updateRooms(preferredRoom); rosterOffset = 0;
         if (!grades.length) { $('[data-teacher-message]').textContent = 'ยังไม่มีห้องที่ได้รับมอบหมายในเทอมนี้ กรุณาติดต่อแอดมิน'; return; }
-        await loadRoster();
+        const firstRoster = data.roster;
+        await loadRoster(firstRoster && student === form.elements.student.value.trim() && Number(firstRoster.grade) === Number(form.elements.grade.value) && String(firstRoster.room) === form.elements.room.value && firstRoster.offset === 0 && firstRoster.limit === 25 ? firstRoster : null);
       } catch (error) { if (ticket === optionId && alive()) { options = null; errorAt($('[data-teacher-message]'),error,loadOptions,'data-options-retry'); } }
     }
-    async function loadRoster() {
+    async function loadRoster(firstPage = null) {
       if (!options || !form.elements.grade.value || !form.elements.room.value) return;
       const ticket = ++rosterId, payload = {grade:Number(form.elements.grade.value),room:form.elements.room.value,student:form.elements.student.value.trim(),offset:rosterOffset,limit:25};
       const key = JSON.stringify(payload); clearStudent(); $('[data-teacher-rows]').textContent = ''; $('[data-roster-pager]').hidden = true; $('[data-roster-search]').disabled = true;
       $('[data-teacher-message]').textContent = 'กำลังอ่านรายชื่อนักเรียน…';
       try {
-        const data = await call('teacherRoster',payload); if (ticket !== rosterId || !alive()) return;
+        // New deployments supply the first page with the authorized options/login response.
+        // Older Apps Script deployments continue through the original roster API.
+        const data = firstPage || await call('teacherRoster',payload); if (ticket !== rosterId || !alive()) return;
         rosterRows = data.rows || []; rosterKey = key;
         $('[data-teacher-rows]').innerHTML = rosterRows.map(r => `<div class="callout staffRow"><span>เลขที่ ${value(r.number)}</span><div class="staffIdentity"><button type="button" class="pixelBtn soft staffName" data-student-open="${esc(r.id || r.studentId || r.username)}">${esc(r.name)}</button><br><small>${esc(r.username || r.id || r.studentId)}</small></div><span>ม.${value(r.grade)}/${value(r.room)}</span></div>`).join('');
         $('[data-teacher-message]').textContent = data.total ? 'นักเรียน ' + data.total + ' คน • เลือกชื่อเพื่อดูผลรายบทเรียน' : 'ไม่พบนักเรียนที่ตรงกับการค้นหา';

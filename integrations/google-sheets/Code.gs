@@ -70,7 +70,7 @@ function doPost(e) {
     else if (request.action === 'sync') data = locked_(function () { return sync_(request.token, payload); });
     else if (request.action === 'teacherSummary') data = summary_(request.token, payload);
     else if (request.action === 'examHistory') data = history_(request.token, payload);
-    else if (request.action === 'teacherOptions') data = teacherOptions_(request.token);
+    else if (request.action === 'teacherOptions') data = teacherOptions_(request.token, payload);
     else if (request.action === 'teacherRoster') data = roster_(request.token, payload);
     else if (request.action === 'studentResults') data = studentResults_(request.token, payload);
     else if (request.action === 'adminTeachers') data = adminTeachers_(request.token, payload);
@@ -145,7 +145,7 @@ function accounts_(db) {
 function teacherSettings_(db) {
   if (!db.getSheetByName(SLH.teachers)) return [];
   var latest = Object.create(null);
-  rows_(table_(db, SLH.teachers, SLH.teacherHeaders), SLH.teacherHeaders.length).forEach(function (row) {
+  readTable_(db, SLH.teachers, SLH.teacherHeaders).rows.forEach(function (row) {
     var id = String(row[0]), assignments;
     try { assignments = JSON.parse(row[5]); } catch (_) { fail_('SETUP_INVALID', 'ข้อมูลการมอบหมายครูไม่สมบูรณ์'); }
     if (!id || !plain_(assignments) || typeof row[4] !== 'boolean' || (row[2] && !/^[a-f0-9]{64}$/.test(String(row[2]))) || (row[3] && !/^[a-f0-9]{64}$/.test(String(row[3])))) fail_('SETUP_INVALID', 'ข้อมูลบัญชีครูไม่สมบูรณ์');
@@ -166,7 +166,16 @@ function table_(db, name, headers) {
   if (actual.join('\u001f') !== headers.join('\u001f') || sheet.getLastColumn() !== headers.length) fail_('SETUP_INVALID', 'โครงสร้างชีตระบบไม่ตรงกัน');
   return sheet;
 }
-function rows_(sheet, width) { return sheet.getLastRow() < 2 ? [] : sheet.getRange(2, 1, sheet.getLastRow() - 1, width).getValues(); }
+function readTable_(db, name, headers) {
+  var sheet = db.getSheetByName(name), lastRow = sheet ? sheet.getLastRow() : 0;
+  if (!sheet || lastRow < 1) fail_('NOT_CONFIGURED', 'กรุณารัน setup ก่อนใช้งาน');
+  if (sheet.getLastColumn() !== headers.length) fail_('SETUP_INVALID', 'โครงสร้างชีตระบบไม่ตรงกัน');
+  // Read header and typed data together. This snapshot is local to this request;
+  // every later request rereads sessions, enabled flags and room assignments.
+  var values = sheet.getRange(1, 1, lastRow, headers.length).getValues(), actual = values.shift();
+  if (actual.join('\u001f') !== headers.join('\u001f')) fail_('SETUP_INVALID', 'โครงสร้างชีตระบบไม่ตรงกัน');
+  return {sheet: sheet, rows: values};
+}
 function append_(sheet, rows) {
   if (!rows.length) return;
   // Values supplied by users must never become spreadsheet formulas.
@@ -207,17 +216,21 @@ function login_(payload) {
   var username = typeof payload.username === 'string' ? payload.username.trim() : '', password = payload.password;
   if (!username || username.length > 120 || typeof password !== 'string' || password.length > 256) fail_('INVALID_CREDENTIALS', 'รหัสผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
   var now = Date.now(); rateLimit_(username, now);
-  var db = database_(), account = accounts_(db)[username], credential = account && account.password ? account.password : 'unassigned-account-placeholder';
+  var db = database_(), accounts = accounts_(db), account = accounts[username], credential = account && account.password ? account.password : 'unassigned-account-placeholder';
   var matches = account && account.passwordHash ? equalSecret_(teacherPassword_(password, account.passwordSalt), account.passwordHash) : equalSecret_(password, credential);
   if (!matches || !account || !account.enabled) fail_('INVALID_CREDENTIALS', 'รหัสผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+  var staff;
+  if (account.roles.some(function (role) { return role === 'Teacher' || role === 'Admin'; })) staff = teacherOptionsForScope_(teacherScopeFromSession_(db, {account: account, accounts: accounts}), {includeRoster: true});
   var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''), expiresAt = now + SLH.sessionMs;
   append_(table_(db, SLH.sessions, SLH.sessionHeaders), [[sha_(token), account.id, now, expiresAt, '']]);
   PropertiesService.getScriptProperties().deleteProperty('SLH_RATE_' + sha_(username));
-  return {token: token, user: publicUser_(account), expiresAt: expiresAt};
+  var response = {token: token, user: publicUser_(account), expiresAt: expiresAt};
+  if (staff) response.staff = staff;
+  return response;
 }
 function session_(token, db) {
   if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) fail_('UNAUTHENTICATED', 'กรุณาเข้าสู่ระบบใหม่');
-  var hash = sha_(token), rows = rows_(table_(db, SLH.sessions, SLH.sessionHeaders), SLH.sessionHeaders.length), found;
+  var hash = sha_(token), rows = readTable_(db, SLH.sessions, SLH.sessionHeaders).rows, found;
   rows.some(function (r, index) { if (r[0] === hash) { found = {row: index + 2, record: r}; return true; } return false; });
   if (!found || found.record[4] || Number(found.record[3]) <= Date.now()) fail_('UNAUTHENTICATED', 'กรุณาเข้าสู่ระบบใหม่');
   var accounts = accounts_(db), account = accounts[String(found.record[1])];
@@ -226,8 +239,8 @@ function session_(token, db) {
 }
 function logout_(token) {
   if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) return {loggedOut: true};
-  var db = database_(), sheet = table_(db, SLH.sessions, SLH.sessionHeaders), hash = sha_(token);
-  rows_(sheet, SLH.sessionHeaders.length).some(function (r, index) {
+  var db = database_(), table = readTable_(db, SLH.sessions, SLH.sessionHeaders), sheet = table.sheet, hash = sha_(token);
+  table.rows.some(function (r, index) {
     if (r[0] !== hash) return false;
     if (!r[4]) sheet.getRange(index + 2, 5, 1, 1).setValues([[Date.now()]]);
     return true;
@@ -289,8 +302,8 @@ function sync_(token, payload) {
   var db = database_(), session = session_(token, db), actor = session.account.id;
   if (!Array.isArray(payload.events) || !payload.events.length || payload.events.length > SLH.maxBatch) fail_('INVALID_REQUEST', 'ส่งกิจกรรมได้ครั้งละ 1–100 รายการ');
   var now = Date.now(), events = payload.events.map(function (raw) { return event_(raw, now); });
-  var sheet = table_(db, SLH.events, SLH.eventHeaders), existing = Object.create(null);
-  rows_(sheet, SLH.eventHeaders.length).forEach(function (row) { if (String(row[2]) === actor) existing[String(row[0])] = String(row[10]); });
+  var table = readTable_(db, SLH.events, SLH.eventHeaders), sheet = table.sheet, existing = Object.create(null);
+  table.rows.forEach(function (row) { if (String(row[2]) === actor) existing[String(row[0])] = String(row[10]); });
   var newRows = [], acknowledged = [], duplicates = 0;
   events.forEach(function (event) {
     var key = sha_(actor + '\u001f' + event.id), fingerprint = sha_(canonical_(event));
@@ -342,9 +355,15 @@ function allRooms_(accounts) {
   return Object.keys(rooms).map(function (key) { return rooms[key]; }).sort(roomOrder_);
 }
 function teacherScope_(token) {
-  var db = database_(), session = session_(token, db); teacher_(session);
+  var db = database_();
+  return teacherScopeFromSession_(db, session_(token, db));
+}
+function teacherScopeFromSession_(db, session) {
+  teacher_(session);
   var term = currentTerm_(), isAdmin = session.account.roles.indexOf('Admin') >= 0;
-  table_(db, SLH.teachers, SLH.teacherHeaders);
+  // accounts_ already read and validated this table. Setup inspection alone may
+  // omit an uncreated table; authenticated staff operations must fail closed.
+  if (!db.getSheetByName(SLH.teachers)) fail_('NOT_CONFIGURED', 'กรุณารัน setup ก่อนใช้งาน');
   var assignments = session.account.teacherSettings ? session.account.teacherSettings.assignments[SLH.year + ':' + term] || [] : [];
   var keys = new Set(assignments.map(function (room) { return roomKey_(room.grade, room.room); }));
   var rooms = allRooms_(session.accounts).filter(function (room) { return isAdmin || keys.has(roomKey_(room.grade, room.room)); });
@@ -363,14 +382,27 @@ function allowStudent_(scope, studentId) {
 function requireRoom_(scope, grade, room) {
   if (!scope.rooms.some(function (item) { return item.grade === grade && item.room === room; })) fail_('FORBIDDEN', 'ไม่มีสิทธิ์เข้าถึงห้องนี้');
 }
-function teacherOptions_(token) {
-  var scope = teacherScope_(token);
-  return {academicYear: SLH.year, term: scope.term, rooms: scope.rooms, isAdmin: scope.isAdmin};
+function teacherOptions_(token, payload) {
+  return teacherOptionsForScope_(teacherScope_(token), payload || {});
+}
+function teacherOptionsForScope_(scope, payload) {
+  var result = {academicYear: SLH.year, term: scope.term, rooms: scope.rooms, isAdmin: scope.isAdmin};
+  if (payload.includeRoster === true) {
+    var search = payload.student === undefined ? '' : payload.student;
+    if (typeof search !== 'string' || search.length > 120 || (payload.grade !== undefined && payload.grade !== '' && ![1, 2, 3].includes(Number(payload.grade))) || (payload.room !== undefined && (typeof payload.room !== 'string' || payload.room.length > 50))) fail_('INVALID_REQUEST', 'กรุณาเลือกชั้นและห้อง');
+    var room = scope.rooms.find(function (item) { return item.grade === Number(payload.grade) && item.room === payload.room; }) || scope.rooms[0];
+    result.roster = room ? rosterForScope_(scope, {grade: room.grade, room: room.room, student: search, offset: 0, limit: 25}) : null;
+    if (result.roster) { result.roster.grade = room.grade; result.roster.room = room.room; }
+  }
+  return result;
 }
 function publicStudent_(student) { return {id: student.id, studentId: student.id, username: student.id, name: student.name, grade: student.grade, room: student.room, number: student.number}; }
 function searchStudent_(account, query) { return !query || account.id.toLowerCase().indexOf(query) >= 0 || account.name.toLowerCase().indexOf(query) >= 0; }
 function roster_(token, payload) {
-  var scope = teacherScope_(token), page = page_(payload), grade = Number(payload.grade), room = payload.room, search = payload.student === undefined ? '' : payload.student;
+  return rosterForScope_(teacherScope_(token), payload);
+}
+function rosterForScope_(scope, payload) {
+  var page = page_(payload), grade = Number(payload.grade), room = payload.room, search = payload.student === undefined ? '' : payload.student;
   if (![1, 2, 3].includes(grade) || typeof room !== 'string' || !room || room.length > 50 || typeof search !== 'string' || search.length > 120) fail_('INVALID_REQUEST', 'กรุณาเลือกชั้นและห้อง');
   requireRoom_(scope, grade, room);
   var selected = Object.keys(scope.students).map(function (id) { return scope.students[id]; }).filter(function (account) { return account.grade === grade && account.room === room && searchStudent_(account, search.trim().toLowerCase()); }).sort(studentOrder_);
@@ -387,7 +419,7 @@ function aggregateResults_(db, selected, lessonId, allowedStudents) {
   }
   var seenStudents = new Set();
   // Single bulk scan; no per-student or per-lesson spreadsheet calls.
-  rows_(table_(db, SLH.events, SLH.eventHeaders), SLH.eventHeaders.length).forEach(function (r) {
+  readTable_(db, SLH.events, SLH.eventHeaders).rows.forEach(function (r) {
     if (String(r[3]) !== SLH.year) return;
     if (allowedStudents[String(r[2])]) lessons.add(String(r[4]));
     var account = students[String(r[2])];
@@ -433,7 +465,7 @@ function history_(token, payload) {
   var scope = teacherScope_(token), studentId = String(payload.studentId || ''), lessonId = String(payload.lessonId || ''), page = page_(payload);
   if (lessonId && !lesson_(lessonId)) fail_('INVALID_REQUEST', 'ไม่พบรายการที่ต้องการ');
   allowStudent_(scope, studentId);
-  var rows = rows_(table_(scope.db, SLH.events, SLH.eventHeaders), SLH.eventHeaders.length).filter(function (r) { return String(r[2]) === studentId && String(r[3]) === SLH.year && String(r[5]) === 'exam' && (!lessonId || String(r[4]) === lessonId); }).map(eventFromRow_);
+  var rows = readTable_(scope.db, SLH.events, SLH.eventHeaders).rows.filter(function (r) { return String(r[2]) === studentId && String(r[3]) === SLH.year && String(r[5]) === 'exam' && (!lessonId || String(r[4]) === lessonId); }).map(eventFromRow_);
   rows.sort(function (a, b) { return (b.occurredAt === null ? -Infinity : b.occurredAt) - (a.occurredAt === null ? -Infinity : a.occurredAt) || b.id.localeCompare(a.id); });
   return {rows: rows.slice(page.offset, page.offset + page.limit), total: rows.length, offset: page.offset, limit: page.limit, academicYear: SLH.year, term: scope.term, clientReported: true};
 }

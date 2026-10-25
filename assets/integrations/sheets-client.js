@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const KEY = 'slh_sheets_outbox_v1_';
-  let session = null, generation = 0, timer = null, busy = false, failures = 0;
+  let session = null, staffBootstrap = null, generation = 0, timer = null, busy = false, failures = 0;
   let notice = '', durable = true, authenticationExpired = false;
   const memory = new Map();
   const enabled = () => !!window.SLH_SHEETS_CONFIG?.endpoint?.trim();
@@ -80,15 +80,18 @@
   }
   async function login(username, password) {
     const ticket = ++generation;
-    clearTimeout(timer); timer = null; session = null; busy = false; notice = ''; failures = 0;
+    clearTimeout(timer); timer = null; session = null; staffBootstrap = null; busy = false; notice = ''; failures = 0;
     const data = await request('login', {username,password}, '');
     if (ticket !== generation) throw Error('ยกเลิกการเข้าสู่ระบบแล้ว');
     if (!data?.token || !data.user?.id || !Array.isArray(data.user.roles)) throw Error('ข้อมูลบัญชีจากเซิร์ฟเวอร์ไม่ครบ');
-    authenticationExpired = false; session = copy(data); read(session.user.id); schedule(); refreshStatus(); return copy(data.user);
+    authenticationExpired = false; session = copy({token:data.token,user:data.user,expiresAt:data.expiresAt});
+    // The authorized first page arrives with login once. Never cache it across views or sessions.
+    if (session.user.roles.some(role => role === 'Teacher' || role === 'Admin') && data.staff) staffBootstrap = copy(data.staff);
+    read(session.user.id); schedule(); refreshStatus(); return copy(data.user);
   }
   function logout() {
     const token = session?.token;
-    generation++; clearTimeout(timer); timer = null; session = null; busy = false; failures = 0; notice = '';
+    generation++; clearTimeout(timer); timer = null; session = null; staffBootstrap = null; busy = false; failures = 0; notice = '';
     if (token) void request('logout', {}, token).catch(() => {});
     refreshStatus();
   }
@@ -128,7 +131,8 @@
     if (ticket !== generation) throw Error('สิ้นสุดการเข้าสู่ระบบแล้ว');
     return data;
   }
-  window.SLH_SHEETS = {enabled,login,logout,event,queue,flush,mountStatus,status,
+  function takeTeacherBootstrap() { const data = staffBootstrap; staffBootstrap = null; return data; }
+  window.SLH_SHEETS = {enabled,login,logout,event,queue,flush,mountStatus,status,takeTeacherBootstrap,
     teacherOptions: payload => teacherRequest('teacherOptions', payload),
     teacherRoster: payload => teacherRequest('teacherRoster', payload),
     studentResults: payload => teacherRequest('studentResults', payload),
