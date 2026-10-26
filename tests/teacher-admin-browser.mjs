@@ -95,5 +95,31 @@ try{
  await page.locator('[data-nav="lessons"]').click();await page.locator('[data-unit="0"]').click();await page.locator('[data-lesson="'+lessonId+'"]').click();await page.locator('[data-stage="exam"]').click();
  await page.evaluate(({id,user})=>{const k='slh_v163_'+user+'_'+id,p=JSON.parse(localStorage.getItem(k));p.exam.current.qs.forEach((q,i)=>p.exam.current.answers[i]=q.correct);p.exam.current.idx=19;localStorage.setItem(k,JSON.stringify(p));},{id:lessonId,user:pupil.user.id});
  await page.locator('[data-stage="exam"]').click();await page.locator('[data-exam-submit]').click();await page.evaluate(()=>window.SLH_SHEETS.flush());await page.waitForFunction(()=>window.SLH_SHEETS.status().includes('ครบแล้ว'));assert.equal(h.call('examHistory',{studentId:pupil.user.id,lessonId},owner.token).data.total,14);
- report.checks.push('original student dashboard and exam submission still work');assert.deepEqual(errors,[]);report.passed=true;
+ report.checks.push('original student dashboard and exam submission still work');
+ // Exercise the complete reset path through a second admin tab while the learner is still active.
+ const adminPage=await context.newPage();adminPage.on('pageerror',e=>errors.push(e.message));
+ await adminPage.goto('http://127.0.0.1:'+server.address().port+'/');
+ await adminPage.locator('#loginUser').fill('watcharapon');await adminPage.locator('#loginPass').fill(h.staffPassword);await adminPage.locator('[data-action="login"]').click();
+ await adminPage.locator('[data-student-open="'+pupil.user.id+'"]').click();await adminPage.locator('[data-exam-history-open]').waitFor();
+ assert.equal(await adminPage.locator('[name="lessonId"] option').count(),40,'Admin can reset review/advance lessons in any grade');
+ await adminPage.locator('[data-student-reset-open]').click();await adminPage.locator('[name="confirmStudentId"]').fill(pupil.user.id);
+ await adminPage.screenshot({path:resolve(root,'tmp/teacher-admin-review/reset-desktop.png'),fullPage:true});
+ await adminPage.locator('[data-student-reset-confirm]').screenshot({path:resolve(root,'tmp/teacher-admin-review/reset-form-desktop.png')});
+ await adminPage.setViewportSize({width:375,height:812});assert(await adminPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await adminPage.screenshot({path:resolve(root,'tmp/teacher-admin-review/reset-mobile.png'),fullPage:true});
+ await adminPage.locator('[data-student-reset-confirm]').screenshot({path:resolve(root,'tmp/teacher-admin-review/reset-form-mobile.png')});
+ const ledgerBeforeReset=JSON.stringify(h.sheets.get('SLH_Events').rows);
+ await adminPage.locator('[data-student-reset-submit]').click();await adminPage.waitForFunction(()=>document.querySelector('[data-student-reset-message]')?.innerText.includes('แล้ว'));
+ await adminPage.locator('[data-exam-history-open]').waitFor();
+ assert.equal(h.call('examHistory',{studentId:pupil.user.id,lessonId},owner.token).data.total,0);
+ assert.equal(JSON.stringify(h.sheets.get('SLH_Events').rows),ledgerBeforeReset,'Reset retains the audit ledger');
+ await page.evaluate(()=>window.SLH_SHEETS.refreshResetState());await page.locator('.dashboardPage').waitFor();
+ assert(await page.evaluate(()=>window.SLH_SHEETS.status().includes('รีเซ็ต')));
+ await page.locator('[data-nav="lessons"]').click();await page.locator('[data-unit="0"]').click();await page.locator('[data-lesson="'+lessonId+'"]').click();await page.locator('[data-stage="exam"]').click();
+ await page.evaluate(({id,user})=>{const revision=window.SLH_SHEETS.progressVersion(id),k='slh_v163_'+user+'_'+id+'_reset_'+revision,p=JSON.parse(localStorage.getItem(k));if(p.exam.attempts!==0)throw Error('Old exam survived reset');p.exam.current.qs.forEach((q,i)=>p.exam.current.answers[i]=q.correct);p.exam.current.idx=19;localStorage.setItem(k,JSON.stringify(p));},{id:lessonId,user:pupil.user.id});
+ await page.locator('[data-stage="exam"]').click();await page.locator('[data-exam-submit]').click();await page.evaluate(()=>window.SLH_SHEETS.flush());
+ assert.equal(h.call('examHistory',{studentId:pupil.user.id,lessonId},owner.token).data.total,1,'New post-reset exam starts at attempt one');
+ assert.equal(JSON.stringify([h.students.rows,h.staff.rows]),originalSources);
+ report.checks.push('Admin reset UI to real backend; active learner reset propagation; fresh exam after reset; unchanged source accounts and retained ledger; confirmation desktop/375px');
+ assert.deepEqual(errors,[]);report.passed=true;
 }finally{await browser?.close();await new Promise(r=>server.close(r));await mkdir(resolve(root,'tmp/teacher-admin-review'),{recursive:true});await writeFile(resolve(root,'tmp/teacher-admin-review/report.json'),JSON.stringify(report,null,2));console.log(report);}

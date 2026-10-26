@@ -1,5 +1,7 @@
 # อัปเดต Apps Script deployment เดิม — 25 ตุลาคม 2569
 
+เอกสารนี้เป็นบันทึกรุ่น performance วันที่ 25 ตุลาคม สำหรับการรีเซ็ตคะแนนรุ่น 26 ตุลาคมให้ใช้ [ขั้นตอนใหม่](student-score-reset.md) ซึ่งต้องเพิ่มชีต `SLH_Resets` ด้วย `setup()` และใช้ไฟล์ `tmp/apps-script-reset-20261026/Code.gs` แทนสำเนาเก่ารุ่นนี้
+
 สถานะ: ผู้ใช้ยืนยันว่าอัปเดตแล้วและ `inspectSetup` ผ่าน จากนั้นส่ง endpoint ใหม่ หลังเปลี่ยนเว็บ local ให้ใช้ URL นี้ การทดสอบจริงผ่านครบ 6 journeys พร้อมรูปแบบ API ใหม่ทั้งสามรอบ ดูตาราง Display/Data/Ready ใน [รายงาน performance](performance-audit.md) ผู้ใช้อนุญาตให้ commit และ push เมื่อผ่าน แล้วตรวจ GitHub Pages จริงต่อ
 
 หมายเหตุรอบนี้: URL เดิมในเว็บยังตอบรูปแบบเก่า จึงเก็บผลรอบนั้นแยกไว้และไม่ใช้ยืนยันการปรับความเร็ว URL ใหม่จากผู้ใช้อยู่ใน [sheets-config.js](../assets/integrations/sheets-config.js) ส่วนขั้นตอนด้านล่างอธิบายการอัปเดต deployment ที่เลือกโดยคง URL ของ deployment นั้น สำหรับการอัปเดตครั้งถัดไปให้ตรวจว่า URL ตรงกับ config ปัจจุบัน

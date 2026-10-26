@@ -6,10 +6,11 @@
  */
 var SLH = Object.freeze({
   year: '2569', students: 907, sessionMs: 12 * 60 * 60 * 1000,
-  events: 'SLH_Events', sessions: 'SLH_Sessions', teachers: 'SLH_Teachers', maxBatch: 100,
+  events: 'SLH_Events', sessions: 'SLH_Sessions', teachers: 'SLH_Teachers', resets: 'SLH_Resets', maxBatch: 100,
   eventHeaders: ['EventKey', 'EventId', 'UserId', 'AcademicYear', 'LessonId', 'Kind', 'Stage', 'OccurredAt', 'ReceivedAt', 'ResultJSON', 'PayloadHash'],
   sessionHeaders: ['TokenHash', 'UserId', 'CreatedAt', 'ExpiresAt', 'RevokedAt'],
   teacherHeaders: ['UserId', 'Name', 'PasswordSalt', 'PasswordHash', 'Enabled', 'AssignmentsJSON', 'CreatedAt', 'UpdatedAt'],
+  resetHeaders: ['ResetId', 'UserId', 'AcademicYear', 'LessonId', 'ResetAt', 'AdminId'],
   studentHeaders: ['เลขประจำตัวโรงเรียน', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ระดับชั้น', 'ห้อง', 'เลขที่', 'Username', 'Password (ทดสอบ)', 'บทบาท', 'ปีการศึกษา'],
   staffHeaders: ['Username', 'Password (ทดสอบ)', 'บทบาท 1', 'บทบาท 2', 'สถานะ', 'หมายเหตุ']
 });
@@ -21,6 +22,7 @@ function inspectSetup() {
   return report;
 }
 function inspectSetup_(db) {
+  if (PropertiesService.getScriptProperties().getProperty('SLH_RESETS_READY') === '1' && !db.getSheetByName(SLH.resets)) fail_('NOT_CONFIGURED', 'ไม่พบประวัติรีเซ็ต กรุณากู้คืนชีต SLH_Resets เดิมก่อนใช้งาน');
   var accounts = accounts_(db), students = Object.keys(accounts).filter(function (id) { return accounts[id].roles.indexOf('Student') >= 0; });
   if (students.length !== SLH.students) fail_('SETUP_INVALID', 'ต้องมีบัญชีนักเรียนปี 2569 จำนวน 907 บัญชี');
   var owner = accounts.watcharapon;
@@ -29,6 +31,7 @@ function inspectSetup_(db) {
   appTables_().forEach(function (item) {
     if (db.getSheetByName(item[0])) { table_(db, item[0], item[1]); existing.push(item[0]); }
   });
+  if (db.getSheetByName(SLH.resets)) readResets_(db, true);
   return {ok: true, academicYear: SLH.year, term: currentTerm_(), studentCount: students.length, accountCount: Object.keys(accounts).length, sourceTabsModified: false, existingAppTabs: existing};
 }
 /** Run after inspection as the owner. Creates only missing app tabs. */
@@ -42,20 +45,21 @@ function setup() {
         sheet.setFrozenRows(1);
       }
     });
+    PropertiesService.getScriptProperties().setProperty('SLH_RESETS_READY', '1');
     PropertiesService.getScriptProperties().setProperty('SLH_READY', '1');
     return report;
   });
   console.log(JSON.stringify(report));
   return report;
 }
-function appTables_() { return [[SLH.events, SLH.eventHeaders], [SLH.sessions, SLH.sessionHeaders], [SLH.teachers, SLH.teacherHeaders]]; }
+function appTables_() { return [[SLH.events, SLH.eventHeaders], [SLH.sessions, SLH.sessionHeaders], [SLH.teachers, SLH.teacherHeaders], [SLH.resets, SLH.resetHeaders]]; }
 function currentTerm_() {
   var term = PropertiesService.getScriptProperties().getProperty('SLH_CURRENT_TERM');
   if (term !== '1' && term !== '2') fail_('NOT_CONFIGURED', 'กรุณาตั้งค่า SLH_CURRENT_TERM เป็น 1 หรือ 2 สำหรับเทอมปัจจุบัน');
   return term;
 }
 
-function doGet() { return json_({ok: true, data: {service: 'Science Learning Hub', protocol: 1}}); }
+function doGet() { return json_({ok: true, data: {service: 'Science Learning Hub', protocol: 1, capabilities: {adminResetStudent: true}}}); }
 function doPost(e) {
   try {
     if (!e || !e.postData || typeof e.postData.contents !== 'string' || e.postData.contents.length > 1048576) fail_('INVALID_REQUEST', 'รูปแบบคำขอไม่ถูกต้อง');
@@ -68,6 +72,7 @@ function doPost(e) {
     if (request.action === 'login') data = locked_(function () { return login_(payload); });
     else if (request.action === 'logout') data = locked_(function () { return logout_(request.token); });
     else if (request.action === 'sync') data = locked_(function () { return sync_(request.token, payload); });
+    else if (request.action === 'studentResetState') data = studentResetState_(request.token, payload);
     else if (request.action === 'teacherSummary') data = summary_(request.token, payload);
     else if (request.action === 'examHistory') data = history_(request.token, payload);
     else if (request.action === 'teacherOptions') data = teacherOptions_(request.token, payload);
@@ -76,6 +81,7 @@ function doPost(e) {
     else if (request.action === 'adminTeachers') data = adminTeachers_(request.token, payload);
     else if (request.action === 'adminCreateTeacher') data = locked_(function () { return adminCreateTeacher_(request.token, payload); });
     else if (request.action === 'adminUpdateTeacher') data = locked_(function () { return adminUpdateTeacher_(request.token, payload); });
+    else if (request.action === 'adminResetStudent') data = locked_(function () { return adminResetStudent_(request.token, payload); });
     else fail_('INVALID_REQUEST', 'ไม่รองรับคำขอนี้');
     return json_({ok: true, data: data});
   } catch (error) {
@@ -219,13 +225,15 @@ function login_(payload) {
   var db = database_(), accounts = accounts_(db), account = accounts[username], credential = account && account.password ? account.password : 'unassigned-account-placeholder';
   var matches = account && account.passwordHash ? equalSecret_(teacherPassword_(password, account.passwordSalt), account.passwordHash) : equalSecret_(password, credential);
   if (!matches || !account || !account.enabled) fail_('INVALID_CREDENTIALS', 'รหัสผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
-  var staff;
+  var staff, resetState;
   if (account.roles.some(function (role) { return role === 'Teacher' || role === 'Admin'; })) staff = teacherOptionsForScope_(teacherScopeFromSession_(db, {account: account, accounts: accounts}), {includeRoster: true});
+  if (account.roles.indexOf('Student') >= 0) resetState = resetStateFor_(resetStates_(readResets_(db).rows), account.id);
   var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''), expiresAt = now + SLH.sessionMs;
   append_(table_(db, SLH.sessions, SLH.sessionHeaders), [[sha_(token), account.id, now, expiresAt, '']]);
   PropertiesService.getScriptProperties().deleteProperty('SLH_RATE_' + sha_(username));
   var response = {token: token, user: publicUser_(account), expiresAt: expiresAt};
   if (staff) response.staff = staff;
+  if (resetState) response.resetState = resetState;
   return response;
 }
 function session_(token, db) {
@@ -266,11 +274,15 @@ function validateTree_(value, depth, budget) {
 function lesson_(value) { return typeof value === 'string' && /^G[1-3]U[1-9][0-9]?L[1-9][0-9]?$/.test(value); }
 function event_(raw, now) {
   if (!plain_(raw) || typeof raw.id !== 'string' || !/^[A-Za-z0-9_.:-]{1,160}$/.test(raw.id) || !lesson_(raw.lessonId) || !plain_(raw.result)) fail_('INVALID_EVENT', 'รูปแบบกิจกรรมไม่ถูกต้อง');
+  if (raw.resetVersion !== undefined && (typeof raw.resetVersion !== 'string' || (raw.resetVersion && !resetId_(raw.resetVersion)))) fail_('INVALID_EVENT', 'รุ่นข้อมูลกิจกรรมไม่ถูกต้อง');
   var stages = {game: ['g1', 'g2', 'g3'], exercise: ['e1', 'e2', 'e3'], onet: ['onet'], simulation: ['simulation'], exam: ['exam']};
   if (!Object.prototype.hasOwnProperty.call(stages, raw.kind) || stages[raw.kind].indexOf(raw.stage) < 0) fail_('INVALID_EVENT', 'ประเภทกิจกรรมไม่ถูกต้อง');
   if (!Number.isSafeInteger(raw.occurredAt) || raw.occurredAt < 0 || raw.occurredAt > now + 300000) fail_('INVALID_EVENT', 'เวลาของกิจกรรมไม่ถูกต้อง');
   validateTree_(raw.result, 0, {count: 0});
   var result = JSON.parse(JSON.stringify(raw.result));
+  // Only the envelope may supply the revision captured when an event was made.
+  // An old browser cannot revive reset work by putting a revision in its result.
+  delete result.resetVersion;
   if (raw.kind === 'exam') {
     if (result.total !== 20 || !Number.isInteger(result.score) || result.score < 0 || result.score > 20 || result.pct !== Math.round(result.score / 20 * 100) || result.passed !== (result.pct >= 60)) fail_('INVALID_EVENT', 'ข้อมูลคะแนนสอบไม่สอดคล้องกัน');
     validateResponses_(result, 20);
@@ -286,8 +298,12 @@ function event_(raw, now) {
     if (!plain_(result.values) || !Array.isArray(result.metrics) || result.metrics.length > 100 || typeof result.summary !== 'string' || result.explored !== true) fail_('INVALID_EVENT', 'ข้อมูลผล Simulation ไม่ถูกต้อง');
   }
   result.clientReported = true;
+  if (raw.resetVersion) result.resetVersion = raw.resetVersion;
   if (JSON.stringify(result).length > 45000) fail_('INVALID_EVENT', 'ข้อมูลกิจกรรมมีขนาดใหญ่เกินไป');
-  return {id: raw.id, lessonId: raw.lessonId, kind: raw.kind, stage: raw.stage, occurredAt: raw.occurredAt, result: result};
+  var event = {id: raw.id, lessonId: raw.lessonId, kind: raw.kind, stage: raw.stage, occurredAt: raw.occurredAt, result: result};
+  // Keep legacy fingerprints unchanged when the lesson has never been reset.
+  if (raw.resetVersion) event.resetVersion = raw.resetVersion;
+  return event;
 }
 function validateResponses_(result, count) {
   if (!Array.isArray(result.responses) || result.responses.length !== count) fail_('INVALID_EVENT', 'ข้อมูลคำตอบไม่ครบ');
@@ -302,10 +318,14 @@ function sync_(token, payload) {
   var db = database_(), session = session_(token, db), actor = session.account.id;
   if (!Array.isArray(payload.events) || !payload.events.length || payload.events.length > SLH.maxBatch) fail_('INVALID_REQUEST', 'ส่งกิจกรรมได้ครั้งละ 1–100 รายการ');
   var now = Date.now(), events = payload.events.map(function (raw) { return event_(raw, now); });
+  var resetState = resetStateFor_(resetStates_(readResets_(db).rows), actor);
   var table = readTable_(db, SLH.events, SLH.eventHeaders), sheet = table.sheet, existing = Object.create(null);
-  table.rows.forEach(function (row) { if (String(row[2]) === actor) existing[String(row[0])] = String(row[10]); });
-  var newRows = [], acknowledged = [], duplicates = 0;
+  table.rows.forEach(function (row) {
+    if (String(row[2]) === actor && String(row[3]) === SLH.year && currentEvent_(eventFromRow_(row), resetState)) existing[String(row[0])] = String(row[10]);
+  });
+  var newRows = [], acknowledged = [], discarded = [], duplicates = 0;
   events.forEach(function (event) {
+    if (!currentEvent_(event, resetState)) { acknowledged.push(event.id); discarded.push(event.id); return; }
     var key = sha_(actor + '\u001f' + event.id), fingerprint = sha_(canonical_(event));
     if (existing[key]) {
       if (existing[key] !== fingerprint) fail_('EVENT_CONFLICT', 'รหัสกิจกรรมเดิมมีข้อมูลต่างกัน กรุณาติดต่อครู');
@@ -318,7 +338,7 @@ function sync_(token, payload) {
   });
   // All records are validated and conflicts checked before a single batch append.
   append_(sheet, newRows);
-  return {acknowledged: acknowledged, accepted: newRows.length, duplicates: duplicates, clientReported: true};
+  return {acknowledged: acknowledged, discarded: discarded, accepted: newRows.length, duplicates: duplicates, clientReported: true, resetState: resetState};
 }
 function teacher_(session) {
   if (!session.account.roles.some(function (role) { return role === 'Teacher' || role === 'Admin'; })) fail_('FORBIDDEN', 'เฉพาะครูหรือผู้ดูแลระบบ');
@@ -332,6 +352,39 @@ function eventFromRow_(r) {
   var result; try { result = JSON.parse(r[9]); } catch (_) { fail_('DATA_ERROR', 'ข้อมูลกิจกรรมไม่สมบูรณ์ กรุณาติดต่อผู้ดูแล'); }
   if (!plain_(result)) fail_('DATA_ERROR', 'ข้อมูลกิจกรรมไม่สมบูรณ์ กรุณาติดต่อผู้ดูแล');
   return {id: String(r[1]), studentId: String(r[2]), lessonId: String(r[4]), kind: String(r[5]), stage: String(r[6]), occurredAt: recordedTime_(r[7]), receivedAt: recordedTime_(r[8]), result: result, clientReported: true};
+}
+function resetId_(value) { return typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$/.test(value); }
+function readResets_(db, required) {
+  // Existing installations keep working before the additive setup migration.
+  // Only reset writes require the new table. A present but malformed log fails closed.
+  if (!required && !db.getSheetByName(SLH.resets) && PropertiesService.getScriptProperties().getProperty('SLH_RESETS_READY') !== '1') return {sheet: null, rows: []};
+  var table = readTable_(db, SLH.resets, SLH.resetHeaders), ids = new Set();
+  table.rows.forEach(function (row) {
+    if (!resetId_(row[0]) || ids.has(row[0]) || typeof row[1] !== 'string' || !row[1] || row[1].length > 120 || !/^\d{4}$/.test(String(row[2])) || typeof row[3] !== 'string' || (row[3] && !lesson_(row[3])) || !Number.isSafeInteger(row[4]) || row[4] < 0 || typeof row[5] !== 'string' || !row[5] || row[5].length > 120) fail_('DATA_ERROR', 'ข้อมูลการรีเซ็ตไม่สมบูรณ์ กรุณาติดต่อผู้ดูแล');
+    ids.add(row[0]);
+  });
+  return table;
+}
+function resetStates_(rows) {
+  var states = {sequence: rows.length, students: Object.create(null)};
+  rows.forEach(function (row) {
+    if (String(row[2]) !== SLH.year) return;
+    var id = String(row[1]), state = states.students[id];
+    if (!state) state = states.students[id] = {sequence: rows.length, all: '', lessons: Object.create(null)};
+    // Append order, not client time or wall-clock ties, determines the generation.
+    if (row[3]) state.lessons[row[3]] = row[0];
+    else { state.all = row[0]; state.lessons = Object.create(null); }
+  });
+  return states;
+}
+function resetStateFor_(states, id) { return states.students[id] || {sequence: states.sequence, all: '', lessons: Object.create(null)}; }
+function resetVersion_(state, lessonId) { return state.lessons[lessonId] || state.all || ''; }
+function currentEvent_(event, state) { return (event.result.resetVersion === undefined ? '' : event.result.resetVersion) === resetVersion_(state, event.lessonId); }
+function studentResetState_(token, payload) {
+  var db = database_(), session = session_(token, db);
+  if (session.account.roles.indexOf('Student') < 0) fail_('FORBIDDEN', 'เฉพาะนักเรียน');
+  allowedFields_(payload, []);
+  return {resetState: resetStateFor_(resetStates_(readResets_(db).rows), session.account.id)};
 }
 function recordedTime_(value) { return (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value)) ? Number(value) : null; }
 function newerEvent_(at, id, previous) {
@@ -410,7 +463,7 @@ function rosterForScope_(scope, payload) {
   return {rows: selected.slice(page.offset, page.offset + page.limit).map(publicStudent_), total: selected.length, offset: page.offset, limit: page.limit, academicYear: SLH.year, term: scope.term};
 }
 function aggregateResults_(db, selected, lessonId, allowedStudents) {
-  var students = Object.create(null), groups = Object.create(null), lessons = new Set();
+  var students = Object.create(null), groups = Object.create(null), lessons = new Set(), resets = resetStates_(readResets_(db).rows);
   selected.forEach(function (account) { students[account.id] = account; });
   function group(account, id) {
     var key = account.id + '\u001f' + id;
@@ -421,10 +474,14 @@ function aggregateResults_(db, selected, lessonId, allowedStudents) {
   // Single bulk scan; no per-student or per-lesson spreadsheet calls.
   readTable_(db, SLH.events, SLH.eventHeaders).rows.forEach(function (r) {
     if (String(r[3]) !== SLH.year) return;
-    if (allowedStudents[String(r[2])]) lessons.add(String(r[4]));
-    var account = students[String(r[2])];
+    var studentId = String(r[2]);
+    if (!allowedStudents[studentId]) return;
+    var event = eventFromRow_(r);
+    if (!currentEvent_(event, resetStateFor_(resets, studentId))) return;
+    lessons.add(event.lessonId);
+    var account = students[studentId];
     if (!account || (lessonId && String(r[4]) !== lessonId)) return;
-    var event = eventFromRow_(r), row = group(account, event.lessonId), timeKey = event.occurredAt, previous = row._times[event.stage];
+    var row = group(account, event.lessonId), timeKey = event.occurredAt, previous = row._times[event.stage];
     seenStudents.add(account.id);
     if (event.kind === 'exam') {
       row.exam.attempts++;
@@ -458,14 +515,16 @@ function summary_(token, payload) {
 function studentResults_(token, payload) {
   var scope = teacherScope_(token), studentId = String(payload.studentId || ''), lessonId = String(payload.lessonId || '');
   if (!lesson_(lessonId)) fail_('INVALID_REQUEST', 'กรุณาเลือกบทเรียน');
-  var student = allowStudent_(scope, studentId), result = aggregateResults_(scope.db, [student], lessonId, scope.students);
+  var student = allowStudent_(scope, studentId), selected = Object.create(null); selected[student.id] = student;
+  var result = aggregateResults_(scope.db, [student], lessonId, selected);
   return {student: publicStudent_(student), result: result.rows[0], academicYear: SLH.year, term: scope.term};
 }
 function history_(token, payload) {
   var scope = teacherScope_(token), studentId = String(payload.studentId || ''), lessonId = String(payload.lessonId || ''), page = page_(payload);
   if (lessonId && !lesson_(lessonId)) fail_('INVALID_REQUEST', 'ไม่พบรายการที่ต้องการ');
   allowStudent_(scope, studentId);
-  var rows = readTable_(scope.db, SLH.events, SLH.eventHeaders).rows.filter(function (r) { return String(r[2]) === studentId && String(r[3]) === SLH.year && String(r[5]) === 'exam' && (!lessonId || String(r[4]) === lessonId); }).map(eventFromRow_);
+  var resetState = resetStateFor_(resetStates_(readResets_(scope.db).rows), studentId);
+  var rows = readTable_(scope.db, SLH.events, SLH.eventHeaders).rows.filter(function (r) { return String(r[2]) === studentId && String(r[3]) === SLH.year && String(r[5]) === 'exam' && (!lessonId || String(r[4]) === lessonId); }).map(eventFromRow_).filter(function (event) { return currentEvent_(event, resetState); });
   rows.sort(function (a, b) { return (b.occurredAt === null ? -Infinity : b.occurredAt) - (a.occurredAt === null ? -Infinity : a.occurredAt) || b.id.localeCompare(a.id); });
   return {rows: rows.slice(page.offset, page.offset + page.limit), total: rows.length, offset: page.offset, limit: page.limit, academicYear: SLH.year, term: scope.term, clientReported: true};
 }
@@ -473,6 +532,23 @@ function adminScope_(token) {
   var scope = teacherScope_(token);
   if (!scope.isAdmin) fail_('FORBIDDEN', 'เฉพาะผู้ดูแลระบบ');
   return scope;
+}
+function adminResetStudent_(token, payload) {
+  var scope = adminScope_(token);
+  allowedFields_(payload, ['requestId', 'studentId', 'lessonId', 'confirmStudentId']);
+  if (!resetId_(payload.requestId) || typeof payload.studentId !== 'string' || !payload.studentId || payload.studentId.length > 120 || typeof payload.lessonId !== 'string' || (payload.lessonId && !lesson_(payload.lessonId)) || payload.confirmStudentId !== payload.studentId) fail_('INVALID_REQUEST', 'กรุณาเลือกนักเรียนและบทเรียน แล้วยืนยันรหัสนักเรียนให้ตรงกัน');
+  var student = allowStudent_(scope, payload.studentId), table = readResets_(scope.db, true), found = -1;
+  table.rows.some(function (row, index) { if (row[0] === payload.requestId) { found = index; return true; } return false; });
+  if (found >= 0) {
+    var previous = table.rows[found];
+    if (previous[1] !== student.id || String(previous[2]) !== SLH.year || previous[3] !== payload.lessonId) fail_('RESET_CONFLICT', 'รหัสคำขอรีเซ็ตเดิมมีขอบเขตต่างกัน กรุณาเริ่มใหม่');
+    // A retry must return the original operation, never reset work created later.
+    return {resetId: previous[0], studentId: student.id, lessonId: previous[3], resetAt: previous[4], duplicate: true, resetState: resetStateFor_(resetStates_(table.rows.slice(0, found + 1)), student.id)};
+  }
+  var row = [payload.requestId, student.id, SLH.year, payload.lessonId, Date.now(), scope.session.account.id];
+  append_(table.sheet, [row]);
+  table.rows.push(row);
+  return {resetId: row[0], studentId: student.id, lessonId: row[3], resetAt: row[4], duplicate: false, resetState: resetStateFor_(resetStates_(table.rows), student.id)};
 }
 function publicTeacher_(account, term) {
   var settings = account.teacherSettings;

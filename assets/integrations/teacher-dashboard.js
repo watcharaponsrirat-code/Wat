@@ -33,15 +33,15 @@
     <div data-staff-view="teacher"><form data-teacher-filters class="staffFlex"><label class="staffField">ชั้น<select name="grade" aria-label="ชั้น" disabled></select></label><label class="staffField">ห้อง<select name="room" aria-label="ห้อง" disabled></select></label><label class="staffField">ค้นหานักเรียน<input name="student" placeholder="ชื่อหรือ Username" maxlength="120" autocomplete="off"></label><button type="submit" class="pixelBtn blue" data-roster-search disabled>ค้นหา</button>${button('data-teacher-refresh', 'โหลดห้องใหม่')}</form><p data-teacher-message role="status"></p><div data-teacher-rows class="staffList"></div><div class="staffPager" data-roster-pager hidden>${button('data-teacher-prev', 'ก่อนหน้า')}<span data-teacher-page></span>${button('data-teacher-next', 'ถัดไป')}</div><section data-student-results class="staffSection" hidden></section></div>
     ${isAdmin ? `<div data-staff-view="admin" hidden><h3>ผู้สอนในเทอมปัจจุบัน</h3><p>กำหนดได้หลายห้อง และแต่ละห้องมีผู้สอนได้หลายคน การเปลี่ยนสิทธิ์ไม่ลบผลนักเรียน</p><details class="callout"><summary>เพิ่มบัญชีครู</summary><form data-admin-create class="staffFlex staffSection"><label class="staffField">Username<input name="username" required maxlength="120" autocomplete="off"></label><label class="staffField">ชื่อผู้สอน<input name="name" required maxlength="200" autocomplete="off"></label><label class="staffField">รหัสผ่านเริ่มต้น<input name="password" type="password" required minlength="8" maxlength="200" autocomplete="new-password"></label><button type="submit" class="pixelBtn blue">เพิ่มครู</button></form></details><p data-admin-message role="status"></p>${button('data-admin-refresh', 'โหลดรายชื่อใหม่')}<div data-admin-rows class="staffList staffSection"></div><div class="staffPager" data-admin-pager hidden>${button('data-admin-prev', 'ก่อนหน้า')}<span data-admin-page></span>${button('data-admin-next', 'ถัดไป')}</div><section data-admin-editor class="staffSection" hidden></section></div>` : ''}`;
     (root.querySelector('.dashShell') || root).appendChild(panel);
-    const $ = selector => panel.querySelector(selector), form = $('[data-teacher-filters]'), pending = new Map();
+    const $ = selector => panel.querySelector(selector), form = $('[data-teacher-filters]'), pending = new Map(), resetRequests = new Map();
     let options = null, rosterOffset = 0, rosterRows = [], rosterKey = '', selected = null, adminOffset = 0, adminRows = [], adminLoaded = false;
     let bootstrap = api.takeTeacherBootstrap?.() || null;
-    let optionId = 0, rosterId = 0, resultId = 0, historyId = 0, adminId = 0, editorId = 0, creating = false;
+    let optionId = 0, rosterId = 0, resultId = 0, historyId = 0, adminId = 0, editorId = 0, resetId = 0, creating = false;
     const alive = () => panel.isConnected;
     // Deduplicate only in-flight requests; a later read always rechecks permissions at the server.
-    function call(action, payload = {}) { const key = action + JSON.stringify(payload); if (pending.has(key)) return pending.get(key); const task = Promise.resolve().then(() => api[action](payload)); pending.set(key,task); task.then(() => pending.delete(key), () => pending.delete(key)); return task; }
+    function call(action, payload = {}) { const key = action + JSON.stringify(payload); if (pending.has(key)) return pending.get(key); const task = Promise.resolve().then(() => api[action](payload)); pending.set(key,task); const done = () => { if (pending.get(key) === task) pending.delete(key); }; task.then(done,done); return task; }
     function errorAt(target, error, retry, attr) { target.textContent = error?.message || 'อ่านข้อมูลไม่สำเร็จ'; const b = document.createElement('button'); b.type = 'button'; b.className = 'pixelBtn soft'; b.setAttribute(attr,''); b.textContent = 'ลองใหม่'; b.onclick = () => retry(); target.appendChild(document.createTextNode(' ')); target.appendChild(b); }
-    function clearStudent() { ++resultId; ++historyId; selected = null; $('[data-student-results]').hidden = true; $('[data-student-results]').textContent = ''; }
+    function clearStudent() { ++resultId; ++historyId; ++resetId; selected = null; $('[data-student-results]').hidden = true; $('[data-student-results]').textContent = ''; }
     function clearRoster() { ++rosterId; rosterRows = []; rosterKey = ''; $('[data-teacher-rows]').textContent = ''; $('[data-roster-pager]').hidden = true; clearStudent(); }
     function updateRooms(preferred) { const rooms = (options?.rooms || []).filter(r => Number(r.grade) === Number(form.elements.grade.value)); form.elements.room.innerHTML = rooms.map(r => `<option value="${esc(r.room)}">ห้อง ${esc(r.room)}</option>`).join(''); if (rooms.some(r => String(r.room) === String(preferred))) form.elements.room.value = preferred; form.elements.room.disabled = !rooms.length; $('[data-roster-search]').disabled = !rooms.length; }
     async function loadOptions() {
@@ -81,13 +81,50 @@
       finally { if (ticket === rosterId && alive()) $('[data-roster-search]').disabled = false; }
     }
     function openStudent(student) {
-      if (!student) return; selected = student; ++resultId; ++historyId;
-      const area = $('[data-student-results]'), lessons = Object.values(context.lessons).filter(l => Number(context.meta?.[l.id]?.grade ?? l.id.match(/^G(\d)/)?.[1]) === Number(student.grade));
-      area.hidden = false; area.innerHTML = `${button('data-student-close','กลับรายชื่อนักเรียน')}<h3 class="staffSection">${esc(student.name)} <small>(${esc(student.username || student.id || student.studentId)})</small></h3><p>ม.${value(student.grade)}/${value(student.room)} • เลขที่ ${value(student.number)}</p><div class="staffFlex"><label class="staffField">บทเรียน<select name="lessonId" aria-label="บทเรียน">${lessons.map(l => `<option value="${esc(l.id)}">${esc(l.title)}</option>`).join('')}</select></label>${button('data-result-refresh','โหลดผลใหม่')}</div><div data-result-body class="staffSection" role="status"></div><section data-teacher-history class="staffSection" hidden></section>`;
-      area.querySelector('[name=lessonId]').onchange = loadResult; $('[data-result-refresh]').onclick = loadResult;
+      if (!student) return; selected = student; ++resultId; ++historyId; ++resetId;
+      const area = $('[data-student-results]'), allLessons = Object.values(context.lessons), inGrade = l => Number(context.meta?.[l.id]?.grade ?? l.id.match(/^G(\d)/)?.[1]) === Number(student.grade);
+      const lessons = allLessons.filter(inGrade).concat(isAdmin ? allLessons.filter(l => !inGrade(l)) : []);
+      area.hidden = false; area.innerHTML = `${button('data-student-close','กลับรายชื่อนักเรียน')}<h3 class="staffSection">${esc(student.name)} <small>(${esc(student.username || student.id || student.studentId)})</small></h3><p>ม.${value(student.grade)}/${value(student.room)} • เลขที่ ${value(student.number)}</p><div class="staffFlex"><label class="staffField">บทเรียน<select name="lessonId" aria-label="บทเรียน">${lessons.map(l => `<option value="${esc(l.id)}">${esc(l.title)}</option>`).join('')}</select></label>${button('data-result-refresh','โหลดผลใหม่')}</div><div data-result-body class="staffSection" role="status"></div>${isAdmin ? `<section class="staffSection" data-admin-student-reset>${button('data-student-reset-open','รีเซ็ตคะแนนนักเรียนคนนี้')}<div data-student-reset-confirm hidden></div><p data-student-reset-message role="status"></p></section>` : ''}<section data-teacher-history class="staffSection" hidden></section>`;
+      area.querySelector('[name=lessonId]').onchange = () => { closeReset(); void loadResult(); }; $('[data-result-refresh]').onclick = () => { closeReset(); void loadResult(); };
+      if (isAdmin) $('[data-student-reset-open]').onclick = openReset;
       $('[data-student-close]').onclick = () => { clearStudent(); form.scrollIntoView?.({block:'start'}); };
       area.scrollIntoView?.({block:'start'});
       if (lessons.length) void loadResult(); else $('[data-result-body]').textContent = 'ไม่มีข้อมูลบทเรียนสำหรับชั้นนี้';
+    }
+    function closeReset() {
+      ++resetId; const area = $('[data-student-reset-confirm]'), message = $('[data-student-reset-message]');
+      if (area) { area.hidden = true; area.textContent = ''; } if (message) message.textContent = '';
+    }
+    function openReset() {
+      if (!isAdmin || !selected) return;
+      closeReset(); const ticket = resetId, student = selected, studentId = String(student.id || student.studentId || student.username), lessonSelect = $('[data-student-results] [name=lessonId]'), lessonId = lessonSelect.value, lessonTitle = lessonSelect.selectedOptions[0]?.textContent || lessonId;
+      const area = $('[data-student-reset-confirm]'), message = $('[data-student-reset-message]'); let saving = false;
+      area.hidden = false; area.innerHTML = `<form class="callout staffSection" data-student-reset-form><h4>ยืนยันรีเซ็ตคะแนน</h4><p>นักเรียน: <strong>${esc(student.name)} (${esc(studentId)})</strong> • ม.${value(student.grade)}/${value(student.room)}</p><label class="staffField">ขอบเขตที่ต้องการรีเซ็ต<select name="resetScope" aria-label="ขอบเขตที่ต้องการรีเซ็ต">${lessonId ? `<option value="lesson">บทเรียนนี้: ${esc(lessonTitle)}</option>` : ''}<option value="all">ทุกบทเรียนของนักเรียนคนนี้</option></select></label><p data-reset-scope-description></p><p>คะแนนเกม แบบฝึกหัด O-NET ผล Simulation สอบท้ายบท และความคืบหน้าในขอบเขตที่เลือกจะเริ่มใหม่ บัญชีนักเรียนยังใช้งานได้ตามเดิม</p><label class="staffField">พิมพ์ Username ${esc(studentId)} เพื่อยืนยัน<input name="confirmStudentId" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="120" required></label><div class="staffFlex staffSection"><button type="submit" class="pixelBtn blue" data-student-reset-submit disabled>ยืนยันรีเซ็ตคะแนน</button>${button('data-student-reset-cancel','ยกเลิก')}</div></form>`;
+      const resetForm = area.querySelector('form'), submit = area.querySelector('[data-student-reset-submit]'), confirm = resetForm.elements.confirmStudentId, scope = resetForm.elements.resetScope;
+      function update() { submit.disabled = saving || confirm.value !== studentId; area.querySelector('[data-reset-scope-description]').textContent = scope.value === 'all' ? 'จะรีเซ็ตทุกบทเรียนของนักเรียนคนนี้' : 'จะรีเซ็ตเฉพาะบทเรียน: ' + lessonTitle; }
+      confirm.oninput = update; scope.onchange = () => { confirm.value = ''; message.textContent = ''; update(); };
+      area.querySelector('[data-student-reset-cancel]').onclick = closeReset;
+      update(); confirm.focus();
+      resetForm.onsubmit = async e => {
+        e.preventDefault(); if (saving || ticket !== resetId || selected !== student || confirm.value !== studentId) return;
+        const resetLesson = scope.value === 'all' ? '' : lessonId, resetKey = studentId + '\u001f' + resetLesson;
+        // Keep uncertain requests across closing/reopening the same student's panel too.
+        if (!resetRequests.has(resetKey)) resetRequests.set(resetKey,window.crypto?.randomUUID?.() || 'slh-reset-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
+        const payload = {requestId:resetRequests.get(resetKey),studentId,lessonId:resetLesson,confirmStudentId:confirm.value}; saving = true;
+        // Freeze the displayed target while the server processes this exact request.
+        const enabled = [...panel.querySelectorAll('button,input,select')].filter(el => !el.disabled); enabled.forEach(el => { el.disabled = true; });
+        ++resultId; ++historyId; $('[data-teacher-history]').hidden = true; $('[data-teacher-history]').textContent = '';
+        message.textContent = 'กำลังรีเซ็ตคะแนน…'; let succeeded = false;
+        try { await api.adminResetStudent(payload); succeeded = ticket === resetId && selected === student && alive(); }
+        catch (error) { if (ticket === resetId && selected === student && alive()) message.textContent = (error?.message || 'รีเซ็ตคะแนนไม่สำเร็จ') + ' กดยืนยันอีกครั้งเพื่อลองใหม่ด้วยคำขอเดิม'; }
+        finally { saving = false; enabled.forEach(el => { if (el.isConnected) el.disabled = false; }); if (ticket === resetId && alive()) { $('[data-result-refresh]').disabled = false; update(); } }
+        if (!succeeded) return;
+        if (resetRequests.get(resetKey) === payload.requestId) resetRequests.delete(resetKey);
+        closeReset(); message.textContent = 'รีเซ็ตคะแนนของ ' + studentId + (payload.lessonId ? ' เฉพาะบทเรียน ' + lessonTitle : ' ทุกบทเรียน') + ' แล้ว';
+        // Reads started before the reset may still resolve; do not reuse their snapshots.
+        for (const key of pending.keys()) if (key.startsWith('studentResults') || key.startsWith('examHistory')) pending.delete(key);
+        await loadResult();
+      };
     }
     function simulationDetails(simulation, lessonId) {
       if (!simulation) return '<p>ยังไม่ทำ</p>';

@@ -14,7 +14,7 @@ for(const block of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){
     : src?await readFile(new URL('../'+src[1],import.meta.url),'utf8'):block[2]);
 }
 const decode=s=>s.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
-export function harness(storage=new Map()){
+export function harness(storage=new Map(),options={}){
   let markup='',elements=[];
   const stub=()=>({textContent:'',value:'',classList:{add(){},remove(){},toggle(){}},setAttribute(){},focus(){},scrollIntoView(){},addEventListener(){},querySelector(){return stub()},querySelectorAll(){return []}});
   function matches(el,selector){
@@ -34,7 +34,7 @@ export function harness(storage=new Map()){
   }};
   const document={querySelector(selector){if(selector==='#app')return app;if(selector==='.arcade')return markup.includes('data-arcade-type')?root:null;return selectAll(selector)[0]||stub()},querySelectorAll:selectAll,addEventListener(){}};
   const context=vm.createContext({window:{scrollTo(){}},document,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>0,clearTimeout(){}});
-  scripts.forEach(source=>vm.runInContext(source,context));
+  scripts.forEach(source=>vm.runInContext(options.exposeProgress ? source.replace('window.__SLH_QA__=', 'window.__SLH_PROGRESS_TEST__={getP,saveP,gameAPI,session:()=>SESSION};window.__SLH_QA__=') : source,context));
   const qa=context.window.__SLH_QA__;
   function click(selector,value,event='click'){
     const el=selectAll(selector)[0];assert(el,'Missing control '+selector);assert(!el.disabled,'Disabled control '+selector);

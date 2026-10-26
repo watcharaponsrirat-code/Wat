@@ -7,7 +7,7 @@ const endpoint = 'https://script.google.com/macros/s/test-only-endpoint/exec';
 const plain = value => JSON.parse(JSON.stringify(value));
 const response = data => ({ok:true,json:async () => ({ok:true,data})});
 const denied = code => ({ok:true,json:async () => ({ok:false,error:{code,message:'test denial'}})});
-function harness(storage = new Map()) {
+export function harness(storage = new Map()) {
   const calls = [], timers = new Map(), listeners = new Map();
   let timerId = 0, eventId = 0, rejectStorage = false, send;
   const localStorage = {

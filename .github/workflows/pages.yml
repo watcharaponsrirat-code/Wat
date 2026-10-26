@@ -40,6 +40,7 @@ jobs:
           node --test tests/performance-tools.test.mjs tests/performance-summary.test.mjs
           node --test tests/leaf-surface-cache.test.mjs tests/simulation-startup-profile.test.mjs
           node --test tests/google-sheets-server.test.mjs tests/google-sheets-client.test.mjs tests/google-sheets-privacy.test.mjs
+          node --test tests/google-sheets-reset.test.mjs tests/student-reset-client.test.mjs tests/student-reset-progress.test.mjs
       - name: Prepare static site
         run: |
           node scripts/build-site.mjs

@@ -17,7 +17,7 @@ test('setup is additive, idempotent, validates 907, and never modifies the sourc
   assert.equal(h.getFlushes(), 2);
   assert.equal(JSON.stringify([h.students.rows, h.staff.rows]), original);
   assert.equal(h.students.writes + h.staff.writes, 0);
-  assert.deepEqual([...h.sheets.keys()], ['Students', 'Staff', 'SLH_Events', 'SLH_Sessions', 'SLH_Teachers']);
+  assert.deepEqual([...h.sheets.keys()], ['Students', 'Staff', 'SLH_Events', 'SLH_Sessions', 'SLH_Teachers', 'SLH_Resets']);
   const bad = harness({count: 906, setup: false});
   assert.throws(() => bad.context.setup(), /907/);
   assert.equal(bad.sheets.size, 2, 'validation precedes app tab creation');
@@ -37,7 +37,7 @@ test('login keeps original IDs and display zeroes, grants roles server-side and 
   assert.equal(h.call('sync', {events: [exam('forged', h.now())]}, 'a'.repeat(64)).error.code, 'UNAUTHENTICATED');
   assert.equal(h.call('login', {username: 'missing', password: 'invalid'}).error.code, 'INVALID_CREDENTIALS');
   assert.equal(h.call('login', {username: 'fixture0001', password: 'invalid'}).error.code, 'INVALID_CREDENTIALS');
-  assert.deepEqual(Object.keys(JSON.parse(h.context.doGet().text).data).sort(), ['protocol', 'service']);
+  assert.deepEqual(Object.keys(JSON.parse(h.context.doGet().text).data).sort(), ['capabilities', 'protocol', 'service']);
 });
 
 test('staff login bootstraps only its first authorized roster without rereading accounts or scanning scores', () => {
