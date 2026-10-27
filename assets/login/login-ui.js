@@ -8,9 +8,9 @@
     const button = form.querySelector('[data-action="login"]');
     if (!button || button.disabled) return;
     button.setAttribute('aria-busy', 'true');
-    // The existing authentication is synchronous; never delay or replace it.
+    // Async authentication owns the disabled/busy state until it completes.
     queueMicrotask(() => {
-      if (button.isConnected) button.removeAttribute('aria-busy');
+      if (button.isConnected && !button.disabled) button.removeAttribute('aria-busy');
     });
   }
   app.addEventListener('submit', event => {

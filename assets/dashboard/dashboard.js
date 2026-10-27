@@ -2,6 +2,20 @@
 (() => {
   'use strict';
   const art = 'assets/dashboard/';
+  let prepared = false;
+  const preparedImages = [];
+  function prepare() {
+    if (prepared || typeof Image !== 'function' || window.navigator?.connection?.saveData) return;
+    prepared = true;
+    // Public artwork only. Start alongside login, never wait for it or retain account data.
+    for (const name of ['wood-sign','student-welcome','flask','books','notebook','gamepad']) {
+      try {
+        const image = new Image(); image.decoding = 'async'; image.fetchPriority = 'low';
+        image.src = art + name + '-v1.webp'; preparedImages.push(image);
+        image.decode?.().catch(() => {});
+      } catch { /* A failed artwork warmup must not interrupt login. */ }
+    }
+  }
   const shapes = {
     home: '<path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/>',
     lessons: '<path d="M12 5C8 2 4 3 2 4v16c4-1 7-1 10 1 3-2 6-2 10-1V4c-2-1-6-2-10 1Zm0 0v16"/>',
@@ -30,7 +44,17 @@
     const progress = ctx.stats.total ? Math.round(ctx.stats.done / ctx.stats.total * 100) : 0;
     return {records, focus, progress};
   }
+  function header() {
+    return `<div class="dashEnvironment" aria-hidden="true"><img class="dashCloud" src="assets/login/cloud.svg" alt="" width="240" height="140"><i class="dashSunlight"></i></div>
+      <div class="dashShell">
+        <header class="dashHeader">
+          <div class="dashSchoolSign"><img src="assets/branding/33852269be64c916.png" width="600" height="956" alt="ตราโรงเรียนห้องสอนศึกษา"><p>โรงเรียนห้องสอนศึกษา<span>ในพระอุปถัมภ์ฯ</span></p></div>
+          <div class="dashBrandSign"><img src="assets/login/flask.svg" width="80" height="100" alt="" aria-hidden="true"><div><b>SCIENCE</b><span>LEARNING HUB</span></div></div>
+          <button type="button" class="dashLogout" data-action="logout">${icon('logout')}<span>ออกจากระบบ</span></button>
+        </header>`;
+  }
   function render(ctx) {
+    if (ctx.staffView) return `<main class="dashboardPage">${header()}</div></main>`;
     const {focus, progress} = model(ctx), e = ctx.escape, p = focus.p, id = focus.lesson.id;
     const exerciseCount = ['e1','e2','e3'].filter(s => p.ex[s].done).length;
     const gameCount = ['g1','g2','g3'].filter(s => p.games[s].done).length;
@@ -46,13 +70,7 @@
     const image = (name, cls = '', lazy = false) => `<img class="${cls}" src="${art}${name}-v1.webp" width="384" height="384" alt="" aria-hidden="true" decoding="async"${lazy ? ' loading="lazy"' : ''}>`;
     const menu = (color, name, title, subtitle, hook) => `<button type="button" class="dashMenu quick dashMenu${color}" ${hook}>${image(name, '', true)}<span class="dashMenuCopy"><b>${title}</b><span>${subtitle}</span></span>${icon('arrow','dashMenuArrow')}</button>`;
     return `<main class="dashboardPage">
-      <div class="dashEnvironment" aria-hidden="true"><img class="dashCloud" src="assets/login/cloud.svg" alt="" width="240" height="140"><i class="dashSunlight"></i></div>
-      <div class="dashShell">
-        <header class="dashHeader">
-          <div class="dashSchoolSign"><img src="assets/branding/33852269be64c916.png" width="600" height="956" alt="ตราโรงเรียนห้องสอนศึกษา"><p>โรงเรียนห้องสอนศึกษา<span>ในพระอุปถัมภ์ฯ</span></p></div>
-          <div class="dashBrandSign"><img src="assets/login/flask.svg" width="80" height="100" alt="" aria-hidden="true"><div><b>SCIENCE</b><span>LEARNING HUB</span></div></div>
-          <button type="button" class="dashLogout" data-action="logout">${icon('logout')}<span>ออกจากระบบ</span></button>
-        </header>
+      ${header()}
         <section class="dashHud" aria-label="ข้อมูลผู้เรียน">
           <div class="dashIdentity"><div class="dashAvatar"><img src="${art}student-welcome-v1.webp" width="800" height="665" alt="ภาพตัวแทนนักเรียน Voxel"></div><div><strong data-dashboard-name>${e(ctx.user.name || ctx.user.id)}</strong><span data-dashboard-grade>${ctx.user.teacher ? 'ครูผู้สอน' : 'นักเรียนชั้น ม.' + e(String(ctx.user.grade))}</span></div></div>
           <div class="dashStat">${icon('results')}<div><span>ความก้าวหน้า</span><strong data-dashboard-progress>${progress}%</strong><div class="dashTrack" aria-hidden="true"><span style="width:${progress}%"></span></div></div></div>
@@ -88,7 +106,7 @@
   }
   function attach(app, ctx) {
     // DOM-only listeners; the application still owns authentication, progression and resume.
-    if (!app.querySelector) return;
+    if (ctx.staffView || !app.querySelector) return;
     const root = app.querySelector('.dashboardPage');
     const dialog = root.querySelector('.dashExerciseDialog');
     const form = dialog.querySelector('form');
@@ -114,5 +132,5 @@
       replacement.observe(app, {childList:true});
     }
   }
-  window.SLH_DASHBOARD = {render, attach};
+  window.SLH_DASHBOARD = {render, attach, prepare};
 })();

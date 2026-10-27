@@ -23,7 +23,8 @@ const demoLogin=login
 assert.equal(demoLogin.replace(/\r\n/g,'\n'),previousLogin.replace(/\r\n/g,'\n'),'Existing login content, design and IDs are unchanged apart from explicit live-account defaults and notice');
 for(const file of ['assets/login/login-ui.js','assets/login/login.css']){
   const content=await readFile(new URL('../'+file,import.meta.url),'utf8');
-  assert.equal(content.replace(/\r\n/g,'\n'),(await git(['show',baseline+':'+file])).replace(/\r\n/g,'\n'),'Login presentation file remains unchanged: '+file);
+  const preserved=content.replace('// Async authentication owns the disabled/busy state until it completes.','// The existing authentication is synchronous; never delay or replace it.').replace('button.isConnected && !button.disabled','button.isConnected');
+  assert.equal(preserved.replace(/\r\n/g,'\n'),(await git(['show',baseline+':'+file])).replace(/\r\n/g,'\n'),'Login presentation remains unchanged apart from keeping busy visible during async authentication: '+file);
 }
 for(const hook of ['id="loginForm"','id="loginUser"','id="loginPass"','id="loginMsg"','data-action="login"','data-login-password','data-login-support'])assert(login.includes(hook),'Preserve/add hook '+hook);
 assert(login.includes('assets/branding/33852269be64c916.png'),'The genuine existing school crest is required');
