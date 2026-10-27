@@ -1,0 +1,96 @@
+/* Backgrounds for the lab and game selectors only. Reuse cached adventure art. */
+body:has(.activitySelectionPage) #app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(#e8fbff12, #174a3726), #72c9ec url('../lesson-selection/lesson-scene-v1.webp') center / cover no-repeat;
+}
+body:has(.activitySelectionPage--games) #app::before {
+  background-image: linear-gradient(#ecf1ff12, #183e5326), url('../login/voxel-scene-v1.webp');
+}
+.activitySelectionPage {
+  --activity-edge: #d7e7d3;
+  --activity-paper: #f5faed;
+  max-width: 1100px;
+}
+.activitySelectionPage--games {
+  --activity-edge: #e1dcf1;
+  --activity-paper: #f7f4ff;
+}
+.activitySelectionPage .sectionTitle { margin: 16px 0 24px; }
+.activitySelectionPage .woodSign {
+  min-width: 0;
+  width: min(100%, 490px);
+  padding: 28px 30px 32px;
+  border: 0;
+  border-radius: 0;
+  background: url('../dashboard/wood-sign-v1.webp') center / 100% 100% no-repeat;
+  box-shadow: none;
+  filter: drop-shadow(0 6px 4px #193c4640);
+}
+.activitySelectionPage .woodSign::before,
+.activitySelectionPage .woodSign::after { display: none; }
+.activitySelectionPage .woodSign h1 { margin: 0 0 7px; color: #fffbed; }
+.activitySelectionPage .subWood { color: #fffbed; }
+.activitySelectionPage .activityGrades {
+  width: fit-content;
+  max-width: 100%;
+  padding: 12px;
+  border: 2px solid #fff;
+  border-radius: 19px;
+  background: #fffdf3f5;
+  box-shadow: 0 4px 0 #36534a30, 0 8px 20px #163f4326;
+}
+.activitySelectionPage > .panel {
+  display: grid;
+  gap: 20px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.activitySelectionPage > .panel > section {
+  min-width: 0;
+  padding: 22px 26px;
+  border: 2px solid #fffdf3;
+  border-radius: 22px;
+  background: linear-gradient(125deg, #fffefafc, var(--activity-paper));
+  box-shadow: 0 5px 0 #294b4930, 0 12px 26px #143c4426;
+}
+.activitySelectionPage > .panel > section > h2 {
+  margin: 0 0 4px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--activity-edge);
+}
+.activitySelectionPage .activityLesson { border-color: var(--activity-edge); }
+.activitySelectionPage .activityLesson:last-child { padding-bottom: 0; }
+.activitySelectionPage .activityChoices { margin-bottom: 6px; }
+@media (min-aspect-ratio: 1/1) and (min-width: 700px) {
+  body:has(.activitySelectionPage) #app::before {
+    background-image: linear-gradient(#e8fbff12, #174a3726), url('../lesson-selection/lesson-scene-wide-v1.webp');
+  }
+  body:has(.activitySelectionPage--games) #app::before {
+    background-image: linear-gradient(#ecf1ff12, #183e5326), url('../login/voxel-scene-wide-v1.webp');
+  }
+}
+@media (max-width: 600px) {
+  .activitySelectionPage .woodSign { padding: 22px 23px 27px; }
+  .activitySelectionPage .woodSign h1 { font-size: clamp(20px, 5.9vw, 28px); }
+  .activitySelectionPage .subWood { font-size: 12px; }
+  .activitySelectionPage > .panel { gap: 16px; }
+  .activitySelectionPage > .panel > section { padding: 19px 17px; border-radius: 19px; }
+  .activitySelectionPage > .panel > section > h2 { font-size: 21px; }
+  .activitySelectionPage .activityLesson h3 { font-size: 17px; }
+  .activitySelectionPage .activityChoices { gap: 9px; }
+  .activitySelectionPage .activityChoices .pixelBtn { padding: 10px 14px; }
+}
+@media (forced-colors: active) {
+  body:has(.activitySelectionPage) #app::before { background: Canvas; }
+  .activitySelectionPage .woodSign { background: Canvas; outline: 1px solid CanvasText; filter: none; text-shadow: none; }
+  .activitySelectionPage .woodSign h1,
+  .activitySelectionPage .subWood { color: CanvasText; }
+  .activitySelectionPage .activityGrades,
+  .activitySelectionPage > .panel > section { background: Canvas; border-color: CanvasText; box-shadow: none; }
+}
